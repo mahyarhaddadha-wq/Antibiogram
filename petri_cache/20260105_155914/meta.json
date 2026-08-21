@@ -1,0 +1,105 @@
+[
+ {
+  "index": 1,
+  "bbox": [
+   1295,
+   484,
+   1674,
+   1674
+  ],
+  "roi_offset_xy": [
+   1295,
+   484
+  ],
+  "center_roi_xy": [
+   837,
+   837
+  ],
+  "center_global_xy": [
+   2132,
+   1321
+  ],
+  "radius_px": 816.9794403605661,
+  "diameter_px": 1633.9588807211321,
+  "confidence": 0.7601679987440395,
+  "method": "hough_fallback",
+  "status": "ok",
+  "precise_dish_result": {
+   "status": "mask_guided_fade",
+   "mask_white_pixels": 2080800,
+   "used_full_image_fallback": false
+  },
+  "roi_gray_masked_file": "dish_1_roi_gray_masked.png",
+  "processing_mask_roi_file": "dish_1_processing_mask_roi.png",
+  "precise_dish_mask_file": "dish_1_precise_dish_mask.png"
+ },
+ {
+  "index": 2,
+  "bbox": [
+   0,
+   893,
+   2927,
+   3107
+  ],
+  "roi_offset_xy": [
+   0,
+   893
+  ],
+  "center_roi_xy": [
+   1367,
+   1560
+  ],
+  "center_global_xy": [
+   1367,
+   2453
+  ],
+  "radius_px": 1539.5694838606282,
+  "diameter_px": 3079.1389677212564,
+  "confidence": 0.7443483380242328,
+  "method": "hough_fallback",
+  "status": "ok",
+  "precise_dish_result": {
+   "status": "mask_guided_fade",
+   "mask_white_pixels": 7423137,
+   "used_full_image_fallback": false
+  },
+  "roi_gray_masked_file": "dish_2_roi_gray_masked.png",
+  "processing_mask_roi_file": "dish_2_processing_mask_roi.png",
+  "precise_dish_mask_file": "dish_2_precise_dish_mask.png"
+ },
+ {
+  "index": 3,
+  "bbox": [
+   0,
+   0,
+   737,
+   710
+  ],
+  "roi_offset_xy": [
+   0,
+   0
+  ],
+  "center_roi_xy": [
+   89,
+   62
+  ],
+  "center_global_xy": [
+   89,
+   62
+  ],
+  "radius_px": 628.389687795201,
+  "diameter_px": 1256.779375590402,
+  "confidence": 0.6360644486314715,
+  "method": "hough_fallback",
+  "status": "ok",
+  "precise_dish_result": {
+   "status": "full_white_mask_fallback",
+   "mask_white_pixels": 523270,
+   "used_full_image_fallback": true,
+   "fallback_mode": "full_roi_border_fade"
+  },
+  "roi_gray_masked_file": "dish_3_roi_gray_masked.png",
+  "processing_mask_roi_file": "dish_3_processing_mask_roi.png",
+  "precise_dish_mask_file": "dish_3_precise_dish_mask.png"
+ }
+]

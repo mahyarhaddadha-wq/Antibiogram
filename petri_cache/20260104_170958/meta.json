@@ -1,0 +1,36 @@
+[
+ {
+  "index": 1,
+  "bbox": [
+   600,
+   0,
+   3034,
+   3000
+  ],
+  "roi_offset_xy": [
+   600,
+   0
+  ],
+  "center_roi_xy": [
+   1517,
+   1517
+  ],
+  "center_global_xy": [
+   2117,
+   1517
+  ],
+  "radius_px": 1496.564103853244,
+  "diameter_px": 2993.128207706488,
+  "confidence": 0.828926924322375,
+  "method": "hough_fallback",
+  "status": "ok",
+  "precise_dish_result": {
+   "status": "mask_guided_fade",
+   "mask_white_pixels": 7004703,
+   "used_full_image_fallback": false
+  },
+  "roi_gray_masked_file": "dish_1_roi_gray_masked.png",
+  "processing_mask_roi_file": "dish_1_processing_mask_roi.png",
+  "precise_dish_mask_file": "dish_1_precise_dish_mask.png"
+ }
+]

@@ -1,0 +1,104 @@
+[
+ {
+  "index": 1,
+  "bbox": [
+   0,
+   621,
+   3000,
+   3104
+  ],
+  "roi_offset_xy": [
+   0,
+   621
+  ],
+  "center_roi_xy": [
+   1502,
+   1552
+  ],
+  "center_global_xy": [
+   1502,
+   2173
+  ],
+  "radius_px": 1531.8176303881955,
+  "diameter_px": 3063.635260776391,
+  "confidence": 0.8102024623612946,
+  "method": "hough_fallback",
+  "status": "ok",
+  "precise_dish_result": {
+   "status": "mask_guided_fade",
+   "mask_white_pixels": 7345800,
+   "used_full_image_fallback": false
+  },
+  "roi_gray_masked_file": "dish_1_roi_gray_masked.png",
+  "processing_mask_roi_file": "dish_1_processing_mask_roi.png",
+  "precise_dish_mask_file": "dish_1_precise_dish_mask.png"
+ },
+ {
+  "index": 2,
+  "bbox": [
+   444,
+   0,
+   1744,
+   1735
+  ],
+  "roi_offset_xy": [
+   444,
+   0
+  ],
+  "center_roi_xy": [
+   872,
+   863
+  ],
+  "center_global_xy": [
+   1316,
+   863
+  ],
+  "radius_px": 851.9780181003111,
+  "diameter_px": 1703.9560362006223,
+  "confidence": 0.7353137806532415,
+  "method": "hough_fallback",
+  "status": "ok",
+  "precise_dish_result": {
+   "status": "mask_guided_fade",
+   "mask_white_pixels": 2263582,
+   "used_full_image_fallback": false
+  },
+  "roi_gray_masked_file": "dish_2_roi_gray_masked.png",
+  "processing_mask_roi_file": "dish_2_processing_mask_roi.png",
+  "precise_dish_mask_file": "dish_2_precise_dish_mask.png"
+ },
+ {
+  "index": 3,
+  "bbox": [
+   1828,
+   0,
+   1082,
+   546
+  ],
+  "roi_offset_xy": [
+   1828,
+   0
+  ],
+  "center_roi_xy": [
+   541,
+   5
+  ],
+  "center_global_xy": [
+   2369,
+   5
+  ],
+  "radius_px": 521.4860812631871,
+  "diameter_px": 1042.9721625263742,
+  "confidence": 0.581373853073122,
+  "method": "hough_fallback",
+  "status": "ok",
+  "precise_dish_result": {
+   "status": "mask_guided_fade",
+   "mask_white_pixels": 589994,
+   "used_full_image_fallback": false
+  },
+  "roi_gray_masked_file": "dish_3_roi_gray_masked.png",
+  "processing_mask_roi_file": "dish_3_processing_mask_roi.png",
+  "precise_dish_mask_file": "dish_3_precise_dish_mask.png"
+ }
+]

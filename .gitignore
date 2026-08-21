@@ -1,0 +1,3 @@
+__pycache__/
+*.pyc
+.petri_cache_build_tmp/
