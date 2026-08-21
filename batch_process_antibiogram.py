@@ -12,10 +12,12 @@
 cfg.image_path برای هر عکس override می‌شود و کل نوت‌بوک با یک کرنل تازه اجرا می‌شود
 (دقیقاً همان‌طور که این نوت‌بوک همیشه به‌صورت تعاملی برای یک عکس اجرا می‌شود).
 
-برای هر عکس، در پوشه‌ی خروجی/<نام عکس>/ سه خروجی ذخیره می‌شود:
-  01_fusion_disks.png    -- نتیجه‌ی نهایی تشخیص دیسک‌ها (ماژول ۱۵، همه‌ی پتری‌های عکس)
-  02_halo_dish<N>.png    -- نتیجه‌ی نهایی هاله + رشد نامتقارن (ماژول ۱۶.۵)، یک فایل به‌ازای هر پتری
-  03_final_report.txt    -- گزارش نهایی متنی: قطر دیسک/هاله/رخداد حباب (ماژول ۱۸)
+برای هر عکس، در پوشه‌ی خروجی/<نام عکس>/ چهار خروجی ذخیره می‌شود:
+  01_fusion_disks.png     -- نتیجه‌ی نهایی تشخیص دیسک‌ها (ماژول ۱۵، همه‌ی پتری‌های عکس)
+  02_halo_dish<N>.png     -- نتیجه‌ی نهایی و اصلاح‌شده‌ی هاله (ماژول ۱۶.۶، بعد از رشد
+                             نامتقارن ۱۶.۵ و رفع رخدادهای زاویه‌ای)، یک فایل به‌ازای هر پتری
+  03_bubbles_dish<N>.png  -- رخدادهای حباب/توده‌ی داخل هاله (ماژول ۱۷)، یک فایل به‌ازای هر پتری
+  04_final_report.txt     -- گزارش نهایی متنی: قطر دیسک/هاله/رخداد حباب (ماژول ۱۸)
 و یک summary.txt در ریشه‌ی پوشه‌ی خروجی با وضعیت کلی همه‌ی عکس‌ها.
 
 پیش‌نیاز: nbformat و nbclient (`pip install nbformat nbclient`) و یک کرنل Jupyter نصب‌شده
@@ -38,7 +40,8 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 DEFAULT_OUTPUT_DIR = Path(r"D:\antibiogram_engine-version 2\output")
 
 FUSION_MARKER = "Fusion Result —"
-HALO_MARKER = "# ── ماژول ۱۶.۵ (جدید)"
+HALO_MARKER = "# ── ماژول ۱۶.۶ (جدید)"  # آخرین ماژولِ اصلاح‌کننده‌ی مرز هاله (بعد از ۱۶.۵) -- تصویرِ خروجی‌اش دایره‌های نهایی/تصحیح‌شده را نشان می‌دهد
+BUBBLE_MARKER = "Halo Bubble Events —"
 REPORT_MARKER = "گزارش نهایی آنتی‌بایوگرام"
 CFG_INIT_MARKER = "cfg = Phase2Config()"
 
@@ -113,8 +116,12 @@ def process_one_image(base_nb, image_path: Path, output_dir: Path, kernel_name: 
         for i, png in enumerate(halo_pngs, start=1):
             (img_out_dir / f"02_halo_dish{i}.png").write_bytes(png)
 
+        bubble_pngs = _extract_png_outputs(nb["cells"][_find_cell_index(nb, BUBBLE_MARKER)])
+        for i, png in enumerate(bubble_pngs, start=1):
+            (img_out_dir / f"03_bubbles_dish{i}.png").write_bytes(png)
+
         report_text = _extract_stream_text(nb["cells"][_find_cell_index(nb, REPORT_MARKER)])
-        (img_out_dir / "03_final_report.txt").write_text(report_text, encoding="utf-8")
+        (img_out_dir / "04_final_report.txt").write_text(report_text, encoding="utf-8")
 
         print(f"[{image_path.name}] تمام شد -> {img_out_dir}")
         return True
