@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 .petri_cache_build_tmp/
+ground_truth/overlays/
+ground_truth/ground_truth_template.csv
+ground_truth/evaluation_results.csv
