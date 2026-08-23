@@ -54,8 +54,43 @@ DISK_REL_RADIUS_MAX = 0.09
 MIN_DISH_AREA_FRAC = 0.03  # نسبت به مساحتِ کلِ تصویر، برای رد کردنِ نویز
 
 
+DISH_DOWNSCALE_TARGET_PX = 800
+
+
+def find_dishes_hough(gray: np.ndarray):
+    """تشخیصِ خودِ لبه‌ی گردِ ظرفِ پتری با یک HoughCircle درشت -- روی این ۱۱ عکس
+    (هرکدام یک ظرف) این روش از Otsu ساده به‌مراتب مقاوم‌تر است: لبه‌ی ظرف همیشه
+    یک دایره‌ی تمیز و پرکنتراست است، برخلاف Otsu که وقتی روشناییِ پس‌زمینه (مثلاً
+    طرح/لوگوی چاپی روی پارچه‌ی زیرِ ظرف) به ظرف نزدیک باشد، آن‌ها را در یک بلابِ
+    واحدِ نامنظم ادغام می‌کند."""
+    h, w = gray.shape[:2]
+    scale = DISH_DOWNSCALE_TARGET_PX / max(h, w)
+    small = cv2.resize(gray, None, fx=scale, fy=scale, interpolation=cv2.INTER_AREA)
+    small = cv2.medianBlur(small, 5)
+    sh, sw = small.shape[:2]
+    r_min = int(0.25 * min(sh, sw))
+    r_max = int(0.60 * min(sh, sw))
+    circles = cv2.HoughCircles(
+        small, cv2.HOUGH_GRADIENT, dp=1.5, minDist=sw,
+        param1=80, param2=60, minRadius=r_min, maxRadius=r_max,
+    )
+    if circles is None:
+        return []
+    out = []
+    for x, y, r in circles[0]:
+        out.append({"cx": float(x / scale), "cy": float(y / scale), "r": float(r / scale)})
+    return out
+
+
 def find_dishes(gray: np.ndarray):
-    """Otsu ساده + بزرگ‌ترین کانتورهای معقول -> لیستِ (cx, cy, r, bbox)."""
+    """اول HoughCircle درشت (بند بالا)؛ اگر چیزی پیدا نکرد (مثلاً چند ظرف در یک
+    قاب که با یک دایره‌ی تکی قابلِ توصیف نیست)، به روشِ قدیمیِ Otsu + کانتور
+    برمی‌گردد."""
+    hough_dishes = find_dishes_hough(gray)
+    if hough_dishes:
+        hough_dishes.sort(key=lambda d: (d["cx"], d["cy"]))
+        return hough_dishes
+
     h, w = gray.shape[:2]
     blur = cv2.GaussianBlur(gray, (0, 0), sigmaX=w / 300.0)
     _, binary = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
@@ -104,14 +139,32 @@ def find_disks_in_dish(gray: np.ndarray, dish: dict):
     r_max_px = max(r_min_px + 1, int(DISK_REL_RADIUS_MAX * 2 * r * scale))
     circles = cv2.HoughCircles(
         roi_small, cv2.HOUGH_GRADIENT, dp=1.2, minDist=r_min_px * 2.0,
-        param1=100, param2=45, minRadius=r_min_px, maxRadius=r_max_px,
+        param1=100, param2=38, minRadius=r_min_px, maxRadius=r_max_px,
     )
+    # سقفِ ۰.۷۸ (نه ۰.۹۸): روی هر ۱۱ عکس، دورترین دیسکِ واقعی از مرکز حداکثر
+    # نسبتِ ۰.۶۸ دارد؛ اما بازتاب/لبه‌ی نورانیِ خودِ ظرف نزدیکِ لبه (نسبت‌های
+    # ۰.۸+) گاهی به‌اشتباه به‌عنوانِ یک دایره‌ی کاذب شناسایی می‌شود -- این سقف
+    # آن را حذف می‌کند بدون از دست‌دادنِ هیچ دیسکِ واقعی.
+    # فیلترِ کنتراستِ روشنایی: دیسکِ کاغذیِ واقعی همیشه به‌وضوح از پس‌زمینه‌ی
+    # محلی‌اش (آگار/هاله) روشن‌تر است -- دایره‌های کاذبِ نویزیِ آگارِ خالی (که با
+    # پایین‌آوردنِ آستانه‌ی Hough برای گرفتنِ دیسک‌های کم‌کنتراست ظاهر می‌شوند)
+    # حداکثر ۷ داشتند. آستانه‌ی ۱۰ (نه ۱۵) انتخاب شد چون دیسکِ زردرنگِ FM300 (که
+    # کنتراستش نسبت به دیسک‌های سفید کمتر است) در دو عکس مقدارِ ۱۳-۱۵ داشت --
+    # آستانه‌ی پایین‌تر آن را نگه می‌دارد و همچنان کاملاً بالاتر از کاذب‌هاست.
+    MIN_BRIGHTNESS_CONTRAST = 10
     disks = []
     if circles is not None:
         for x, y, rad in circles[0]:
             gx, gy, grad = x / scale + x0, y / scale + y0, rad / scale
-            if np.hypot(gx - cx, gy - cy) > r * 0.98:
-                continue  # بیرونِ ظرف
+            if np.hypot(gx - cx, gy - cy) > r * 0.78:
+                continue  # بیرونِ ظرف یا روی لبه/بازتابِ نورانیِ آن
+            gxi, gyi = int(gx), int(gy)
+            patch = gray[max(0, gyi - 25):gyi + 25, max(0, gxi - 25):gxi + 25]
+            patch_bg = gray[max(0, gyi - 60):gyi + 60, max(0, gxi - 60):gxi + 60]
+            if patch.size == 0 or patch_bg.size == 0:
+                continue
+            if float(patch.mean()) - float(patch_bg.mean()) < MIN_BRIGHTNESS_CONTRAST:
+                continue  # نویزِ آگارِ خالی، نه دیسکِ واقعی
             disks.append((float(gx), float(gy), float(grad)))
     return disks
 
