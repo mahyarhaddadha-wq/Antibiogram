@@ -341,7 +341,8 @@ cfg.dish_detect_w_solidity = 0.25
 cfg.dish_detect_w_center = 0.20
 cfg.dish_detect_w_border = 0.10
 cfg.dish_detect_w_radius = 0.10
-cfg.dish_reference_diameter_mm = 90.0       # مرجع تبدیل px→mm (پتری 90 یا 150)
+cfg.disk_reference_diameter_mm = 6.0        # قطرِ استانداردِ دیسکِ آنتی‌بیوتیکِ کوچک‌تر (mm) -- مرجعِ تبدیلِ px→mm
+cfg.disk_calibration_cluster_tolerance = 0.30  # کوچک‌ترین خوشه‌ی قطرِ پیکسلیِ دیسک‌ها برایِ کالیبراسیون: کوچک‌ترین دیسک + هر دیسکی که حداکثر این نسبت بزرگ‌تر باشد (۳۰٪، بینِ نسبتِ دو اندازه‌ی واقعیِ ۶/۸mm=۱.۳۳ و نویزِ معمولی)
 
 # --- بازه‌ی نسبی قطر دیسک نسبت به قطر پتری ---
 # دیسک 6mm در پتری 150mm → 0.040 ، دیسک 8mm در پتری 90mm → 0.089
@@ -2717,10 +2718,23 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
                 crossed = True
                 break
 
-        # اگر گذار واقعی پیدا شد، یا دیگر جایی برای گسترش نمانده (به سقف فیزیکی رسیدیم
-        # یا سقف تلاش‌های گسترش تمام شد)، همین‌جا نتیجه را قبول کن؛ وگرنه پنجره را
-        # بزرگ‌تر کن و از نو بساز.
-        if crossed or r_out >= max_allowed - 1.0 or widen_iter == max_widenings:
+        # باگِ کشف‌شده با ground truth واقعی: وقتی نویزِ محلی (noise) با کلِ بازه‌ی
+        # تغییراتِ پروفایل در همین پنجره قابل‌مقایسه یا بزرگ‌تر باشد (هاله‌ای با
+        # گذارِ تدریجی/کم‌شیب که هنوز به‌طورِ کامل داخلِ این پنجره دیده نشده)، باندِ
+        # همگرایی (± band) از کلِ بازه‌ی مشاهده‌شده پهن‌تر می‌شود -- در نتیجه تقریباً
+        # هر رینگی، even نزدیکِ r_in، به‌اشتباه «همگرا» تشخیص داده می‌شود، درحالی‌که
+        # واقعاً فقط بخشِ کوچکی از یک گذارِ بزرگ‌ترِ هنوز-ادامه‌دار را دیده‌ایم -- نه
+        # این‌که واقعاً به پس‌زمینه رسیده باشیم. علامتِ قابل‌اتکایی که این دو حالت را
+        # جدا می‌کند دقیقاً همان contrast_sigma است: اگر این آماره‌ی تجمیعیِ همین
+        # پنجره از قبل به‌وضوح از نویز فراتر رفته (بزرگ‌تر از همان آستانه‌ی ۳σِ
+        # استانداردی که ماژولِ ۱۶.۵ هم استفاده می‌کند)، همگرایی واقعی و قابل‌اعتماد
+        # است؛ وگرنه باید پنجره را گسترش داد تا معلوم شود سیگنالِ واقعی‌تری فراتر از
+        # این پنجره هست یا نه -- دقیقاً همان فلسفه‌ی «گسترشِ تطبیقی» که این حلقه از
+        # قبل برایش طراحی شده بود، فقط تا امروز هرگز عملاً فرصتِ اجرا پیدا نمی‌کرد.
+        reliable_convergence = crossed and (
+            abs(contrast_sigma) >= cfg.halo_extension_require_min_contrast_sigma)
+
+        if reliable_convergence or r_out >= max_allowed - 1.0 or widen_iter == max_widenings:
             break
         scale *= float(cfg.halo_r_max_scale_growth)
 
@@ -2960,6 +2974,40 @@ def segment_dish_halos(gray_img: np.ndarray, dish_mask: np.ndarray,
 
 
 
+def _estimate_px_per_mm_from_disks(disks: List[Dict[str, Any]], cfg) -> Optional[float]:
+    """
+    کالیبراسیونِ px→mm از رویِ خودِ اندازه‌یِ استانداردِ دیسک‌ها (مرجعِ
+    cfg.disk_reference_diameter_mm)، نه از رویِ قطرِ فرضیِ ظرفِ پتری
+    (نسخه‌ی قبلی: cfg.dish_reference_diameter_mm=90.0). چرا این تغییر لازم شد:
+    Ground truth واقعی (۹۳ دیسک، ۱۱ عکس) نشان داد کالیبراسیونِ مبتنی‌بر پتری
+    بایاسِ سیستماتیکِ قابل‌توجهی داشت -- قطرِ گزارش‌شده‌ی دیسک‌هایِ ۶mmِ واقعی
+    میانگین ~۴.۹mm درمی‌آمد (یعنی px_per_mm قدیمی ~۲۰٪ بیش‌ازحد بود) -- چون هم
+    به دقتِ تشخیصِ شعاعِ خودِ پتری (که هر خطای جزئی مستقیماً به مقیاسِ mm سرایت
+    می‌کند) و هم به فرضِ ثابتِ ۹۰mm (که پتریِ واقعی ممکن است اصلاً این اندازه
+    نباشد) وابسته بود. اندازه‌ی خودِ دیسک، برخلافِ این دو، یک استانداردِ فیزیکیِ
+    دقیق و ثابت است -- کالیبراسیون از رویِ آن مستقیم‌تر و قابل‌اتکاتر است.
+
+    طبقِ فرضِ مستندِ پروژه (دیسک‌های آنتی‌بیوتیک فقط ۲ اندازه‌ی فیزیکی دارند --
+    عمدتاً ۶mm، با احتمالِ چند دیسکِ ۸mm در همان پتری؛ همان فرضی که
+    disk_radius_cluster_gap_frac در Fusion هم از آن استفاده می‌کند)، کوچک‌ترین
+    خوشه‌ی قطرِ پیکسلی (کوچک‌ترین دیسک + هر دیسکِ دیگری که قطرش حداکثر
+    cfg.disk_calibration_cluster_tolerance برابر بزرگ‌تر باشد) میانگین گرفته
+    می‌شود و برابرِ cfg.disk_reference_diameter_mm گذاشته می‌شود -- این خوشه
+    همیشه فقط دیسک‌هایِ ۶mm را می‌گیرد (چون ۸/۶=۱.۳۳ به‌وضوح فراتر از سقفِ ۳۰٪
+    است)، حتی اگر پتری فقط یک دیسک داشته باشد (خوشه به همان یک دیسک تحویل
+    می‌شود، دقیقاً هم‌ارز با «مطمئن‌ترین/تنها دیسک را ۶mm در نظر بگیر»).
+    """
+    diam_px = [2.0 * float(d["r"]) for d in disks if d.get("r", 0) > 0]
+    if not diam_px:
+        return None
+    min_diam = min(diam_px)
+    if min_diam <= 0:
+        return None
+    cluster = [d for d in diam_px if d <= min_diam * (1.0 + cfg.disk_calibration_cluster_tolerance)]
+    mean_diam_px = float(np.mean(cluster))
+    return mean_diam_px / float(cfg.disk_reference_diameter_mm)
+
+
 for dish in dishes:
     disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
     petri_radius_px = 0.5 * dish["diameter_px"]
@@ -2973,8 +3021,7 @@ for dish in dishes:
         halo_results.append(res)
 
     dish["halo_results"] = halo_results
-    dish["px_per_mm_est"] = (dish["diameter_px"] / float(cfg.dish_reference_diameter_mm)
-                             if dish["diameter_px"] > 0 else None)
+    dish["px_per_mm_est"] = _estimate_px_per_mm_from_disks(disks_in, cfg)
 
     halo_overlay = original_bgr.copy()
     offset_x, offset_y = dish["roi_offset_xy"]
