@@ -2596,7 +2596,8 @@ for dish in dishes:
 
 def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
                          x: int, y: int, r_disk: int, cfg,
-                         bg_noise: Optional[float] = None) -> Dict[str, Any]:
+                         bg_noise: Optional[float] = None,
+                         neighbor_limit_px: Optional[float] = None) -> Dict[str, Any]:
     """
     پروفایل شعاعی همه‌جهته‌ی دیسک + برازش شعاع دایره‌ی هاله — بدون هیچ گیت وجود/عدم‌وجود.
     خروجی «status» فقط برای شکست‌های واقعیِ داده (دیسک بیرون از ماسک، خیلی نزدیک به
@@ -2624,6 +2625,18 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
 
     dt_border = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
     max_allowed = float(dt_border[y, x]) - 2.0
+    # باگِ کشف‌شده با ground truth واقعی (عارضه‌ی جانبیِ رفعِ قبلی): وقتی گسترشِ
+    # پنجره فقط با فاصله تا لبه‌ی *پتری* محدود می‌شد (نه تا نزدیک‌ترین *دیسکِ دیگر*)،
+    # روی پنل‌های پرتراکم، پنجره‌ی جست‌وجوی یک دیسکِ کاملاً بدونِ هاله می‌توانست آن‌قدر
+    # گسترش یابد که به قلمروِ یک دیسکِ همسایه با هاله‌ی واقعاً بزرگ برسد -- افتِ شدتِ
+    # ناشی از ورود به هاله‌ی همسایه (نه پس‌زمینه‌ی واقعی) در انتهای پروفایل به‌اشتباه
+    # به‌عنوانِ «رسیدن به پس‌زمینه» تفسیر می‌شد و contrast_sigma را کاذباً معنادار
+    # می‌کرد. سقفِ همسایه (نیمساز عمودِ فاصله تا نزدیک‌ترین دیسکِ دیگر -- همان اصلِ
+    # هندسیِ _neighbor_voronoi_cap، اینجا به‌صورتِ همه‌جهته/اسکالر چون این پروفایل
+    # تجمیعی است نه per-angle) اکنون پنجره‌ی جست‌وجو را هم محدود می‌کند، نه فقط شکلِ
+    # نهایی را.
+    if neighbor_limit_px is not None:
+        max_allowed = min(max_allowed, float(neighbor_limit_px))
     out["max_allowed"] = max_allowed
 
     r_in = cfg.halo_r_start_scale * float(r_disk)
@@ -2908,8 +2921,17 @@ def segment_dish_halos(gray_img: np.ndarray, dish_mask: np.ndarray,
         else np.full((h, w), 255, dtype=np.uint8)
 
     bg_noise = _compute_dish_background_noise(gray_img, mask_u8, disks, petri_radius_px, cfg)
-    bases = [_halo_radial_profile(gray_img, mask_u8, d["x"], d["y"], d["r"], cfg, bg_noise=bg_noise)
-            for d in disks]
+
+    def _neighbor_limit_for(i: int) -> float:
+        others = [disks[j] for j in range(len(disks)) if j != i]
+        if not others:
+            return float("inf")
+        nearest = min(float(np.hypot(disks[i]["x"] - o["x"], disks[i]["y"] - o["y"])) for o in others)
+        return 0.5 * nearest
+
+    bases = [_halo_radial_profile(gray_img, mask_u8, d["x"], d["y"], d["r"], cfg, bg_noise=bg_noise,
+                                  neighbor_limit_px=_neighbor_limit_for(i))
+            for i, d in enumerate(disks)]
     n_angles = int(cfg.halo_num_angles)
     angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
 
