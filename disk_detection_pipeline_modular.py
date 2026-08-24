@@ -2705,16 +2705,46 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
         if bg_noise is not None and bg_noise > 0:
             pixel_noise = float(bg_noise)
 
-        if np.any(cnts == 0):
-            good = cnts > 0
-            if int(np.count_nonzero(good)) < 3:
+        good = cnts > 0
+        # باگِ کشف‌شده با ground truth (بخشِ ۱۲.۷ تاریخچه، رفعِ جهت‌آگاهِ عارضه‌ی
+        # بیش‌برآورد): وقتی یک دنباله‌ی حلقه‌هایِ خالی تا *انتهایِ* آرایه ادامه یابد
+        # (نه یک شکافِ منفردِ داخلی -- که معمولاً چون چند دیسکِ همسایه هم‌زمان اکثرِ
+        # زوایا را در آن شعاع بسته‌اند رخ می‌دهد)، از آن نقطه به بعد هیچ پیکسلِ واقعاً
+        # امنی باقی نمانده. `np.interp` در این حالت (بدونِ هیچ نقطه‌ی معتبرِ *بعدی*
+        # برایِ درون‌یابیِ واقعی) فقط آخرین مقدارِ معتبر را برایِ همیشه ثابت ادامه
+        # می‌دهد -- یک «فلاتِ» کاملاً ساختگی که دقیقاً امضایِ همان همگراییِ واقعی است و
+        # می‌تواند به‌اشتباه پذیرفته شود (کشف‌شده: چند دیسکِ محاصره‌شده با دنباله‌ی
+        # پروفایلِ یک عددِ ثابتِ تکراری). این دنباله‌ی فاقدِ اعتبار به‌طورِ کامل کنار
+        # گذاشته می‌شود -- نه فقط از همگرایی، از خودِ پروفایلِ استفاده‌شده هم حذف
+        # می‌شود؛ فقط شکاف‌هایِ منفردِ *داخلی* (بینِ دو نقطه‌ی معتبرِ واقعی) طبقِ روالِ
+        # قبلی درون‌یابی می‌شوند.
+        trustworthy_n = n_rings
+        k = n_rings - 1
+        while k >= 0 and not good[k]:
+            trustworthy_n = k
+            k -= 1
+
+        if trustworthy_n < n_rings:
+            interior_good = good[:trustworthy_n]
+            if int(np.count_nonzero(interior_good)) < 3:
                 out["status"] = "insufficient_ring_coverage"
                 return out
+            ii = np.arange(trustworthy_n)
+            profile = np.interp(ii, ii[interior_good], profile[:trustworthy_n][interior_good])
+            ring_centers = ring_centers[:trustworthy_n]
+        elif np.any(~good):
             ii = np.arange(n_rings)
             profile = np.interp(ii, ii[good], profile[good])
 
-        background = float(np.median(profile[-tail:]))
-        inner_val = float(np.median(profile[:near_n]))
+        n_rings_eff = len(profile)
+        if n_rings_eff < max(3, near_n + 1):
+            out["status"] = "insufficient_ring_coverage"
+            return out
+        tail_eff = max(1, min(tail, n_rings_eff // 3))
+        near_n_eff = max(1, min(near_n, n_rings_eff // 3))
+
+        background = float(np.median(profile[-tail_eff:]))
+        inner_val = float(np.median(profile[:near_n_eff]))
         noise = pixel_noise
         contrast_sigma = (inner_val - background) / noise
         polarity_sign = 1 if contrast_sigma >= 0 else -1
@@ -2737,7 +2767,7 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
         in_band = (profile >= lo) & (profile <= hi)
         r_halo_radial = r_in
         crossed = False
-        for k in range(n_rings):
+        for k in range(n_rings_eff):
             if bool(np.all(in_band[k:])):
                 r_halo_radial = float(ring_centers[k])
                 crossed = True
@@ -2762,6 +2792,20 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
         if reliable_convergence or r_out >= max_allowed - 1.0 or widen_iter == max_widenings:
             break
         scale *= float(cfg.halo_r_max_scale_growth)
+
+
+    # باگِ کشف‌شده با ground truth (دنبال‌کردنِ عمیقِ gt_10): reliable_convergence فقط
+    # حلقه‌ی گسترش را کنترل می‌کند -- تصمیم می‌گیرد آیا جست‌وجو ادامه یابد یا نه --
+    # ولی وقتی حلقه بدونِ رسیدن به یک همگراییِ واقعاً قابل‌اتکا (سیگمای contrast کافی)
+    # به‌اجبار متوقف شود (چون به max_allowed یا max_widenings رسیده)، آخرین «crossed»یِ
+    # ضعیف همچنان به‌عنوانِ جوابِ نهایی پذیرفته می‌شد. یعنی یک عبورِ اتفاقی/نویزی از
+    # باندِ همگرایی که هرگز به آستانه‌ی اطمینانِ ۳σ نرسید، هنوز شعاعِ نهایی را تعیین
+    # می‌کرد. رفع: اگر تا پایانِ کاملِ گسترشِ تطبیقی هیچ‌گاه یک همگراییِ قابل‌اتکا به
+    # دست نیامد، شعاع به r_in (یعنی «سیگنالِ قابل‌اتکایی دیده نشد») بازنشانی می‌شود --
+    # دقیقاً همان رفتاری که برای دیسکِ بدونِ هیچ گذارِ همگرا از قبل در نظر گرفته شده بود.
+    if not reliable_convergence:
+        r_halo_radial = r_in
+        crossed = False
 
     out.update({"profile": profile, "ring_centers": ring_centers,
                "contrast_sigma": float(contrast_sigma),
@@ -2942,7 +2986,23 @@ def segment_dish_halos(gray_img: np.ndarray, dish_mask: np.ndarray,
 
     results: List[Dict[str, Any]] = []
     for i, (d, b) in enumerate(zip(disks, bases)):
-        out = {"status": b["status"], "halo_radius_px": 0.0, "halo_mask": None,
+        # باگِ سیستمیِ کشف‌شده با ground truth (توضیحِ FP=28 ثابت در همه‌ی اجراهای این
+        # نشست، حتی با پروفایل‌های اصلاح‌شده): این سلول تا امروز «هاله تشکیل شد یا نه»
+        # را فقط از رویِ status=="ok" تصمیم می‌گرفت -- ولی status فقط یعنی «پروفایل
+        # هندسی معتبر محاسبه شد»، نه «سیگنالِ واقعیِ هاله دیده شد». برایِ یک دیسکِ
+        # کاملاً بدونِ هاله، پروفایل هنوز هم status="ok" برمی‌گرداند (چون هندسه معتبر
+        # است) و r_halo_radial همیشه دستِ‌کم برابر r_in باقی می‌ماند -- یعنی همیشه یک
+        # عدد mm غیرصفر گزارش می‌شد، حتی وقتی _halo_radial_profile با رفعِ اخیرش
+        # (بازنشانیِ r_halo_radial/crossed به‌خاطرِ نبودِ همگراییِ قابل‌اتکا) به‌درستی
+        # halo_signal_detected=False برمی‌گرداند. رفع: «سیگنالِ واقعی دیده شد» اکنون
+        # پیش‌شرطِ صریحِ ادامه‌ی این حلقه است، نه فقط status. دیسکِ بدونِ سیگنالِ
+        # قابل‌اتکا دقیقاً مثلِ دیسکِ too_close_to_border/insufficient_ring_coverage
+        # رفتار می‌کند (halo_radius_px=0.0، همان مسیرِ موجودِ «هاله تشکیل نشد» در
+        # ماژول‌هایِ ۱۶.۵/۱۶.۶/۱۷/گزارشِ نهایی -- که همه از قبل فقط status!="ok" را
+        # چک می‌کنند، پس این تغییر به‌تنهایی همه‌ی آن‌ها را هم‌زمان درست می‌کند).
+        signal_ok = (b["status"] == "ok") and bool(b.get("halo_signal_detected", False))
+        out = {"status": (b["status"] if signal_ok else "no_reliable_signal"),
+              "halo_radius_px": 0.0, "halo_mask": None,
               "halo_area_px": 0.0, "confidence": b.get("confidence", 0.0),
               "contrast_sigma": b.get("contrast_sigma", 0.0),
               "continuity": b.get("continuity", 0.0),
@@ -2954,7 +3014,7 @@ def segment_dish_halos(gray_img: np.ndarray, dish_mask: np.ndarray,
               "halo_signal_detected": b.get("halo_signal_detected", False),
               "boundary_source": None, "clipped_by_dish_edge": False, "overlaps_neighbor": False}
 
-        if b["status"] != "ok":
+        if not signal_ok:
             results.append(out)
             continue
 
