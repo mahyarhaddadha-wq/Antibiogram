@@ -2596,7 +2596,8 @@ for dish in dishes:
 
 def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
                          x: int, y: int, r_disk: int, cfg,
-                         bg_noise: Optional[float] = None) -> Dict[str, Any]:
+                         bg_noise: Optional[float] = None,
+                         other_centers: Optional[List[Tuple[float, float]]] = None) -> Dict[str, Any]:
     """
     پروفایل شعاعی همه‌جهته‌ی دیسک + برازش شعاع دایره‌ی هاله — بدون هیچ گیت وجود/عدم‌وجود.
     خروجی «status» فقط برای شکست‌های واقعیِ داده (دیسک بیرون از ماسک، خیلی نزدیک به
@@ -2653,10 +2654,34 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
         yy, xx = np.ogrid[:patch.shape[0], :patch.shape[1]]
         rad = np.sqrt((xx - (x - x0)) ** 2 + (yy - (y - y0)) ** 2)
 
+        # ماسکِ جهت‌آگاهِ «امن از همسایه»: باگِ کشف‌شده با ground truth (تلاشِ اولِ رفع،
+        # revert شد -- بخشِ ۱۲.۶ تاریخچه): یک سقفِ *اسکالر/همه‌جهته* روی شعاعِ پنجره
+        # (بر مبنایِ فاصله تا نزدیک‌ترین همسایه) درست بود که از نشتِ هاله‌ی همسایه
+        # جلوگیری می‌کرد، اما چون همه‌جهته بود، اطلاعاتِ معتبرِ جهت‌هایی که اصلاً
+        # همسایه‌ی نزدیکی در آن سمت نداشتند را هم دور می‌ریخت و کم‌برآوردِ قبلی را جای
+        # دیگر برمی‌گرداند (MAE در اجرایِ کامل بدتر شد). رفعِ درست باید *جهت‌آگاه* باشد:
+        # برایِ هر دیسکِ همسایه، فقط پیکسل‌هایی که از نیمسازِ عمودِ فاصله تا همان همسایه
+        # گذشته‌اند (یعنی واقعاً به قلمروِ او نزدیک‌ترند، نه به این دیسک) از میانگینِ
+        # حلقه‌ای کنار گذاشته می‌شوند -- دقیقاً همان فرمولِ بسته‌ی هندسیِ
+        # _neighbor_voronoi_cap، اینجا به‌صورتِ یک تستِ نیم‌صفحه‌ایِ per-pixel به‌جایِ
+        # یک سقفِ per-angle روی شکلِ نهایی. جهت‌هایِ بدونِ همسایه‌ی نزدیک هیچ‌وقت
+        # محدود نمی‌شوند، پس پس‌زمینه‌ی واقعیِ آن‌ها همچنان کاملاً دیده می‌شود.
+        neighbor_safe = np.ones(patch.shape, dtype=bool)
+        if other_centers:
+            abs_x = xx + x0
+            abs_y = yy + y0
+            for ox, oy in other_centers:
+                dx, dy = float(ox) - float(x), float(oy) - float(y)
+                d2 = dx * dx + dy * dy
+                if d2 < 1e-6:
+                    continue
+                proj = (abs_x - x) * dx + (abs_y - y) * dy
+                neighbor_safe &= (proj < 0.5 * d2)
+
         edges = np.linspace(r_in, r_out, n_rings + 1)
         ring_centers = 0.5 * (edges[:-1] + edges[1:])
         idx = np.digitize(rad, edges) - 1
-        valid = (idx >= 0) & (idx < n_rings) & pmask
+        valid = (idx >= 0) & (idx < n_rings) & pmask & neighbor_safe
 
         sums = np.bincount(idx[valid], weights=patch[valid], minlength=n_rings)
         sumsq = np.bincount(idx[valid], weights=patch[valid] ** 2, minlength=n_rings)
@@ -2908,8 +2933,10 @@ def segment_dish_halos(gray_img: np.ndarray, dish_mask: np.ndarray,
         else np.full((h, w), 255, dtype=np.uint8)
 
     bg_noise = _compute_dish_background_noise(gray_img, mask_u8, disks, petri_radius_px, cfg)
-    bases = [_halo_radial_profile(gray_img, mask_u8, d["x"], d["y"], d["r"], cfg, bg_noise=bg_noise)
-            for d in disks]
+    bases = [_halo_radial_profile(gray_img, mask_u8, d["x"], d["y"], d["r"], cfg, bg_noise=bg_noise,
+                                  other_centers=[(disks[j]["x"], disks[j]["y"])
+                                                for j in range(len(disks)) if j != i])
+            for i, d in enumerate(disks)]
     n_angles = int(cfg.halo_num_angles)
     angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
 
@@ -3011,6 +3038,14 @@ def _estimate_px_per_mm_from_disks(disks: List[Dict[str, Any]], cfg) -> Optional
 for dish in dishes:
     disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
     petri_radius_px = 0.5 * dish["diameter_px"]
+    # تصحیحِ نورِ ناهموار قبل از ماژولِ هاله: بررسیِ پروفایل‌هایِ خامِ چند دیسکِ
+    # بدونِ هاله (gt_10) نشان داد بعضی از موارد بیش‌برآورد ربطی به نشتِ همسایه نداشتند --
+    # پروفایل به‌طورِ کاملاً یکنواخت و بدونِ هیچ افتی در سرتاسرِ پنجره بالا می‌رفت، دقیقاً
+    # امضایِ گرادیانِ نورِ ناهمواری (vignetting) که تا امروز فقط برایِ ماژولِ ۴ (تشخیصِ
+    # پتری) تصحیح می‌شد، نه برایِ ماژول‌هایِ بعدی. همان تابعِ `illumination_normalize`
+    # (که قبلاً روی کلِ تصویر برایِ تشخیصِ پتری تایید و استفاده شده) اینجا روی ROIِ خودِ
+    # همین پتری هم اعمال می‌شود -- چون کرنلش بر حسبِ کسری از اندازه‌ی خودِ تصویرِ ورودی
+    # تعریف شده (نه پیکسلِ مطلق)، به‌طورِ خودکار با اندازه‌ی ROI سازگار می‌شود.
     halo_results_raw = segment_dish_halos(dish["roi_gray_masked"], dish["processing_mask_roi"],
                                           disks_in, petri_radius_px, cfg)
 
