@@ -341,7 +341,8 @@ cfg.dish_detect_w_solidity = 0.25
 cfg.dish_detect_w_center = 0.20
 cfg.dish_detect_w_border = 0.10
 cfg.dish_detect_w_radius = 0.10
-cfg.dish_reference_diameter_mm = 90.0       # مرجع تبدیل px→mm (پتری 90 یا 150)
+cfg.disk_reference_diameter_mm = 6.0        # قطرِ استانداردِ دیسکِ آنتی‌بیوتیکِ کوچک‌تر (mm) -- مرجعِ تبدیلِ px→mm
+cfg.disk_calibration_cluster_tolerance = 0.30  # کوچک‌ترین خوشه‌ی قطرِ پیکسلیِ دیسک‌ها برایِ کالیبراسیون: کوچک‌ترین دیسک + هر دیسکی که حداکثر این نسبت بزرگ‌تر باشد (۳۰٪، بینِ نسبتِ دو اندازه‌ی واقعیِ ۶/۸mm=۱.۳۳ و نویزِ معمولی)
 
 # --- بازه‌ی نسبی قطر دیسک نسبت به قطر پتری ---
 # دیسک 6mm در پتری 150mm → 0.040 ، دیسک 8mm در پتری 90mm → 0.089
@@ -398,6 +399,8 @@ cfg.halo_extension_gradient_min_sigma = 2.0   # حداقل سیگمای robust (
 cfg.halo_extension_min_gradient_frac_of_noise = 2.0  # الزام مطلق: بزرگیِ خودِ قله باید حداقل این ضریب از نویز robust سراسری ماژول ۱۶ (profile_noise، مقیاس فیزیکی مطلق دیسک) بزرگ‌تر باشد -- جلوگیری از پذیرفتن یک روند صاف اما ناچیز (لَون نامتقارن یا vignetting نور) فقط به‌خاطر کم‌نویز-محلی-بودنش
 cfg.halo_extension_local_noise_floor_frac = 0.15  # کف نویز محلی هر کمان، به‌عنوان کسری از نویز سراسری -- جلوگیری از انفجار عددی z-score وقتی گرادیان محلی تصادفاً تقریباً صاف است
 cfg.halo_extension_max_frac_of_petri_radius = 0.5  # سقف مطلق جست‌وجوی رشد: نصف شعاع پتری (طبق درخواست صریح کاربر) — فراتر از این، از نظر زیستی برای یک دیسک واحد معقول نیست
+cfg.halo_noise_exclude_neighbor_frac = 0.45  # سقفِ اکسکلود‌ِ نویزِ پس‌زمینه بر مبنایِ فاصله تا نزدیک‌ترین دیسکِ دیگر (نه فقط کسری از شعاعِ پتری) -- در پنل‌های ۸-۹-دیسکیِ متراکم، اکسکلودِ صرفاً کسری‌از-شعاع-پتری تقریباً کلِ پتری را می‌بلعد و چیزی برای «واقعاً پس‌زمینه» باقی نمی‌گذارد؛ این سقفِ نسبیِ اضافه (min با سقفِ قبلی) تضمین می‌کند اکسکلود هرگز فاصله‌ی بین‌دیسکی را نبلعد
+cfg.halo_noise_min_bg_area_frac = 0.03  # حداقلِ نسبتِ مساحتِ پتری که باید به‌عنوانِ ناحیه‌ی پس‌زمینه باقی بماند تا برآوردِ نویز قابل‌اتکا شمرده شود
 cfg.halo_extension_smooth_frac = 0.07  # پنجره‌ی صافی میانه‌ی دایره‌ای روی شعاع‌های گسترش‌یافته × تعداد زوایا
 cfg.halo_extension_require_min_contrast_sigma = 3.0  # حداقل |contrast_sigma| تجمیعیِ ماژول ۱۶ برای اعتماد به رشدِ کمانی ماژول ۱۶.۵ -- سطح استاندارد ۳σ (نه تنظیم‌شده روی یک عکس خاص)؛ زیر این حد، آماره‌ی بسیار مطمئن‌ترِ تجمیعی خودش می‌گوید سیگنال معناداری نیست، پس به کمان‌های پرنویزتر هم اعتماد نمی‌شود و دایره در همان r_circle ماژول ۱۶ باقی می‌ماند
 cfg.halo_angular_outlier_window_frac = 0.14  # نیمه‌پهنای پنجره‌ی همسایگیِ محلی برای ماژول ۱۶.۶ (× تعداد زاویه‌ها؛ ۰.۱۴×۷۲≈۱۰ زاویه ≈ ۵۰ درجه هر سو) -- به‌اندازه‌ی کافی پهن‌تر از یک رخداد باریک (چند درجه)، ولی کوچک‌تر از نیمِ دایره تا عدم‌تقارنِ واقعیِ پهن را با میانه‌ی خودش اشتباه نگیرد
@@ -2593,7 +2596,8 @@ for dish in dishes:
 
 def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
                          x: int, y: int, r_disk: int, cfg,
-                         bg_noise: Optional[float] = None) -> Dict[str, Any]:
+                         bg_noise: Optional[float] = None,
+                         other_centers: Optional[List[Tuple[float, float]]] = None) -> Dict[str, Any]:
     """
     پروفایل شعاعی همه‌جهته‌ی دیسک + برازش شعاع دایره‌ی هاله — بدون هیچ گیت وجود/عدم‌وجود.
     خروجی «status» فقط برای شکست‌های واقعیِ داده (دیسک بیرون از ماسک، خیلی نزدیک به
@@ -2650,10 +2654,34 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
         yy, xx = np.ogrid[:patch.shape[0], :patch.shape[1]]
         rad = np.sqrt((xx - (x - x0)) ** 2 + (yy - (y - y0)) ** 2)
 
+        # ماسکِ جهت‌آگاهِ «امن از همسایه»: باگِ کشف‌شده با ground truth (تلاشِ اولِ رفع،
+        # revert شد -- بخشِ ۱۲.۶ تاریخچه): یک سقفِ *اسکالر/همه‌جهته* روی شعاعِ پنجره
+        # (بر مبنایِ فاصله تا نزدیک‌ترین همسایه) درست بود که از نشتِ هاله‌ی همسایه
+        # جلوگیری می‌کرد، اما چون همه‌جهته بود، اطلاعاتِ معتبرِ جهت‌هایی که اصلاً
+        # همسایه‌ی نزدیکی در آن سمت نداشتند را هم دور می‌ریخت و کم‌برآوردِ قبلی را جای
+        # دیگر برمی‌گرداند (MAE در اجرایِ کامل بدتر شد). رفعِ درست باید *جهت‌آگاه* باشد:
+        # برایِ هر دیسکِ همسایه، فقط پیکسل‌هایی که از نیمسازِ عمودِ فاصله تا همان همسایه
+        # گذشته‌اند (یعنی واقعاً به قلمروِ او نزدیک‌ترند، نه به این دیسک) از میانگینِ
+        # حلقه‌ای کنار گذاشته می‌شوند -- دقیقاً همان فرمولِ بسته‌ی هندسیِ
+        # _neighbor_voronoi_cap، اینجا به‌صورتِ یک تستِ نیم‌صفحه‌ایِ per-pixel به‌جایِ
+        # یک سقفِ per-angle روی شکلِ نهایی. جهت‌هایِ بدونِ همسایه‌ی نزدیک هیچ‌وقت
+        # محدود نمی‌شوند، پس پس‌زمینه‌ی واقعیِ آن‌ها همچنان کاملاً دیده می‌شود.
+        neighbor_safe = np.ones(patch.shape, dtype=bool)
+        if other_centers:
+            abs_x = xx + x0
+            abs_y = yy + y0
+            for ox, oy in other_centers:
+                dx, dy = float(ox) - float(x), float(oy) - float(y)
+                d2 = dx * dx + dy * dy
+                if d2 < 1e-6:
+                    continue
+                proj = (abs_x - x) * dx + (abs_y - y) * dy
+                neighbor_safe &= (proj < 0.5 * d2)
+
         edges = np.linspace(r_in, r_out, n_rings + 1)
         ring_centers = 0.5 * (edges[:-1] + edges[1:])
         idx = np.digitize(rad, edges) - 1
-        valid = (idx >= 0) & (idx < n_rings) & pmask
+        valid = (idx >= 0) & (idx < n_rings) & pmask & neighbor_safe
 
         sums = np.bincount(idx[valid], weights=patch[valid], minlength=n_rings)
         sumsq = np.bincount(idx[valid], weights=patch[valid] ** 2, minlength=n_rings)
@@ -2677,16 +2705,46 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
         if bg_noise is not None and bg_noise > 0:
             pixel_noise = float(bg_noise)
 
-        if np.any(cnts == 0):
-            good = cnts > 0
-            if int(np.count_nonzero(good)) < 3:
+        good = cnts > 0
+        # باگِ کشف‌شده با ground truth (بخشِ ۱۲.۷ تاریخچه، رفعِ جهت‌آگاهِ عارضه‌ی
+        # بیش‌برآورد): وقتی یک دنباله‌ی حلقه‌هایِ خالی تا *انتهایِ* آرایه ادامه یابد
+        # (نه یک شکافِ منفردِ داخلی -- که معمولاً چون چند دیسکِ همسایه هم‌زمان اکثرِ
+        # زوایا را در آن شعاع بسته‌اند رخ می‌دهد)، از آن نقطه به بعد هیچ پیکسلِ واقعاً
+        # امنی باقی نمانده. `np.interp` در این حالت (بدونِ هیچ نقطه‌ی معتبرِ *بعدی*
+        # برایِ درون‌یابیِ واقعی) فقط آخرین مقدارِ معتبر را برایِ همیشه ثابت ادامه
+        # می‌دهد -- یک «فلاتِ» کاملاً ساختگی که دقیقاً امضایِ همان همگراییِ واقعی است و
+        # می‌تواند به‌اشتباه پذیرفته شود (کشف‌شده: چند دیسکِ محاصره‌شده با دنباله‌ی
+        # پروفایلِ یک عددِ ثابتِ تکراری). این دنباله‌ی فاقدِ اعتبار به‌طورِ کامل کنار
+        # گذاشته می‌شود -- نه فقط از همگرایی، از خودِ پروفایلِ استفاده‌شده هم حذف
+        # می‌شود؛ فقط شکاف‌هایِ منفردِ *داخلی* (بینِ دو نقطه‌ی معتبرِ واقعی) طبقِ روالِ
+        # قبلی درون‌یابی می‌شوند.
+        trustworthy_n = n_rings
+        k = n_rings - 1
+        while k >= 0 and not good[k]:
+            trustworthy_n = k
+            k -= 1
+
+        if trustworthy_n < n_rings:
+            interior_good = good[:trustworthy_n]
+            if int(np.count_nonzero(interior_good)) < 3:
                 out["status"] = "insufficient_ring_coverage"
                 return out
+            ii = np.arange(trustworthy_n)
+            profile = np.interp(ii, ii[interior_good], profile[:trustworthy_n][interior_good])
+            ring_centers = ring_centers[:trustworthy_n]
+        elif np.any(~good):
             ii = np.arange(n_rings)
             profile = np.interp(ii, ii[good], profile[good])
 
-        background = float(np.median(profile[-tail:]))
-        inner_val = float(np.median(profile[:near_n]))
+        n_rings_eff = len(profile)
+        if n_rings_eff < max(3, near_n + 1):
+            out["status"] = "insufficient_ring_coverage"
+            return out
+        tail_eff = max(1, min(tail, n_rings_eff // 3))
+        near_n_eff = max(1, min(near_n, n_rings_eff // 3))
+
+        background = float(np.median(profile[-tail_eff:]))
+        inner_val = float(np.median(profile[:near_n_eff]))
         noise = pixel_noise
         contrast_sigma = (inner_val - background) / noise
         polarity_sign = 1 if contrast_sigma >= 0 else -1
@@ -2709,18 +2767,45 @@ def _halo_radial_profile(gray_img: np.ndarray, mask_u8: np.ndarray,
         in_band = (profile >= lo) & (profile <= hi)
         r_halo_radial = r_in
         crossed = False
-        for k in range(n_rings):
+        for k in range(n_rings_eff):
             if bool(np.all(in_band[k:])):
                 r_halo_radial = float(ring_centers[k])
                 crossed = True
                 break
 
-        # اگر گذار واقعی پیدا شد، یا دیگر جایی برای گسترش نمانده (به سقف فیزیکی رسیدیم
-        # یا سقف تلاش‌های گسترش تمام شد)، همین‌جا نتیجه را قبول کن؛ وگرنه پنجره را
-        # بزرگ‌تر کن و از نو بساز.
-        if crossed or r_out >= max_allowed - 1.0 or widen_iter == max_widenings:
+        # باگِ کشف‌شده با ground truth واقعی: وقتی نویزِ محلی (noise) با کلِ بازه‌ی
+        # تغییراتِ پروفایل در همین پنجره قابل‌مقایسه یا بزرگ‌تر باشد (هاله‌ای با
+        # گذارِ تدریجی/کم‌شیب که هنوز به‌طورِ کامل داخلِ این پنجره دیده نشده)، باندِ
+        # همگرایی (± band) از کلِ بازه‌ی مشاهده‌شده پهن‌تر می‌شود -- در نتیجه تقریباً
+        # هر رینگی، even نزدیکِ r_in، به‌اشتباه «همگرا» تشخیص داده می‌شود، درحالی‌که
+        # واقعاً فقط بخشِ کوچکی از یک گذارِ بزرگ‌ترِ هنوز-ادامه‌دار را دیده‌ایم -- نه
+        # این‌که واقعاً به پس‌زمینه رسیده باشیم. علامتِ قابل‌اتکایی که این دو حالت را
+        # جدا می‌کند دقیقاً همان contrast_sigma است: اگر این آماره‌ی تجمیعیِ همین
+        # پنجره از قبل به‌وضوح از نویز فراتر رفته (بزرگ‌تر از همان آستانه‌ی ۳σِ
+        # استانداردی که ماژولِ ۱۶.۵ هم استفاده می‌کند)، همگرایی واقعی و قابل‌اعتماد
+        # است؛ وگرنه باید پنجره را گسترش داد تا معلوم شود سیگنالِ واقعی‌تری فراتر از
+        # این پنجره هست یا نه -- دقیقاً همان فلسفه‌ی «گسترشِ تطبیقی» که این حلقه از
+        # قبل برایش طراحی شده بود، فقط تا امروز هرگز عملاً فرصتِ اجرا پیدا نمی‌کرد.
+        reliable_convergence = crossed and (
+            abs(contrast_sigma) >= cfg.halo_extension_require_min_contrast_sigma)
+
+        if reliable_convergence or r_out >= max_allowed - 1.0 or widen_iter == max_widenings:
             break
         scale *= float(cfg.halo_r_max_scale_growth)
+
+
+    # باگِ کشف‌شده با ground truth (دنبال‌کردنِ عمیقِ gt_10): reliable_convergence فقط
+    # حلقه‌ی گسترش را کنترل می‌کند -- تصمیم می‌گیرد آیا جست‌وجو ادامه یابد یا نه --
+    # ولی وقتی حلقه بدونِ رسیدن به یک همگراییِ واقعاً قابل‌اتکا (سیگمای contrast کافی)
+    # به‌اجبار متوقف شود (چون به max_allowed یا max_widenings رسیده)، آخرین «crossed»یِ
+    # ضعیف همچنان به‌عنوانِ جوابِ نهایی پذیرفته می‌شد. یعنی یک عبورِ اتفاقی/نویزی از
+    # باندِ همگرایی که هرگز به آستانه‌ی اطمینانِ ۳σ نرسید، هنوز شعاعِ نهایی را تعیین
+    # می‌کرد. رفع: اگر تا پایانِ کاملِ گسترشِ تطبیقی هیچ‌گاه یک همگراییِ قابل‌اتکا به
+    # دست نیامد، شعاع به r_in (یعنی «سیگنالِ قابل‌اتکایی دیده نشد») بازنشانی می‌شود --
+    # دقیقاً همان رفتاری که برای دیسکِ بدونِ هیچ گذارِ همگرا از قبل در نظر گرفته شده بود.
+    if not reliable_convergence:
+        r_halo_radial = r_in
+        crossed = False
 
     out.update({"profile": profile, "ring_centers": ring_centers,
                "contrast_sigma": float(contrast_sigma),
@@ -2798,21 +2883,55 @@ def _dish_edge_cap(mask_u8: np.ndarray, cx: int, cy: int, angles: np.ndarray,
 
 def _compute_dish_background_noise(gray_img: np.ndarray, dish_mask: np.ndarray,
                                    disks: List[Dict[str, Any]],
-                                   petri_radius_px: float, cfg) -> float:
+                                   petri_radius_px: float, cfg) -> Optional[float]:
     """
     یک نویز پس‌زمینه‌ی مشترک برای کل پتری -- از ناحیه‌ای محاسبه می‌شود که مطمئناً بیرون
-    از قلمرو هاله‌ی *هر* دیسکی است (فراتر از سقف مطلق cfg.halo_extension_max_frac_of_
-    petri_radius که هر دیسک مجاز است رشد کند)، نه از حلقه‌های محلی خودِ هر دیسک به‌طور
-    جداگانه. این عمداً دو مشکل مستقل را حل می‌کند که روی عکس‌های واقعی دیده شدند:
-    ۱) نشتِ هاله‌ی واقعیِ یک دیسک (مثلاً دیسک مرکزی که هاله‌ی بزرگی دارد) به تخمین نویز
-       دیسک‌های همسایه که خودشان هاله ندارند.
-    ۲) بزرگ‌نماییِ مصنوعیِ نویز برای دیسکی که خودش لبه‌ی هاله‌ی واقعاً ناهموار/جاگ‌دار
-       دارد -- آن ناهمواری سیگنال زیستی واقعی است، نه نویز اندازه‌گیری.
+    از قلمرو هاله‌ی *هر* دیسکی است، نه از حلقه‌های محلی خودِ هر دیسک به‌طور جداگانه. این
+    عمداً دو مشکل مستقل را حل می‌کند: ۱) نشتِ هاله‌ی واقعیِ یک دیسک به تخمین نویز
+    دیسک‌های همسایه؛ ۲) بزرگ‌نماییِ مصنوعیِ نویز برای دیسکی که خودش لبه‌ی هاله‌ی واقعاً
+    ناهموار دارد (سیگنال زیستی، نه نویز).
+
+    باگِ نسخه‌ی قبلی (کشف‌شده با ground truth واقعی -- ۹۳ دیسک، ۱۱ عکس): اکسکلودِ هر
+    دیسک صرفاً «کسری ثابت از شعاعِ کلِ پتری» بود (cfg.halo_extension_max_frac_of_
+    petri_radius)، بدون توجه به تعداد/تراکمِ دیسک‌های همان پتری. روی پنل‌های واقعیِ
+    ۸-۹-دیسکی (که در آن‌ها این کسر ثابت تقریباً نیمِ شعاعِ کل پتری است)، اجتماعِ نواحیِ
+    اکسکلودِ همه‌ی دیسک‌ها تقریباً کلِ پتری را می‌پوشاند و چیزی به‌عنوانِ «واقعاً دور از
+    همه» باقی نمی‌ماند مگر یک نوارِ باریک و غیرِنماینده (اغلب نزدیکِ لبه/بازتابِ ظرف) --
+    نویزِ برآوردشده از آن نوار به‌طور سیستماتیک متورم می‌شد، contrast_sigma را برایِ
+    *همه‌ی* دیسک‌هایِ همان پتری مصنوعاً کوچک می‌کرد، و همین هم گیتِ رشدِ ماژولِ ۱۶.۵ را
+    می‌بست و هم همگراییِ خودِ ماژولِ ۱۶ را زودهنگام می‌کرد -- نتیجه: کم‌برآوردِ شدیدِ
+    قطرِ هاله دقیقاً روی پتری‌هایِ پرتراکم (که بیشترین اهمیتِ بالینی را هم دارند).
+
+    راه‌حل (دو لایه، هردو نسبی/بدون مقدارِ پیکسلیِ مطلق): (الف) اکسکلودِ هر پتری علاوه‌
+    بر سقفِ قبلی، با کسری از فاصله‌ی واقعیِ تا نزدیک‌ترین دیسکِ دیگر هم سقف می‌خورَد --
+    یعنی هرچه دیسک‌ها متراکم‌تر باشند، اکسکلود خودکار کوچک‌تر می‌شود و جایی برایِ
+    پس‌زمینه باقی می‌گذارد. (ب) اگر بازهم ناحیه‌ی پس‌زمینه کوچک‌تر از یک نسبتِ حداقلی از
+    مساحتِ پتری بود، اکسکلود تدریجاً کوچک‌تر می‌شود (هرگز کمتر از کمی فراتر از خودِ
+    دیسک) تا سطحِ کافی از پیکسل برایِ یک برآوردِ قابل‌اتکا به‌دست آید.
     """
     h, w = gray_img.shape[:2]
     mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
         else np.full((h, w), 255, dtype=np.uint8)
-    exclude_radius = float(cfg.halo_extension_max_frac_of_petri_radius) * float(petri_radius_px)
+    if not disks:
+        return 1.0
+
+    min_r = min(float(d["r"]) for d in disks)
+    dish_area = float(np.count_nonzero(mask_u8 > 0))
+    min_bg_area = float(cfg.halo_noise_min_bg_area_frac) * dish_area if dish_area > 0 else 0.0
+    floor_radius = 1.5 * min_r
+
+    if len(disks) > 1:
+        nearest_neighbor_dists = []
+        for i, d in enumerate(disks):
+            dists = [float(np.hypot(d["x"] - o["x"], d["y"] - o["y"]))
+                     for j, o in enumerate(disks) if j != i]
+            nearest_neighbor_dists.append(min(dists))
+        neighbor_cap = float(cfg.halo_noise_exclude_neighbor_frac) * min(nearest_neighbor_dists)
+    else:
+        neighbor_cap = float("inf")
+
+    base_exclude = float(cfg.halo_extension_max_frac_of_petri_radius) * float(petri_radius_px)
+    exclude_radius = max(min(base_exclude, neighbor_cap), floor_radius)
 
     yy, xx = np.mgrid[0:h, 0:w]
     far_from_all = np.ones((h, w), dtype=bool)
@@ -2821,10 +2940,15 @@ def _compute_dish_background_noise(gray_img: np.ndarray, dish_mask: np.ndarray,
         far_from_all &= (dist > exclude_radius)
     bg_mask = far_from_all & (mask_u8 > 0)
 
-    if not np.any(bg_mask) or not disks:
-        return 1.0
+    # اگر حتی بعد از سقفِ همسایه‌محور، ناحیه‌ی «واقعاً دور از همه» به‌اندازه‌ی کافی
+    # نماینده نبود (پنل‌های بسیار متراکم/پرهاله)، به‌جایِ اجبارِ یک برآوردِ نامطمئن/
+    # آلوده بر همه‌ی دیسک‌ها، None برمی‌گردانیم -- تا هر دیسک به برآوردِ نویزِ محلیِ
+    # خودش (میانه‌ی انحرافِ‌معیارِ *درونِ* هر حلقه، که از قبل در _halo_radial_profile
+    # محاسبه می‌شود و مستقل از این مشکل است) برگردد؛ اجبارِ یک عددِ سراسریِ نامطمئن
+    # بدتر از نداشتنِ آن است.
+    if np.count_nonzero(bg_mask) < min_bg_area:
+        return None
 
-    min_r = min(float(d["r"]) for d in disks)
     k = max(3, int(round(0.08 * min_r)) | 1)
     gray_f = gray_img.astype(np.float32)
     local_mean = cv2.blur(gray_f, (k, k))
@@ -2853,14 +2977,32 @@ def segment_dish_halos(gray_img: np.ndarray, dish_mask: np.ndarray,
         else np.full((h, w), 255, dtype=np.uint8)
 
     bg_noise = _compute_dish_background_noise(gray_img, mask_u8, disks, petri_radius_px, cfg)
-    bases = [_halo_radial_profile(gray_img, mask_u8, d["x"], d["y"], d["r"], cfg, bg_noise=bg_noise)
-            for d in disks]
+    bases = [_halo_radial_profile(gray_img, mask_u8, d["x"], d["y"], d["r"], cfg, bg_noise=bg_noise,
+                                  other_centers=[(disks[j]["x"], disks[j]["y"])
+                                                for j in range(len(disks)) if j != i])
+            for i, d in enumerate(disks)]
     n_angles = int(cfg.halo_num_angles)
     angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
 
     results: List[Dict[str, Any]] = []
     for i, (d, b) in enumerate(zip(disks, bases)):
-        out = {"status": b["status"], "halo_radius_px": 0.0, "halo_mask": None,
+        # باگِ سیستمیِ کشف‌شده با ground truth (توضیحِ FP=28 ثابت در همه‌ی اجراهای این
+        # نشست، حتی با پروفایل‌های اصلاح‌شده): این سلول تا امروز «هاله تشکیل شد یا نه»
+        # را فقط از رویِ status=="ok" تصمیم می‌گرفت -- ولی status فقط یعنی «پروفایل
+        # هندسی معتبر محاسبه شد»، نه «سیگنالِ واقعیِ هاله دیده شد». برایِ یک دیسکِ
+        # کاملاً بدونِ هاله، پروفایل هنوز هم status="ok" برمی‌گرداند (چون هندسه معتبر
+        # است) و r_halo_radial همیشه دستِ‌کم برابر r_in باقی می‌ماند -- یعنی همیشه یک
+        # عدد mm غیرصفر گزارش می‌شد، حتی وقتی _halo_radial_profile با رفعِ اخیرش
+        # (بازنشانیِ r_halo_radial/crossed به‌خاطرِ نبودِ همگراییِ قابل‌اتکا) به‌درستی
+        # halo_signal_detected=False برمی‌گرداند. رفع: «سیگنالِ واقعی دیده شد» اکنون
+        # پیش‌شرطِ صریحِ ادامه‌ی این حلقه است، نه فقط status. دیسکِ بدونِ سیگنالِ
+        # قابل‌اتکا دقیقاً مثلِ دیسکِ too_close_to_border/insufficient_ring_coverage
+        # رفتار می‌کند (halo_radius_px=0.0، همان مسیرِ موجودِ «هاله تشکیل نشد» در
+        # ماژول‌هایِ ۱۶.۵/۱۶.۶/۱۷/گزارشِ نهایی -- که همه از قبل فقط status!="ok" را
+        # چک می‌کنند، پس این تغییر به‌تنهایی همه‌ی آن‌ها را هم‌زمان درست می‌کند).
+        signal_ok = (b["status"] == "ok") and bool(b.get("halo_signal_detected", False))
+        out = {"status": (b["status"] if signal_ok else "no_reliable_signal"),
+              "halo_radius_px": 0.0, "halo_mask": None,
               "halo_area_px": 0.0, "confidence": b.get("confidence", 0.0),
               "contrast_sigma": b.get("contrast_sigma", 0.0),
               "continuity": b.get("continuity", 0.0),
@@ -2872,7 +3014,7 @@ def segment_dish_halos(gray_img: np.ndarray, dish_mask: np.ndarray,
               "halo_signal_detected": b.get("halo_signal_detected", False),
               "boundary_source": None, "clipped_by_dish_edge": False, "overlaps_neighbor": False}
 
-        if b["status"] != "ok":
+        if not signal_ok:
             results.append(out)
             continue
 
@@ -2919,9 +3061,51 @@ def segment_dish_halos(gray_img: np.ndarray, dish_mask: np.ndarray,
 
 
 
+def _estimate_px_per_mm_from_disks(disks: List[Dict[str, Any]], cfg) -> Optional[float]:
+    """
+    کالیبراسیونِ px→mm از رویِ خودِ اندازه‌یِ استانداردِ دیسک‌ها (مرجعِ
+    cfg.disk_reference_diameter_mm)، نه از رویِ قطرِ فرضیِ ظرفِ پتری
+    (نسخه‌ی قبلی: cfg.dish_reference_diameter_mm=90.0). چرا این تغییر لازم شد:
+    Ground truth واقعی (۹۳ دیسک، ۱۱ عکس) نشان داد کالیبراسیونِ مبتنی‌بر پتری
+    بایاسِ سیستماتیکِ قابل‌توجهی داشت -- قطرِ گزارش‌شده‌ی دیسک‌هایِ ۶mmِ واقعی
+    میانگین ~۴.۹mm درمی‌آمد (یعنی px_per_mm قدیمی ~۲۰٪ بیش‌ازحد بود) -- چون هم
+    به دقتِ تشخیصِ شعاعِ خودِ پتری (که هر خطای جزئی مستقیماً به مقیاسِ mm سرایت
+    می‌کند) و هم به فرضِ ثابتِ ۹۰mm (که پتریِ واقعی ممکن است اصلاً این اندازه
+    نباشد) وابسته بود. اندازه‌ی خودِ دیسک، برخلافِ این دو، یک استانداردِ فیزیکیِ
+    دقیق و ثابت است -- کالیبراسیون از رویِ آن مستقیم‌تر و قابل‌اتکاتر است.
+
+    طبقِ فرضِ مستندِ پروژه (دیسک‌های آنتی‌بیوتیک فقط ۲ اندازه‌ی فیزیکی دارند --
+    عمدتاً ۶mm، با احتمالِ چند دیسکِ ۸mm در همان پتری؛ همان فرضی که
+    disk_radius_cluster_gap_frac در Fusion هم از آن استفاده می‌کند)، کوچک‌ترین
+    خوشه‌ی قطرِ پیکسلی (کوچک‌ترین دیسک + هر دیسکِ دیگری که قطرش حداکثر
+    cfg.disk_calibration_cluster_tolerance برابر بزرگ‌تر باشد) میانگین گرفته
+    می‌شود و برابرِ cfg.disk_reference_diameter_mm گذاشته می‌شود -- این خوشه
+    همیشه فقط دیسک‌هایِ ۶mm را می‌گیرد (چون ۸/۶=۱.۳۳ به‌وضوح فراتر از سقفِ ۳۰٪
+    است)، حتی اگر پتری فقط یک دیسک داشته باشد (خوشه به همان یک دیسک تحویل
+    می‌شود، دقیقاً هم‌ارز با «مطمئن‌ترین/تنها دیسک را ۶mm در نظر بگیر»).
+    """
+    diam_px = [2.0 * float(d["r"]) for d in disks if d.get("r", 0) > 0]
+    if not diam_px:
+        return None
+    min_diam = min(diam_px)
+    if min_diam <= 0:
+        return None
+    cluster = [d for d in diam_px if d <= min_diam * (1.0 + cfg.disk_calibration_cluster_tolerance)]
+    mean_diam_px = float(np.mean(cluster))
+    return mean_diam_px / float(cfg.disk_reference_diameter_mm)
+
+
 for dish in dishes:
     disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
     petri_radius_px = 0.5 * dish["diameter_px"]
+    # تصحیحِ نورِ ناهموار قبل از ماژولِ هاله: بررسیِ پروفایل‌هایِ خامِ چند دیسکِ
+    # بدونِ هاله (gt_10) نشان داد بعضی از موارد بیش‌برآورد ربطی به نشتِ همسایه نداشتند --
+    # پروفایل به‌طورِ کاملاً یکنواخت و بدونِ هیچ افتی در سرتاسرِ پنجره بالا می‌رفت، دقیقاً
+    # امضایِ گرادیانِ نورِ ناهمواری (vignetting) که تا امروز فقط برایِ ماژولِ ۴ (تشخیصِ
+    # پتری) تصحیح می‌شد، نه برایِ ماژول‌هایِ بعدی. همان تابعِ `illumination_normalize`
+    # (که قبلاً روی کلِ تصویر برایِ تشخیصِ پتری تایید و استفاده شده) اینجا روی ROIِ خودِ
+    # همین پتری هم اعمال می‌شود -- چون کرنلش بر حسبِ کسری از اندازه‌ی خودِ تصویرِ ورودی
+    # تعریف شده (نه پیکسلِ مطلق)، به‌طورِ خودکار با اندازه‌ی ROI سازگار می‌شود.
     halo_results_raw = segment_dish_halos(dish["roi_gray_masked"], dish["processing_mask_roi"],
                                           disks_in, petri_radius_px, cfg)
 
@@ -2932,8 +3116,7 @@ for dish in dishes:
         halo_results.append(res)
 
     dish["halo_results"] = halo_results
-    dish["px_per_mm_est"] = (dish["diameter_px"] / float(cfg.dish_reference_diameter_mm)
-                             if dish["diameter_px"] > 0 else None)
+    dish["px_per_mm_est"] = _estimate_px_per_mm_from_disks(disks_in, cfg)
 
     halo_overlay = original_bgr.copy()
     offset_x, offset_y = dish["roi_offset_xy"]
