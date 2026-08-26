@@ -1,6 +1,6 @@
 # صفحاتِ مقدماتی
 
-> **راهنمای استفاده:** ترتیبِ این بخش‌ها از قالبِ رسمیِ `thesis_template.docx` گرفته شده است. مطابقِ تصمیمِ شما، هرجا قالب عبارتِ «پایان‌نامه‌ی کارشناسی ارشد» داشت، به **«پروژه‌ی کارشناسی»** تغییر یافته است. مواردی که با `[…]` علامت خورده‌اند باید توسطِ شما تکمیل شوند.
+> **راهنمای استفاده:** ترتیبِ این بخش‌ها از قالبِ رسمیِ `thesis_template.docx` گرفته شده است. مطابقِ تصمیمِ شما، هرجا قالب عبارتِ «پایان‌نامه‌ی کارشناسی ارشد» داشت، به **«پروژه‌ی کارشناسی»** تغییر یافته است.
 
 ---
 
@@ -10,7 +10,7 @@
 
 **دانشگاه اصفهان**
 
-**دانشکده‌ی [نامِ دانشکده — نیازمندِ تایید]**
+**دانشکده‌ی فنی و مهندسی**
 
 **گروه مهندسی پزشکی**
 
@@ -38,7 +38,7 @@
 
 <br>
 
-**[ماه] ۱۴۰۵**
+**شهریور ۱۴۰۵**
 
 </div>
 
@@ -158,7 +158,7 @@ Quantitative evaluation was carried out against an independent reference dataset
 
 **University of Isfahan**
 
-**Faculty of [to be confirmed]**
+**Faculty of Engineering**
 
 **Department of Biomedical Engineering**
 
@@ -184,7 +184,7 @@ Quantitative evaluation was carried out against an independent reference dataset
 
 <br>
 
-**[Month] 2026**
+**September 2026**
 
 </div>
 
