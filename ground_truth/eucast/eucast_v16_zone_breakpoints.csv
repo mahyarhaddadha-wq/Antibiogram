@@ -1,0 +1,1117 @@
+organism,agent_class,agent,disk_content_ug,zone_S_ge_mm,zone_R_lt_mm,zone_ATU,mic_S_le,mic_R_gt,pdf_page
+Enterobacterales,,Benzylpenicillin,,-,-,1.,-,-,16
+Enterobacterales,,Ampicillin iv1,10,14,14,,8,8,16
+Enterobacterales,,Ampicillin oral (uncomplicated UTI only)1,10,14,14,2.,8,8,16
+Enterobacterales,,Ampicillin-sulbactam iv1,10-10,14,14,,82,82,16
+Enterobacterales,,Ampicillin-sulbactam oral (uncomplicated,10-10,14,14,,82,82,16
+Enterobacterales,UTI only)1,Amoxicillin iv1,-,Note,Note,A.,8,8,16
+Enterobacterales,UTI only)1,Amoxicillin oral (infections originating from the urinary tract)1,-,Note,Note,B.,0.001,8,16
+Enterobacterales,UTI only)1,Amoxicillin oral (uncomplicated UTI only)1,-,Note,Note,,8,8,16
+Enterobacterales,UTI only)1,Amoxicillin oral (other indications)1,-,Note,Note,E.,(0.001)3,(8)3,16
+Enterobacterales,UTI only)1,Amoxicillin-clavulanic acid iv1,20-10,19,19,19-20,84,84,16
+Enterobacterales,UTI only)1,Amoxicillin-clavulanic acid oral (infections originating from the urinary tract)1,20-10,50,19,19-20,0.0014,84,16
+Enterobacterales,UTI only)1,Amoxicillin-clavulanic acid oral (uncomplicated UTI only)1,20-10,16,16,,324,324,16
+Enterobacterales,UTI only)1,Amoxicillin-clavulanic acid oral (other indications)1,20-10,50,19,19-20,"(0.001)3,4","(8)3,4",16
+Enterobacterales,UTI only)1,Piperacillin,30,20,20,,8,8,16
+Enterobacterales,UTI only)1,Piperacillin-tazobactam,30-6,20,20,19,85,85,16
+Enterobacterales,UTI only)1,Ticarcillin-clavulanic acid,75-10,23,20,,84,164,16
+Enterobacterales,UTI only)1,"Temocillin (infections originating from the urinary tract), E. coli, Klebsiella spp. (except K. aerogenes ) and P. mirabilis",30,50,17,,0.001,16,16
+Enterobacterales,UTI only)1,Phenoxymethylpenicillin,,-,-,,-,-,16
+Enterobacterales,UTI only)1,Oxacillin,,-,-,,-,-,16
+Enterobacterales,UTI only)1,Cloxacillin,,-,-,,-,-,16
+Enterobacterales,UTI only)1,Dicloxacillin,,-,-,,-,-,16
+Enterobacterales,UTI only)1,Flucloxacillin,,-,-,,-,-,16
+Enterobacterales,UTI only)1,"Mecillinam oral (pivmecillinam) (uncomplicated UTI only), E. coli, Citrobacter spp., Klebsiella spp., Raoultella spp., Enterobacter spp. and P. mirabilis",10,15,15,,86,86,16
+Enterobacterales,,Cefaclor (uncomplicated UTI only),,IE,IE,1.,IE,IE,17
+Enterobacterales,,Cefadroxil (uncomplicated UTI only),30,12,12,,16,16,17
+Enterobacterales,,Cefalexin (uncomplicated UTI only),30,14,14,,16,16,17
+Enterobacterales,,Cefazolin (infections originating from the,30,50,20,,0.0012,42,17
+Enterobacterales,(except K. aerogenes ),Cefepime,30,27,24,,1,4,17
+Enterobacterales,(except K. aerogenes ),Cefepime-enmetazobactam,30-20,22,22,21-22,43,43,17
+Enterobacterales,(except K. aerogenes ),Cefiderocol,30,23,23,21-23,24,24,17
+Enterobacterales,(except K. aerogenes ),Cefixime (uncomplicated UTI only),5,17,17,5.,1,1,17
+Enterobacterales,(except K. aerogenes ),Cefotaxime (indications other than meningitis),5,20,17,,1,2,17
+Enterobacterales,(except K. aerogenes ),Cefotaxime (meningitis),5,20,20,,1,1,17
+Enterobacterales,(except K. aerogenes ),Cefoxitin (screen only)5,30,19,19,7.,Note5,Note5,17
+Enterobacterales,(except K. aerogenes ),Cefpodoxime (uncomplicated UTI only),10,21,21,8.,1,1,17
+Enterobacterales,(except K. aerogenes ),Ceftaroline,5,23,23,22-23,0.5,0.5,17
+Enterobacterales,(except K. aerogenes ),Ceftazidime,10,22,19,,1,4,17
+Enterobacterales,(except K. aerogenes ),Ceftazidime-avibactam,10-4,13,13,,86,86,17
+Enterobacterales,(except K. aerogenes ),Ceftibuten (infections originating from the urinary tract),30,23,23,,1,1,17
+Enterobacterales,(except K. aerogenes ),Ceftobiprole,5,23,23,,0.25,0.25,17
+Enterobacterales,(except K. aerogenes ),Ceftolozane-tazobactam7,30-10,22,22,19-21,28,28,17
+Enterobacterales,(except K. aerogenes ),Ceftriaxone (indications other than meningitis),30,27,24,,1,2,17
+Enterobacterales,(except K. aerogenes ),Ceftriaxone (meningitis),30,27,27,,1,1,17
+Enterobacterales,(except K. aerogenes ),"Cefuroxime iv, E. coli , Klebsiella spp. (except K. aerogenes ), Raoultella spp. and P. mirabilis",30,50,19,,0.001,8,17
+Enterobacterales,(except K. aerogenes ),"Cefuroxime oral (uncomplicated UTI only), E. coli, Klebsiella spp. (except K. aerogenes ), Raoultella spp. and P. mirabilis",30,19,19,,8,8,17
+Enterobacterales,,Doripenem,10,24,21,1.,1,2,18
+Enterobacterales,,Ertapenem,10,23,23,,0.5,0.5,18
+Enterobacterales,,"Imipenem, Enterobacterales except Morganellaceae",10,22,19,,2,4,18
+Enterobacterales,,"Imipenem2, Morganellaceae",10,50,19,,0.001,4,18
+Enterobacterales,,"Imipenem-relebactam, Enterobacterales except Morganellaceae",10-25,22,22,20-22 3.,23,23,18
+Enterobacterales,,Meropenem (indications other than meningitis),10,22,16,,2,8,18
+Enterobacterales,,Meropenem (meningitis),10,22,22,,2,2,18
+Enterobacterales,,Meropenem-vaborbactam,20-10,20,20,15-19A,84,84,18
+Enterobacterales,,Aztreonam1,30,26,21,1.,1,4,18
+Enterobacterales,,Aztreonam-avibactam,30-20,25,25,22-24,42,42,18
+Enterobacterales,,"Ciprofloxacin, Salmonella spp.1",,Note,Note,1.,0.06,0.06,18
+Enterobacterales,,Ciprofloxacin (indications other than meningitis),5,25,22,22-24,0.25,0.5,18
+Enterobacterales,,Ciprofloxacin (meningitis)2,,Note,Note,,0.125,0.125,18
+Enterobacterales,,Pefloxacin (screen only),5,24,24,,NA,NA,18
+Enterobacterales,,"Delafloxacin, E. coli",,Note,Note,,0.125,0.125,18
+Enterobacterales,,Levofloxacin,5,23,19,A.,0.5,1,18
+Enterobacterales,,"Moxifloxacin, Enterobacterales except Morganella morganii, Proteus spp. and Serratia spp.3",5,22,22,,0.25,0.25,18
+Enterobacterales,,Nalidixic acid (screen only),,NA,NA,D.,NA,NA,18
+Enterobacterales,,Norfloxacin (uncomplicated UTI only),10,24,24,,0.5,0.5,18
+Enterobacterales,,Ofloxacin,5,24,22,,0.25,0.5,18
+Enterobacterales,,Amikacin (systemic infections),30,18,18,,(8)1,(8)1,19
+Enterobacterales,,Amikacin (infections originating from the urinary tract),30,18,18,,8,8,19
+Enterobacterales,,Gentamicin (systemic infections),10,17,17,,(2)1,(2)1,19
+Enterobacterales,,Gentamicin (infections originating from the urinary tract),10,17,17,,2,2,19
+Enterobacterales,,Netilmicin,,IE,IE,,IE,IE,19
+Enterobacterales,,Tobramycin (systemic infections),10,16,16,,(2)1,(2)1,19
+Enterobacterales,,Tobramycin (infections originating from the urinary tract),10,16,16,,2,2,19
+Enterobacterales,,Dalbavancin,,-,-,,-,-,19
+Enterobacterales,,Oritavancin,,-,-,,-,-,19
+Enterobacterales,,Teicoplanin,,-,-,,-,-,19
+Enterobacterales,,Telavancin,,-,-,,-,-,19
+Enterobacterales,,Vancomycin,,-,-,,-,-,19
+Enterobacterales,,Azithromycin1,,Note,Note,,Note1,Note1,19
+Enterobacterales,,Clarithromycin,,-,-,,-,-,19
+Enterobacterales,,Erythromycin,,-,-,,-,-,19
+Enterobacterales,,Roxithromycin,,-,-,,-,-,19
+Enterobacterales,,Clindamycin,,-,-,,-,-,19
+Enterobacterales,,Quinupristin-dalfopristin,,-,-,,-,-,19
+Enterobacterales,,Doxycycline,,-,-,1.,-,-,20
+Enterobacterales,,"Eravacycline, E. coli",20,17,17,,0.5,0.5,20
+Enterobacterales,,Minocycline,,-,-,,-,-,20
+Enterobacterales,,Tetracycline1,,-,-,,-,-,20
+Enterobacterales,,"Tigecycline, E. coli and C. koseri",15,18,18,,"0.52,3","0.52,3",20
+Enterobacterales,,Linezolid,,-,-,,-,-,20
+Enterobacterales,,Tedizolid,,-,-,,-,-,20
+Enterobacterales,,Chloramphenicol,,Note,Note,,Note1,Note1,21
+Enterobacterales,,Colistin2,,Note,Note,,(2)3,(2)3,21
+Enterobacterales,,Daptomycin,,-,-,,-,-,21
+Enterobacterales,,Fosfomycin iv (infections originating from,200C,24,24,,84,84,21
+Enterobacterales,"the urinary tract), E. coli","Fosfomycin iv (other indications),",,Note,Note,,Note5,Note5,21
+Enterobacterales,E. coli,"Fosfomycin iv, other Enterobacterales",,Note,Note,,Note6,Note6,21
+Enterobacterales,E. coli,"Fosfomycin oral (uncomplicated UTI only), E. coli",200C,24,24,,84,84,21
+Enterobacterales,E. coli,Fusidic acid,,-,-,in,-,-,21
+Enterobacterales,E. coli,Lefamulin,,-,-,,-,-,21
+Enterobacterales,E. coli,Metronidazole,,-,-,8.,-,-,21
+Enterobacterales,E. coli,"Nitrofurantoin (uncomplicated UTI only),",100,11,11,,64,64,21
+Enterobacterales,E. coli,"Nitroxoline (uncomplicated UTI only), E. coli",30,15,15,D.,16,16,21
+Enterobacterales,E. coli,Rifampicin,,-,-,,-,-,21
+Enterobacterales,E. coli,Spectinomycin,,-,-,,-,-,21
+Enterobacterales,E. coli,"Trimethoprim (uncomplicated UTI only), E. coli and Klebsiella spp. (except K. aerogenes )",5,15,15,,2,2,21
+Enterobacterales,E. coli,"Trimethoprim (uncomplicated UTI only), Proteus spp.",,Note,Note,,Note7,Note7,21
+Enterobacterales,E. coli,"Trimethoprim-sulfamethoxazole8, Enterobacterales except Serratia spp.",1.25-23.75,15,15,,0.5,0.5,21
+Enterobacterales,E. coli,"Trimethoprim-sulfamethoxazole8, Serratia spp.",1.25-23.75,50,15,,0.001,2,21
+Pseudomonas spp.,,Benzylpenicillin,,-,-,1.,-,-,22
+Pseudomonas spp.,,Ampicillin,,-,-,2.,-,-,22
+Pseudomonas spp.,,Ampicillin-sulbactam,,-,-,,-,-,22
+Pseudomonas spp.,,Amoxicillin,,-,-,,-,-,22
+Pseudomonas spp.,,Amoxicillin-clavulanic acid,,-,-,,-,-,22
+Pseudomonas spp.,,Piperacillin,30,50,18,18-19,0.001,16,22
+Pseudomonas spp.,,Piperacillin-tazobactam,30-6,50,18,18-19,0.0011,161,22
+Pseudomonas spp.,,Ticarcillin-clavulanic acid,75-10,50,18,,0.0012,162,22
+Pseudomonas spp.,,Temocillin,,-,-,,-,-,22
+Pseudomonas spp.,,Phenoxymethylpenicillin,,-,-,,-,-,22
+Pseudomonas spp.,,Oxacillin,,-,-,,-,-,22
+Pseudomonas spp.,,Cloxacillin,,-,-,,-,-,22
+Pseudomonas spp.,,Dicloxacillin,,-,-,,-,-,22
+Pseudomonas spp.,,Flucloxacillin,,-,-,,-,-,22
+Pseudomonas spp.,,Mecillinam oral (pivmecillinam) (uncomplicated UTI only),,-,-,,-,-,22
+Pseudomonas spp.,,Cefadroxil,,-,-,,-,-,23
+Pseudomonas spp.,,Cefalexin,,-,-,2.,-,-,23
+Pseudomonas spp.,,Cefazolin,,-,-,,-,-,23
+Pseudomonas spp.,,Cefepime,30,50,21,19-23,0.001,8,23
+Pseudomonas spp.,,Cefepime-enmetazobactam,,Note,Note,,Note1,Note1,23
+Pseudomonas spp.,,"Cefiderocol, P. aeruginosa",30,22,22,20-21 5.,22,22,23
+Pseudomonas spp.,,Cefixime,,-,-,,-,-,23
+Pseudomonas spp.,,Cefotaxime,,-,-,,-,-,23
+Pseudomonas spp.,,Cefoxitin,,-,-,,-,-,23
+Pseudomonas spp.,,Cefpodoxime,,-,-,,-,-,23
+Pseudomonas spp.,,Ceftaroline,,-,-,,-,-,23
+Pseudomonas spp.,,Ceftazidime,10,50,17,,0.001,8,23
+Pseudomonas spp.,,"Ceftazidime-avibactam, P. aeruginosa",10-4,17,17,16-17,83,83,23
+Pseudomonas spp.,,Ceftibuten,,-,-,,-,-,23
+Pseudomonas spp.,,Ceftobiprole,,IE,IE,,IE,IE,23
+Pseudomonas spp.,,"Ceftolozane-tazobactam4, P. aeruginosa",30-10,23,23,,45,45,23
+Pseudomonas spp.,,Ceftriaxone,,-,-,,-,-,23
+Pseudomonas spp.,,Cefuroxime iv,,-,-,,-,-,23
+Pseudomonas spp.,,Cefuroxime oral,,-,-,,-,-,23
+Pseudomonas spp.,,Doripenem,10,50,22,1.,0.001,2,23
+Pseudomonas spp.,,Ertapenem,,-,-,2.,-,-,23
+Pseudomonas spp.,,Imipenem,10,50,20,,0.001,4,23
+Pseudomonas spp.,,"Imipenem-relebactam, P. aeruginosa",10-25,22,22,,21,21,23
+Pseudomonas spp.,,"Meropenem (indications other than meningitis), P. aeruginosa",10,20,14,,2,8,23
+Pseudomonas spp.,,"Meropenem (indications other than meningitis), Pseudomonas other than P. aeruginosa",10,24,18,,2,8,23
+Pseudomonas spp.,,"Meropenem (meningitis), P. aeruginosa",10,20,20,,2,2,23
+Pseudomonas spp.,,"Meropenem-vaborbactam, P. aeruginosa",20-10,14,14,,82,82,23
+Pseudomonas spp.,,Aztreonam-avibactam,,IE,IE,,IE,IE,24
+Pseudomonas spp.,,Ciprofloxacin,5,50,26,,0.001,0.5,24
+Pseudomonas spp.,,Delafloxacin,,IE,IE,,IE,IE,24
+Pseudomonas spp.,,Levofloxacin,5,50,18,,0.001,2,24
+Pseudomonas spp.,,Moxifloxacin,,-,-,,-,-,24
+Pseudomonas spp.,,Nalidixic acid (screen only),,NA,NA,,NA,NA,24
+Pseudomonas spp.,,Norfloxacin (uncomplicated UTI only),,-,-,,-,-,24
+Pseudomonas spp.,,Ofloxacin,,-,-,,-,-,24
+Pseudomonas spp.,,Amikacin (systemic infections),30,15,15,,(16)1,(16)1,24
+Pseudomonas spp.,,Amikacin (infections originating from the urinary tract),30,15,15,,16,16,24
+Pseudomonas spp.,,Gentamicin (systemic infections),,IE,IE,,IE,IE,24
+Pseudomonas spp.,,Gentamicin (infections originating from the urinary tract),,IE,IE,,IE,IE,24
+Pseudomonas spp.,,Netilmicin,,IE,IE,,IE,IE,24
+Pseudomonas spp.,,Tobramycin (systemic infections),10,18,18,,(2)1,(2)1,24
+Pseudomonas spp.,,Tobramycin (infections originating from the urinary tract),10,18,18,,2,2,24
+Pseudomonas spp.,,Dalbavancin,,-,-,,-,-,24
+Pseudomonas spp.,,Oritavancin,,-,-,,-,-,24
+Pseudomonas spp.,,Teicoplanin,,-,-,,-,-,24
+Pseudomonas spp.,,Telavancin,,-,-,,-,-,24
+Pseudomonas spp.,,Vancomycin,,-,-,,-,-,24
+Pseudomonas spp.,,Clarithromycin,,-,-,,-,-,25
+Pseudomonas spp.,,Erythromycin,,-,-,,-,-,25
+Pseudomonas spp.,,Roxithromycin,,-,-,,-,-,25
+Pseudomonas spp.,,Clindamycin,,-,-,,-,-,25
+Pseudomonas spp.,,Quinupristin-dalfopristin,,-,-,,-,-,25
+Pseudomonas spp.,,Doxycycline,,-,-,,-,-,25
+Pseudomonas spp.,,Eravacycline,,-,-,,-,-,25
+Pseudomonas spp.,,Minocycline,,-,-,,-,-,25
+Pseudomonas spp.,,Tetracycline,,-,-,,-,-,25
+Pseudomonas spp.,,Tigecycline,,-,-,,-,-,25
+Pseudomonas spp.,,Linezolid,,-,-,,-,-,25
+Pseudomonas spp.,,Tedizolid,,-,-,,-,-,25
+Pseudomonas spp.,,Colistin1,,Note,Note,,(4)2,(4)2,26
+Pseudomonas spp.,,Daptomycin,,-,-,,-,-,26
+Pseudomonas spp.,,Fosfomycin iv,,Note,Note,,Note3,Note3,26
+Pseudomonas spp.,,Fosfomycin oral,,-,-,,-,-,26
+Pseudomonas spp.,,Fusidic acid,,-,-,,-,-,26
+Pseudomonas spp.,,Lefamulin,,-,-,A.,-,-,26
+Pseudomonas spp.,,Metronidazole,,-,-,,-,-,26
+Pseudomonas spp.,,Nitrofurantoin (uncomplicated UTI only),,-,-,,-,-,26
+Pseudomonas spp.,,Nitroxoline (uncomplicated UTI only),,-,-,,-,-,26
+Pseudomonas spp.,,Rifampicin,,-,-,,-,-,26
+Pseudomonas spp.,,Spectinomycin,,-,-,,-,-,26
+Pseudomonas spp.,,Trimethoprim (uncomplicated UTI only),,-,-,,-,-,26
+Pseudomonas spp.,,Trimethoprim-sulfamethoxazole,,-,-,,-,-,26
+Stenotrophomonas maltophilia,Inoculum: 5x105 CFU/mL,Ceftazidime,,-,-,1.,-,-,27
+Stenotrophomonas maltophilia,Inoculum: 5x105 CFU/mL,Cefepime,,-,-,,-,-,27
+Stenotrophomonas maltophilia,Inoculum: 5x105 CFU/mL,Cefiderocol1,30,Note,Note,,Note2,Note2,27
+Stenotrophomonas maltophilia,Inoculum: 5x105 CFU/mL,Aztreonam,,-,-,,-,-,27
+Stenotrophomonas maltophilia,Inoculum: 5x105 CFU/mL,Aztreonam-avibactam,,IE,IE,,IE1,IE1,27
+Stenotrophomonas maltophilia,Inoculum: 5x105 CFU/mL,Ciprofloxacin,,Note,Note,1.,Note1,Note1,27
+Stenotrophomonas maltophilia,Inoculum: 5x105 CFU/mL,Levofloxacin,,Note,Note,,Note1,Note1,27
+Stenotrophomonas maltophilia,,Minocycline,,Note,Note,1.,"Note1,2","Note1,2",28
+Stenotrophomonas maltophilia,,Tigecycline,,Note,Note,,Note1,Note1,28
+Stenotrophomonas maltophilia,,Trimethoprim-sulfamethoxazole1,1.25-23.75,50,16,1.,0.001,2,28
+Acinetobacter spp.,EUCAST QC Tables.,Benzylpenicillin,,-,-,1.,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Ampicillin,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Ampicillin-sulbactam,,IE,IE,,IE,IE,29
+Acinetobacter spp.,EUCAST QC Tables.,Amoxicillin,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Amoxicillin-clavulanic acid,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Piperacillin,,IE,IE,,IE,IE,29
+Acinetobacter spp.,EUCAST QC Tables.,Piperacillin-tazobactam,,IE,IE,,IE,IE,29
+Acinetobacter spp.,EUCAST QC Tables.,Ticarcillin-clavulanic acid,,IE,IE,,IE,IE,29
+Acinetobacter spp.,EUCAST QC Tables.,Temocillin,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Phenoxymethylpenicillin,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Oxacillin,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Cloxacillin,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Dicloxacillin,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Flucloxacillin,,-,-,,-,-,29
+Acinetobacter spp.,EUCAST QC Tables.,Mecillinam oral (pivmecillinam) (uncomplicated UTI only),,-,-,,-,-,29
+Acinetobacter spp.,,Cefadroxil,,-,-,,-,-,30
+Acinetobacter spp.,,Cefalexin,,-,-,,-,-,30
+Acinetobacter spp.,,Cefazolin,,-,-,,-,-,30
+Acinetobacter spp.,,Cefepime,,-,-,,-,-,30
+Acinetobacter spp.,,Cefepime-enmetazobactam,,-,-,,-,-,30
+Acinetobacter spp.,,Cefiderocol1,30,Note,Note,,Note2,Note2,30
+Acinetobacter spp.,,Cefixime,,-,-,,-,-,30
+Acinetobacter spp.,,Cefotaxime,,-,-,,-,-,30
+Acinetobacter spp.,,Cefoxitin,,-,-,,-,-,30
+Acinetobacter spp.,,Cefpodoxime,,-,-,,-,-,30
+Acinetobacter spp.,,Ceftaroline,,-,-,,-,-,30
+Acinetobacter spp.,,Ceftazidime,,-,-,,-,-,30
+Acinetobacter spp.,,Ceftazidime-avibactam,,-,-,,-,-,30
+Acinetobacter spp.,,Ceftibuten,,-,-,,-,-,30
+Acinetobacter spp.,,Ceftobiprole,,-,-,,-,-,30
+Acinetobacter spp.,,Ceftolozane-tazobactam,,-,-,,-,-,30
+Acinetobacter spp.,,Ceftriaxone,,-,-,,-,-,30
+Acinetobacter spp.,,Cefuroxime iv,,-,-,,-,-,30
+Acinetobacter spp.,,Cefuroxime oral,,-,-,,-,-,30
+Acinetobacter spp.,,Doripenem,10,50,22,,0.001,2,30
+Acinetobacter spp.,,Ertapenem,,-,-,,-,-,30
+Acinetobacter spp.,,Imipenem,10,24,21,,2,4,30
+Acinetobacter spp.,,Imipenem-relebactam1,,Note,Note,,Note1,Note1,30
+Acinetobacter spp.,,Meropenem (indications other than meningitis),10,21,15,,2,8,30
+Acinetobacter spp.,,Meropenem (meningitis),10,21,21,,2,2,30
+Acinetobacter spp.,,Meropenem-vaborbactam1,,Note,Note,,Note1,Note1,30
+Acinetobacter spp.,,Aztreonam,,-,-,,-,-,30
+Acinetobacter spp.,,Aztreonam-avibactam,,-,-,,-,-,30
+Acinetobacter spp.,,Delafloxacin,,IE,IE,,IE,IE,31
+Acinetobacter spp.,,Levofloxacin,5,23,20,,0.5,1,31
+Acinetobacter spp.,,Moxifloxacin,,-,-,,-,-,31
+Acinetobacter spp.,,Nalidixic acid (screen only),,NA,NA,,NA,NA,31
+Acinetobacter spp.,,Norfloxacin (uncomplicated UTI only),,-,-,,-,-,31
+Acinetobacter spp.,,Ofloxacin,,-,-,,-,-,31
+Acinetobacter spp.,,Amikacin (systemic infections),30,19,19,,(8)1,(8)1,31
+Acinetobacter spp.,,Amikacin (infections originating from the urinary tract),30,19,19,,8,8,31
+Acinetobacter spp.,,Gentamicin (systemic infections),10,17,17,,(4)1,(4)1,31
+Acinetobacter spp.,,Gentamicin (infections originating from the urinary tract),10,17,17,,4,4,31
+Acinetobacter spp.,,Netilmicin,,IE,IE,,IE,IE,31
+Acinetobacter spp.,,Tobramycin (systemic infections),10,17,17,,(4)1,(4)1,31
+Acinetobacter spp.,,Tobramycin (infections originating from the urinary tract),10,17,17,,4,4,31
+Acinetobacter spp.,,Dalbavancin,,-,-,,-,-,31
+Acinetobacter spp.,,Oritavancin,,-,-,,-,-,31
+Acinetobacter spp.,,Teicoplanin,,-,-,,-,-,31
+Acinetobacter spp.,,Telavancin,,-,-,,-,-,31
+Acinetobacter spp.,,Vancomycin,,-,-,,-,-,31
+Acinetobacter spp.,,Clarithromycin,,-,-,,-,-,32
+Acinetobacter spp.,,Erythromycin,,-,-,,-,-,32
+Acinetobacter spp.,,Roxithromycin,,-,-,,-,-,32
+Acinetobacter spp.,,Clindamycin,,-,-,,-,-,32
+Acinetobacter spp.,,Quinupristin-dalfopristin,,-,-,,-,-,32
+Acinetobacter spp.,,Doxycycline,,-,-,1.,-,-,32
+Acinetobacter spp.,,Eravacycline,,IE,IE,,IE,IE,32
+Acinetobacter spp.,,Minocycline,,IE,IE,,IE1,IE1,32
+Acinetobacter spp.,,Tetracycline,,-,-,,-,-,32
+Acinetobacter spp.,,Tigecycline,,IE,IE,,IE,IE,32
+Acinetobacter spp.,,Linezolid,,-,-,,-,-,32
+Acinetobacter spp.,,Tedizolid,,-,-,,-,-,32
+Acinetobacter spp.,,Chloramphenicol,,-,-,1.,-,-,32
+Acinetobacter spp.,,Colistin1,,Note,Note,,(2)2,(2)2,32
+Acinetobacter spp.,,Daptomycin,,-,-,,-,-,32
+Acinetobacter spp.,,Fosfomycin iv,,Note,Note,,Note3,Note3,32
+Acinetobacter spp.,,Fosfomycin oral,,-,-,,-,-,32
+Acinetobacter spp.,,Fusidic acid,,-,-,,-,-,32
+Acinetobacter spp.,,Lefamulin,,-,-,,-,-,32
+Acinetobacter spp.,,Metronidazole,,-,-,A.,-,-,32
+Acinetobacter spp.,,Nitrofurantoin (uncomplicated UTI only),,-,-,,-,-,32
+Acinetobacter spp.,,Nitroxoline (uncomplicated UTI only),,-,-,,-,-,32
+Acinetobacter spp.,,Rifampicin,,-,-,,-,-,32
+Acinetobacter spp.,,Spectinomycin,,-,-,,-,-,32
+Acinetobacter spp.,,Trimethoprim (uncomplicated UTI only),,-,-,,-,-,32
+Acinetobacter spp.,,Trimethoprim-sulfamethoxazole4,1.25-23.75,16,16,,0.5,0.5,32
+Staphylococcus spp.,,"Benzylpenicillin, S. lugdunensis",1 unit,26,26,,0.125,0.125,34
+Staphylococcus spp.,,"Benzylpenicillin, other staphylococci",,Note,Note,,Note2,Note2,34
+Staphylococcus spp.,,"Ampicillin, S. saprophyticus",2,18,18,,"Note2,3","Note2,3",34
+Staphylococcus spp.,,Ampicillin-sulbactam,,Note,Note,,"Note1,2,3","Note1,2,3",34
+Staphylococcus spp.,,Amoxicillin,,Note,Note,,"Note1,2,3","Note1,2,3",34
+Staphylococcus spp.,,Amoxicillin-clavulanic acid,,Note,Note,,"Note1,2,3","Note1,2,3",34
+Staphylococcus spp.,,Piperacillin,,Note,Note,,"Note1,2,3","Note1,2,3",34
+Staphylococcus spp.,,Piperacillin-tazobactam,,Note,Note,,"Note1,2,3","Note1,2,3",34
+Staphylococcus spp.,,Ticarcillin-clavulanic acid,,Note,Note,,"Note1,2","Note1,2",34
+Staphylococcus spp.,,Temocillin,,-,-,,-,-,34
+Staphylococcus spp.,,"Phenoxymethylpenicillin, S. aureus",,Note,Note,,Note1,Note1,34
+Staphylococcus spp.,,"Phenoxymethylpenicillin, Coagulase-negative staphylococci",,Note,Note,to,-2,-2,34
+Staphylococcus spp.,,"Oxacillin (screen only), S. pseudintermedius, S. intermedius, S. schleiferi and S. coagulans",1,20,20,,NA,NA,34
+Staphylococcus spp.,,"Oxacillin4, other staphylococci",,Note,Note,,"Note1,4","Note1,4",34
+Staphylococcus spp.,,Cloxacillin,,Note,Note,B.,"Note1,2","Note1,2",34
+Staphylococcus spp.,,Dicloxacillin,,Note,Note,,"Note1,2","Note1,2",34
+Staphylococcus spp.,,Flucloxacillin,,Note,Note,,"Note1,2","Note1,2",34
+Staphylococcus spp.,,Mecillinam oral (pivmecillinam),,-,-,,-,-,34
+Staphylococcus spp.,Cefaclor2,Cefadroxil,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,Cefaclor2,Cefalexin,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,Cefaclor2,Cefazolin2,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,Cefaclor2,Cefepime2,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,Cefaclor2,Cefepime-enmetazobactam3,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,Cefaclor2,Cefiderocol,,-,-,2.,-,-,35
+Staphylococcus spp.,Cefaclor2,Cefixime,,-,-,3.,-,-,35
+Staphylococcus spp.,Cefaclor2,Cefotaxime2,,Note,Note,4.,Note1,Note1,35
+Staphylococcus spp.,Cefaclor2,"Cefoxitin (screen only), S. aureus and coagulase-negative staphylococci except S. epidermidis and S. lugdunensis",30,22,22,,"Note4,5","Note4,5",35
+Staphylococcus spp.,Cefaclor2,"Cefoxitin (screen only), S. epidermidis and S. lugdunensis",30,27,27,27,"Note4,5","Note4,5",35
+Staphylococcus spp.,Cefaclor2,"Cefoxitin (screen only), S. pseudintermedius,",,Note,Note,,Note6,Note6,35
+Staphylococcus spp.,Cefaclor2,Cefpodoxime,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,Cefaclor2,Ceftaroline (indications other than,5,20,17,19-20,17,"27,8",35
+Staphylococcus spp.,"pneumonia), S. aureus","Ceftaroline (pneumonia), S. aureus",5,20,20,19-20 B.,17,17,35
+Staphylococcus spp.,"pneumonia), S. aureus",Ceftazidime,,-,-,,-,-,35
+Staphylococcus spp.,"pneumonia), S. aureus",Ceftazidime-avibactam,,-,-,,-,-,35
+Staphylococcus spp.,"pneumonia), S. aureus",Ceftibuten,,-,-,,-,-,35
+Staphylococcus spp.,"pneumonia), S. aureus","Ceftobiprole, S. aureus",5,17,17,16-17,29,29,35
+Staphylococcus spp.,"pneumonia), S. aureus",Ceftolozane-tazobactam,,-,-,,-,-,35
+Staphylococcus spp.,"pneumonia), S. aureus",Ceftriaxone2,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,"pneumonia), S. aureus",Cefuroxime iv2,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,"pneumonia), S. aureus",Cefuroxime oral,,Note,Note,,Note1,Note1,35
+Staphylococcus spp.,,Ertapenem,,Note,Note,2.,Note1,Note1,36
+Staphylococcus spp.,,Imipenem,,Note,Note,,Note1,Note1,36
+Staphylococcus spp.,,Imipenem-relebactam2,,Note,Note,,Note1,Note1,36
+Staphylococcus spp.,,Meropenem,,Note,Note,,Note1,Note1,36
+Staphylococcus spp.,,Meropenem-vaborbactam2,,Note,Note,,Note1,Note1,36
+Staphylococcus spp.,,Aztreonam,,-,-,,-,-,36
+Staphylococcus spp.,,Aztreonam-avibactam,,-,-,,-,-,36
+Staphylococcus spp.,,"Ciprofloxacin, S. aureus",5,50,17,1.,(0.001)2,(2)2,36
+Staphylococcus spp.,,"Ciprofloxacin, Coagulase-negative staphylococci",5,50,22,,(0.001)2,(2)2,36
+Staphylococcus spp.,,"Delafloxacin (community-acquired pneumonia), S. aureus",,Note,Note,,0.016,0.016,36
+Staphylococcus spp.,,"Delafloxacin (skin and skin structure infections), S. aureus",,Note,Note,,0.25,0.25,36
+Staphylococcus spp.,,"Levofloxacin, S. aureus",5,50,22,C.,0.001,1,36
+Staphylococcus spp.,,"Levofloxacin,",5,50,24,,0.001,1,36
+Staphylococcus spp.,Coagulase-negative staphylococci,"Moxifloxacin3, S. aureus",5,25,25,,0.25,0.25,36
+Staphylococcus spp.,Coagulase-negative staphylococci,"Moxifloxacin3, Coagulase-negative staphylococci",5,28,28,,0.25,0.25,36
+Staphylococcus spp.,Coagulase-negative staphylococci,Nalidixic acid (screen only),,NA,NA,,NA,NA,36
+Staphylococcus spp.,Coagulase-negative staphylococci,Norfloxacin (screen only),10,17,17,,NA,NA,36
+Staphylococcus spp.,Coagulase-negative staphylococci,Ofloxacin,,Note,Note,,Note3,Note3,36
+Staphylococcus spp.,,"Amikacin, Coagulase-negative staphylococci",30,15,15,,(16)1,(16)1,37
+Staphylococcus spp.,,"Gentamicin, S. aureus",10,18,18,,(2)1,(2)1,37
+Staphylococcus spp.,,"Gentamicin, Coagulase-negative staphylococci",10,22,22,,(2)1,(2)1,37
+Staphylococcus spp.,,Netilmicin,,IE,IE,,IE,IE,37
+Staphylococcus spp.,,"Tobramycin, S. aureus",10,18,18,,(2)1,(2)1,37
+Staphylococcus spp.,,"Tobramycin, Coagulase-negative staphylococci",10,20,20,,(2)1,(2)1,37
+Staphylococcus spp.,,Dalbavancin2,,Note,Note,1.,0.253,0.253,37
+Staphylococcus spp.,,"Oritavancin2, S. aureus",,Note,Note,S.,0.1253,0.1253,37
+Staphylococcus spp.,,"Teicoplanin2, S. aureus",,Note,Note,,2,2,37
+Staphylococcus spp.,,"Teicoplanin,",,Note,Note,,4,4,37
+Staphylococcus spp.,Coagulase-negative staphylococci,"Telavancin2, MRSA",,Note,Note,,0.1253,0.1253,37
+Staphylococcus spp.,Coagulase-negative staphylococci,"Vancomycin2, S. aureus",,Note,Note,,2,2,37
+Staphylococcus spp.,Coagulase-negative staphylococci,"Vancomycin2, Coagulase-negative staphylococci",,Note,Note,A.,4,4,37
+Staphylococcus spp.,,Azithromycin,,Note,Note,,21,21,38
+Staphylococcus spp.,,Clarithromycin,,Note,Note,,11,11,38
+Staphylococcus spp.,,Erythromycin,15,21,21,,11,11,38
+Staphylococcus spp.,,Roxithromycin,,Note,Note,,11,11,38
+Staphylococcus spp.,,Clindamycin2,2,22,22,,0.25,0.25,38
+Staphylococcus spp.,,Quinupristin-dalfopristin,15,21,21,,1,1,38
+Staphylococcus spp.,,Doxycycline,,Note,Note,,11,11,38
+Staphylococcus spp.,,"Eravacycline, S. aureus",20,20,20,,0.25,0.25,38
+Staphylococcus spp.,,Minocycline,30,23,23,,0.51,0.51,38
+Staphylococcus spp.,,Tetracycline,30,22,22,,11,11,38
+Staphylococcus spp.,,Tigecycline2,15,19,19,,0.53,0.53,38
+Staphylococcus spp.,,Linezolid,10,21,21,,4,4,38
+Staphylococcus spp.,,Tedizolid,2,20,20,19,0.51,0.5,38
+Staphylococcus spp.,,Colistin,,-,-,,-,-,39
+Staphylococcus spp.,,"Daptomycin1, S. aureus",,Note,Note,2.,12,12,39
+Staphylococcus spp.,,"Daptomycin, other staphylococci",,Note,Note,,Note3,Note3,39
+Staphylococcus spp.,,Fosfomycin iv,,Note,Note,,Note4,Note4,39
+Staphylococcus spp.,,Fosfomycin oral,,-,-,,-,-,39
+Staphylococcus spp.,,Fusidic acid,10,24,24,,1,1,39
+Staphylococcus spp.,S. saprophyticus,"Lefamulin, S. aureus",5,23,23,A.,0.25,0.25,39
+Staphylococcus spp.,S. saprophyticus,Metronidazole,,-,-,,-,-,39
+Staphylococcus spp.,S. saprophyticus,"Nitrofurantoin (uncomplicated UTI only), S. saprophyticus",100,13,13,,64,64,39
+Staphylococcus spp.,S. saprophyticus,"Nitroxoline (uncomplicated UTI only), S. saprophyticus",,IE,IE,,IE,IE,39
+Staphylococcus spp.,S. saprophyticus,"Rifampicin, S. aureus",5,26,26,,0.06,0.06,39
+Staphylococcus spp.,S. saprophyticus,"Rifampicin, Coagulase-negative staphylococci",5,30,30,,0.06,0.06,39
+Staphylococcus spp.,S. saprophyticus,Spectinomycin,,-,-,,-,-,39
+Staphylococcus spp.,S. saprophyticus,Trimethoprim (uncomplicated UTI only),5,19,19,,2,2,39
+Staphylococcus spp.,S. saprophyticus,Trimethoprim-sulfamethoxazole5,1.25-23.75,24,24,,0.5,0.5,39
+Enterococcus spp.,,Benzylpenicillin,,-,-,,-,-,40
+Enterococcus spp.,,Ampicillin iv,2,10,10,2.,4,4,40
+Enterococcus spp.,,Ampicillin-sulbactam iv2,,Note,Note,,Note1,Note1,40
+Enterococcus spp.,,Amoxicillin iv,,Note,Note,,41,41,40
+Enterococcus spp.,,Amoxicillin oral (uncomplicated UTI only),,Note,Note,,41,41,40
+Enterococcus spp.,,"Amoxicillin oral (other indications), E. faecalis",,Note,Note,,"(0.001)3,4","(4)3,4",40
+Enterococcus spp.,,Amoxicillin-clavulanic acid iv2,,Note,Note,,Note1,Note1,40
+Enterococcus spp.,,Amoxicillin-clavulanic acid oral2 (uncomplicated UTI only),,Note,Note,A.,Note1,Note1,40
+Enterococcus spp.,,"Amoxicillin-clavulanic acid oral2 (other indications), E. faecalis",,Note,Note,,"Note3,4","Note3,4",40
+Enterococcus spp.,,"Piperacillin, E. faecalis",30,50,18,,0.001,16,40
+Enterococcus spp.,,"Piperacillin-tazobactam2, E. faecalis",30-6,50,18,,0.0015,165,40
+Enterococcus spp.,,Ticarcillin-clavulanic acid,,-,-,,-,-,40
+Enterococcus spp.,,Temocillin,,-,-,,-,-,40
+Enterococcus spp.,,Phenoxymethylpenicillin,,-,-,,-,-,40
+Enterococcus spp.,,Oxacillin,,-,-,,-,-,40
+Enterococcus spp.,,Cloxacillin,,-,-,,-,-,40
+Enterococcus spp.,,Dicloxacillin,,-,-,,-,-,40
+Enterococcus spp.,,Flucloxacillin,,-,-,,-,-,40
+Enterococcus spp.,,Mecillinam oral (pivmecillinam) (uncomplicated UTI only),,-,-,,-,-,40
+Enterococcus spp.,,Cefaclor,,-,-,,-,-,41
+Enterococcus spp.,,Cefadroxil,,-,-,,-,-,41
+Enterococcus spp.,,Cefalexin,,-,-,,-,-,41
+Enterococcus spp.,,Cefazolin,,-,-,,-,-,41
+Enterococcus spp.,,Cefepime,,-,-,,-,-,41
+Enterococcus spp.,,Cefepime-enmetazobactam,,-,-,,-,-,41
+Enterococcus spp.,,Cefiderocol,,-,-,,-,-,41
+Enterococcus spp.,,Cefixime,,-,-,,-,-,41
+Enterococcus spp.,,Cefotaxime,,-,-,,-,-,41
+Enterococcus spp.,,Cefoxitin,,-,-,,-,-,41
+Enterococcus spp.,,Cefpodoxime,,-,-,,-,-,41
+Enterococcus spp.,,Ceftaroline,,-,-,,-,-,41
+Enterococcus spp.,,Ceftazidime,,-,-,,-,-,41
+Enterococcus spp.,,Ceftazidime-avibactam,,-,-,,-,-,41
+Enterococcus spp.,,Ceftibuten,,-,-,,-,-,41
+Enterococcus spp.,,Ceftobiprole,,-,-,,-,-,41
+Enterococcus spp.,,Ceftolozane-tazobactam,,-,-,,-,-,41
+Enterococcus spp.,,Ceftriaxone,,-,-,,-,-,41
+Enterococcus spp.,,Cefuroxime iv,,-,-,,-,-,41
+Enterococcus spp.,,Cefuroxime oral,,-,-,,-,-,41
+Enterococcus spp.,,Doripenem,,-,-,,-,-,41
+Enterococcus spp.,,Ertapenem,,-,-,,-,-,41
+Enterococcus spp.,,"Imipenem, E. faecalis",10,50,21,,0.001,4,41
+Enterococcus spp.,,Imipenem-relebactam,,-,-,,-,-,41
+Enterococcus spp.,,Meropenem,,-,-,,-,-,41
+Enterococcus spp.,,Meropenem-vaborbactam,,-,-,,-,-,41
+Enterococcus spp.,,Aztreonam,,-,-,,-,-,41
+Enterococcus spp.,,Aztreonam-avibactam,,-,-,,-,-,41
+Enterococcus spp.,,Delafloxacin,,IE,IE,no,IE,IE,42
+Enterococcus spp.,,Levofloxacin (uncomplicated UTI only),5,15,15,,4,4,42
+Enterococcus spp.,,Moxifloxacin,,Note,Note,,Note1,Note1,42
+Enterococcus spp.,,Nalidixic acid (screen only),,NA,NA,,NA,NA,42
+Enterococcus spp.,,Norfloxacin (screen only),10,12,12,C.,NA,NA,42
+Enterococcus spp.,,Ofloxacin,,-,-,,-,-,42
+Enterococcus spp.,,Amikacin,,Note,Note,1.,Note2,Note2,42
+Enterococcus spp.,,Gentamicin (test for acquired aminoglycoside-modifying enzyme),30,Note,Note,,Note2,Note2,42
+Enterococcus spp.,,Netilmicin,,Note,Note,,Note2,Note2,42
+Enterococcus spp.,,Streptomycin (test for acquired,300,Note,Note,,Note3,Note3,42
+Enterococcus spp.,aminoglycoside-modifying enzyme),Tobramycin,,Note,Note,,Note2,Note2,42
+Enterococcus spp.,,Dalbavancin,,IE,IE,A.,IE,IE,43
+Enterococcus spp.,,Oritavancin,,IE,IE,,IE,IE,43
+Enterococcus spp.,,Teicoplanin,30,16,16,,2,2,43
+Enterococcus spp.,,Telavancin,,IE,IE,,IE,IE,43
+Enterococcus spp.,,"Vancomycin, E. faecalis and E. faecium",5,12,12,,4,4,43
+Enterococcus spp.,,"Vancomycin, E. casseliflavus and E. gallinarum",,-,-,,-,-,43
+Enterococcus spp.,,"Vancomycin, other enterococci",5,15,15,,4,4,43
+Enterococcus spp.,,Azithromycin,,-,-,,-,-,43
+Enterococcus spp.,,Clarithromycin,,-,-,,-,-,43
+Enterococcus spp.,,Erythromycin,,-,-,,-,-,43
+Enterococcus spp.,,Roxithromycin,,-,-,,-,-,43
+Enterococcus spp.,,Clindamycin,,-,-,,-,-,43
+Enterococcus spp.,,"Quinupristin-dalfopristin, E. faecium",15,22,22,,1,1,43
+Enterococcus spp.,,Doxycycline,,-,-,1.,-,-,43
+Enterococcus spp.,,Eravacycline,20,22,22,,0.25,0.25,43
+Enterococcus spp.,,Minocycline,,-,-,2.,-,-,43
+Enterococcus spp.,,Tetracycline,,-,-,,-,-,43
+Enterococcus spp.,,Tigecycline1,15,20,20,,0.52,0.52,43
+Enterococcus spp.,,Linezolid,10,20,20,,4,4,43
+Enterococcus spp.,,Tedizolid,,IE,IE,,IE,IE,43
+Enterococcus spp.,Chloramphenicol,Colistin,,-,-,,-,-,44
+Enterococcus spp.,Chloramphenicol,Daptomycin1,,IE,IE,,IE,IE,44
+Enterococcus spp.,Chloramphenicol,Fosfomycin iv,,Note,Note,,Note2,Note2,44
+Enterococcus spp.,Chloramphenicol,Fosfomycin oral,,-,-,,-,-,44
+Enterococcus spp.,Chloramphenicol,Fusidic acid,,-,-,,-,-,44
+Enterococcus spp.,E. faecalis,Lefamulin,,Note,Note,5.,Note3,Note3,44
+Enterococcus spp.,E. faecalis,Metronidazole,,-,-,,-,-,44
+Enterococcus spp.,E. faecalis,"Nitrofurantoin (uncomplicated UTI only), E. faecalis",100,15,15,,64,64,44
+Enterococcus spp.,E. faecalis,Nitroxoline (uncomplicated UTI only),,IE,IE,,IE,IE,44
+Enterococcus spp.,E. faecalis,Rifampicin,,-,-,,-,-,44
+Enterococcus spp.,E. faecalis,Spectinomycin,,-,-,,-,-,44
+Enterococcus spp.,E. faecalis,Trimethoprim (uncomplicated UTI only),5,Note,Note,,Note4,Note4,44
+Enterococcus spp.,E. faecalis,Trimethoprim-sulfamethoxazole5,1.25-23.75,Note,Note,,Note4,Note4,44
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,"Benzylpenicillin2, Streptococcus groups A, C and G",1 unit,23,23,,0.03,0.03,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,"Benzylpenicillin2, S. agalactiae (group B streptococci)",1 unit,18,18,,0.125,0.125,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Ampicillin,,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Ampicillin-sulbactam3,,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Amoxicillin,,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Amoxicillin-clavulanic acid3,,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Piperacillin,,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Piperacillin-tazobactam3,,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Ticarcillin-clavulanic acid,,-,-,,-,-,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Temocillin,,-,-,,-,-,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,"Phenoxymethylpenicillin Streptococcus groups A, C and G",,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,"Oxacillin Streptococcus groups A, C and G",,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,"Cloxacillin Streptococcus groups A, C and G",,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,"Dicloxacillin Streptococcus groups A, C and G",,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,"Flucloxacillin Streptococcus groups A, C and G",,Note,Note,,Note1,Note1,45
+"Streptococcus groups A, B, C and G",Group G: S. dysgalactiae and S. canis,Mecillinam oral (pivmecillinam) (uncomplicated UTI only),,-,-,,-,-,45
+"Streptococcus groups A, B, C and G",,Cefaclor,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Cefadroxil,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Cefalexin,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Cefazolin,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Cefepime,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Cefepime-enmetazobactam2,,Note,Note,,Note2,Note2,46
+"Streptococcus groups A, B, C and G",,Cefiderocol,,-,-,,-,-,46
+"Streptococcus groups A, B, C and G",,Cefixime,,-,-,,-,-,46
+"Streptococcus groups A, B, C and G",,Cefotaxime,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Cefoxitin,,IE,IE,,IE,IE,46
+"Streptococcus groups A, B, C and G",,Cefpodoxime,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Ceftaroline,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Ceftazidime,,-,-,,-,-,46
+"Streptococcus groups A, B, C and G",,Ceftazidime-avibactam,,-,-,,-,-,46
+"Streptococcus groups A, B, C and G",,Ceftibuten,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Ceftobiprole,,IE,IE,,IE,IE,46
+"Streptococcus groups A, B, C and G",,Ceftolozane-tazobactam2,,IE,IE,,IE,IE,46
+"Streptococcus groups A, B, C and G",,Ceftriaxone,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Cefuroxime iv,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Cefuroxime oral,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Doripenem,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Ertapenem,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Imipenem,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Imipenem-relebactam2,,Note,Note,,Note2,Note2,46
+"Streptococcus groups A, B, C and G",,Meropenem,,Note,Note,,Note1,Note1,46
+"Streptococcus groups A, B, C and G",,Meropenem-vaborbactam2,,Note,Note,,Note2,Note2,46
+"Streptococcus groups A, B, C and G",,Aztreonam,,-,-,,-,-,46
+"Streptococcus groups A, B, C and G",,Aztreonam-avibactam,,-,-,,-,-,46
+"Streptococcus groups A, B, C and G",,Ciprofloxacin,,-,-,A.,-,-,47
+"Streptococcus groups A, B, C and G",,Delafloxacin,,Note,Note,B.,0.03,0.03,47
+"Streptococcus groups A, B, C and G",,Levofloxacin,5,50,17,C.,0.001,2,47
+"Streptococcus groups A, B, C and G",,Moxifloxacin,5,19,19,,0.5,0.5,47
+"Streptococcus groups A, B, C and G",,Nalidixic acid (screen only),,NA,NA,,NA,NA,47
+"Streptococcus groups A, B, C and G",,Norfloxacin (screen only),10,12,12,,NA,NA,47
+"Streptococcus groups A, B, C and G",,Ofloxacin,,-,-,,-,-,47
+"Streptococcus groups A, B, C and G",,Amikacin,,-,-,,-,-,47
+"Streptococcus groups A, B, C and G",,Gentamicin,,-,-,,-,-,47
+"Streptococcus groups A, B, C and G",,Netilmicin,,-,-,,-,-,47
+"Streptococcus groups A, B, C and G",,Tobramycin,,-,-,,-,-,47
+"Streptococcus groups A, B, C and G",,Dalbavancin1,,Note,Note,1.,"0.1252,3",0.1252,47
+"Streptococcus groups A, B, C and G",,Oritavancin1,,Note,Note,,"0.252,3",0.252,47
+"Streptococcus groups A, B, C and G",,Teicoplanin1,30,15,15,2.,2,2,47
+"Streptococcus groups A, B, C and G",,Telavancin,,IE,IE,,IE,IE,47
+"Streptococcus groups A, B, C and G",,Vancomycin1,5,13,13,,2,2,47
+"Streptococcus groups A, B, C and G",,Azithromycin,,Note,Note,,0.251,0.251,48
+"Streptococcus groups A, B, C and G",,Clarithromycin,,Note,Note,,0.251,0.251,48
+"Streptococcus groups A, B, C and G",,Erythromycin,15,21,21,,0.251,0.251,48
+"Streptococcus groups A, B, C and G",,Roxithromycin,,Note,Note,,0.51,0.51,48
+"Streptococcus groups A, B, C and G",,Clindamycin2,2,17,17,,0.5,0.5,48
+"Streptococcus groups A, B, C and G",,Quinupristin-dalfopristin,,-,-,,-,-,48
+"Streptococcus groups A, B, C and G",,Doxycycline,,Note,Note,,11,11,48
+"Streptococcus groups A, B, C and G",,Eravacycline,,IE,IE,,IE,IE,48
+"Streptococcus groups A, B, C and G",,Minocycline,30,23,23,to,0.51,0.51,48
+"Streptococcus groups A, B, C and G",,Tetracycline,30,23,23,,11,11,48
+"Streptococcus groups A, B, C and G",,Tigecycline2,15,19,19,,0.1253,0.1253,48
+"Streptococcus groups A, B, C and G",,Linezolid1,10,19,19,1.,2,2,48
+"Streptococcus groups A, B, C and G",,Tedizolid1,2,18,18,,0.52,0.5,48
+"Streptococcus groups A, B, C and G",,Chloramphenicol,,IE,IE,1.,IE,IE,49
+"Streptococcus groups A, B, C and G",,Colistin,,-,-,,-,-,49
+"Streptococcus groups A, B, C and G",,Daptomycin1,,Note,Note,2.,12,12,49
+"Streptococcus groups A, B, C and G",,Fosfomycin iv,,-,-,,-,-,49
+"Streptococcus groups A, B, C and G",,Fosfomycin oral,,-,-,,-,-,49
+"Streptococcus groups A, B, C and G",,Fusidic acid,,IE,IE,,IE,IE,49
+"Streptococcus groups A, B, C and G",,Lefamulin,,IE,IE,,IE,IE,49
+"Streptococcus groups A, B, C and G",,Metronidazole,,-,-,A.,-,-,49
+"Streptococcus groups A, B, C and G",,"Nitrofurantoin (uncomplicated UTI only), S. agalactiae (group B streptococci)",100,15,15,,64,64,49
+"Streptococcus groups A, B, C and G",,Nitroxoline (uncomplicated UTI only),,-,-,,-,-,49
+"Streptococcus groups A, B, C and G",,Rifampicin,5,21,21,,0.25,0.25,49
+"Streptococcus groups A, B, C and G",,Spectinomycin,,-,-,,-,-,49
+"Streptococcus groups A, B, C and G",,"Trimethoprim (uncomplicated UTI only), S. agalactiae (group B streptococci)",,Note,Note,,Note3,Note3,49
+"Streptococcus groups A, B, C and G",,Trimethoprim-sulfamethoxazole4,1.25-23.75,16,16,,0.5,0.5,49
+Streptococcus pneumoniae,EUCAST QC Tables.,Benzylpenicillin (indications other than endocarditis and meningitis),1 unitA,Note,Note,,0.06,1,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Benzylpenicillin (endocarditis and meningitis),,Note,Note,,0.06,0.06,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Ampicillin iv (indications other than endocarditis and meningitis),2,22,19,,0.5,1,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Ampicillin iv (endocarditis and meningitis),,Note,Note,,0.06,0.06,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Ampicillin-sulbactam2,,Note,Note,4.,"Note1,3","Note1,3",50
+Streptococcus pneumoniae,EUCAST QC Tables.,Amoxicillin iv (indications other than endocarditis and meningitis),,Note,Note,,"Note1,3","Note1,3",50
+Streptococcus pneumoniae,EUCAST QC Tables.,Amoxicillin iv (endocarditis and meningitis),,Note,Note,,0.06,0.06,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Amoxicillin oral,,Note,Note,,0.5,1,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Amoxicillin-clavulanic acid iv2,,Note,Note,D.,"Note1,3","Note1,3",50
+Streptococcus pneumoniae,EUCAST QC Tables.,Amoxicillin-clavulanic acid oral2,,Note,Note,,0.54,14,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Piperacillin,,Note,Note,,"Note1,3","Note1,3",50
+Streptococcus pneumoniae,EUCAST QC Tables.,Piperacillin-tazobactam2,,Note,Note,,"Note1,3","Note1,3",50
+Streptococcus pneumoniae,EUCAST QC Tables.,Ticarcillin-clavulanic acid,,-,-,,-,-,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Temocillin,,-,-,,-,-,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Phenoxymethylpenicillin,,Note,Note,,Note1,Note1,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Oxacillin (screen only)1,1,20,20,,NA,NA,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Oxacillin,,IE,IE,,IE,IE,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Cloxacillin,,IE,IE,,IE,IE,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Dicloxacillin,,IE,IE,,IE,IE,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Flucloxacillin,,IE,IE,,IE,IE,50
+Streptococcus pneumoniae,EUCAST QC Tables.,Mecillinam oral (pivmecillinam) (uncomplicated UTI only),,-,-,,-,-,50
+Streptococcus pneumoniae,,Cefaclor,30,50,28,,0.001,0.5,51
+Streptococcus pneumoniae,,Cefadroxil,,IE,IE,,IE,IE,51
+Streptococcus pneumoniae,,Cefalexin,,IE,IE,,IE,IE,51
+Streptococcus pneumoniae,,Cefazolin,,IE,IE,,IE,IE,51
+Streptococcus pneumoniae,,Cefepime,,Note,Note,,1,2,51
+Streptococcus pneumoniae,,Cefepime-enmetazobactam2,,Note,Note,,Note2,Note2,51
+Streptococcus pneumoniae,,Cefiderocol,,-,-,,-,-,51
+Streptococcus pneumoniae,,Cefixime,,-,-,,-,-,51
+Streptococcus pneumoniae,,Cefotaxime (indications other than endocarditis and meningitis),,Note,Note,,0.5,2,51
+Streptococcus pneumoniae,,Cefotaxime (endocarditis and meningitis),,Note,Note,,0.5,0.5,51
+Streptococcus pneumoniae,,Cefoxitin,,IE,IE,,IE,IE,51
+Streptococcus pneumoniae,,Cefpodoxime,,Note,Note,,0.25,0.25,51
+Streptococcus pneumoniae,,Ceftaroline,,Note,Note,,0.25,0.25,51
+Streptococcus pneumoniae,,Ceftazidime,,-,-,,-,-,51
+Streptococcus pneumoniae,,Ceftazidime-avibactam,,-,-,,-,-,51
+Streptococcus pneumoniae,,Ceftibuten,,-,-,,-,-,51
+Streptococcus pneumoniae,,Ceftobiprole,,Note,Note,,0.5,0.5,51
+Streptococcus pneumoniae,,Ceftolozane-tazobactam,,-,-,,-,-,51
+Streptococcus pneumoniae,,Ceftriaxone (indications other than endocarditis and meningitis),,Note,Note,,0.5,2,51
+Streptococcus pneumoniae,,Ceftriaxone (endocarditis and meningitis),,Note,Note,,0.5,0.5,51
+Streptococcus pneumoniae,,Cefuroxime iv,,Note,Note,,0.5,1,51
+Streptococcus pneumoniae,,Cefuroxime oral,,Note,Note,,0.25,0.25,51
+Streptococcus pneumoniae,,Doripenem,,Note,Note,,1,1,51
+Streptococcus pneumoniae,,Ertapenem,,Note,Note,,0.5,0.5,51
+Streptococcus pneumoniae,,Imipenem,,Note,Note,,2,2,51
+Streptococcus pneumoniae,,Imipenem-relebactam3,,Note,Note,,Note3,Note3,51
+Streptococcus pneumoniae,,Meropenem (indications other than,,Note,Note,,2,2,51
+Streptococcus pneumoniae,meningitis),Meropenem (meningitis),,Note,Note,,0.25,0.25,51
+Streptococcus pneumoniae,meningitis),Meropenem-vaborbactam3,,Note,Note,,Note3,Note3,51
+Streptococcus pneumoniae,,Aztreonam,,-,-,,-,-,52
+Streptococcus pneumoniae,,Aztreonam-avibactam,,-,-,,-,-,52
+Streptococcus pneumoniae,,Ciprofloxacin,,-,-,A.,-,-,52
+Streptococcus pneumoniae,,Delafloxacin,,IE,IE,B.,IE,IE,52
+Streptococcus pneumoniae,,Levofloxacin,5,50,16,,0.001,2,52
+Streptococcus pneumoniae,,Moxifloxacin,5,22,22,,0.5,0.5,52
+Streptococcus pneumoniae,,Nalidixic acid (screen only),,NA,NA,,NA,NA,52
+Streptococcus pneumoniae,,Norfloxacin (screen only),10,10,10,,NA,NA,52
+Streptococcus pneumoniae,,Ofloxacin,,-,-,,-,-,52
+Streptococcus pneumoniae,,Amikacin,,-,-,,-,-,52
+Streptococcus pneumoniae,,Gentamicin,,-,-,,-,-,52
+Streptococcus pneumoniae,,Netilmicin,,-,-,,-,-,52
+Streptococcus pneumoniae,,Tobramycin,,-,-,,-,-,52
+Streptococcus pneumoniae,,Dalbavancin,,IE,IE,1.,IE,IE,52
+Streptococcus pneumoniae,,Oritavancin,,IE,IE,,IE,IE,52
+Streptococcus pneumoniae,,Teicoplanin1,30,17,17,,2,2,52
+Streptococcus pneumoniae,,Telavancin,,IE,IE,,IE,IE,52
+Streptococcus pneumoniae,,Vancomycin1,5,16,16,,2,2,52
+Streptococcus pneumoniae,,Clarithromycin,,Note,Note,,0.251,0.251,53
+Streptococcus pneumoniae,,Erythromycin,15,22,22,,0.251,0.251,53
+Streptococcus pneumoniae,,Roxithromycin,,Note,Note,,0.51,0.51,53
+Streptococcus pneumoniae,,Clindamycin2,2,19,19,,0.5,0.5,53
+Streptococcus pneumoniae,,Quinupristin-dalfopristin,,-,-,B.,-,-,53
+Streptococcus pneumoniae,,Doxycycline,,Note,Note,,11,11,53
+Streptococcus pneumoniae,,Eravacycline,,IE,IE,,IE,IE,53
+Streptococcus pneumoniae,,Minocycline,30,24,24,,0.51,0.51,53
+Streptococcus pneumoniae,,Tetracycline,30,25,25,,11,11,53
+Streptococcus pneumoniae,,Tigecycline,,IE,IE,,IE,IE,53
+Streptococcus pneumoniae,,Linezolid,10,22,22,,2,2,53
+Streptococcus pneumoniae,,Tedizolid,,IE,IE,,IE,IE,53
+Streptococcus pneumoniae,,Colistin,,-,-,,-,-,54
+Streptococcus pneumoniae,,Daptomycin,,IE,IE,30,IE,IE,54
+Streptococcus pneumoniae,,Fosfomycin iv,,IE,IE,,IE,IE,54
+Streptococcus pneumoniae,,Fosfomycin oral,,-,-,,-,-,54
+Streptococcus pneumoniae,,Fusidic acid,,-,-,,-,-,54
+Streptococcus pneumoniae,,Lefamulin,5,12,12,,0.5,0.5,54
+Streptococcus pneumoniae,,Metronidazole,,-,-,,-,-,54
+Streptococcus pneumoniae,,Nitrofurantoin (uncomplicated UTI only),,-,-,,-,-,54
+Streptococcus pneumoniae,,Nitroxoline (uncomplicated UTI only),,-,-,,-,-,54
+Streptococcus pneumoniae,,Rifampicin,5,22,22,,0.125,0.125,54
+Streptococcus pneumoniae,,Spectinomycin,,-,-,,-,-,54
+Streptococcus pneumoniae,,Trimethoprim (uncomplicated UTI only),,-,-,,-,-,54
+Streptococcus pneumoniae,,Trimethoprim-sulfamethoxazole2,1.25-23.75,15,15,,1,1,54
+Viridans group streptococci,,Benzylpenicillin (indications other than endocarditis),1 unit,21,12,,0.25,1,57
+Viridans group streptococci,,Benzylpenicillin (endocarditis),1 unit,21,21,,0.25,0.25,57
+Viridans group streptococci,,"Benzylpenicillin (endocarditis, in",1 unit,12,12,,(1)2,(1)2,57
+Viridans group streptococci,treatment),Ampicillin (indications other than,2,21,15,,0.5,2,57
+Viridans group streptococci,endocarditis),Ampicillin iv (endocarditis),2,21,21,,0.5,0.5,57
+Viridans group streptococci,endocarditis),Ampicillin-sulbactam3,,Note,Note,,"Note1,4","Note1,4",57
+Viridans group streptococci,endocarditis),Amoxicillin (indications other than endocarditis),,Note,Note,,0.5,2,57
+Viridans group streptococci,endocarditis),Amoxicillin iv (endocarditis),,Note,Note,,0.5,0.5,57
+Viridans group streptococci,endocarditis),Amoxicillin-clavulanic acid3,,Note,Note,,"Note1,4","Note1,4",57
+Viridans group streptococci,endocarditis),Piperacillin,,Note,Note,,"Note1,4","Note1,4",57
+Viridans group streptococci,endocarditis),Piperacillin-tazobactam3,,Note,Note,,"Note1,4","Note1,4",57
+Viridans group streptococci,endocarditis),Ticarcillin-clavulanic acid3,,IE,IE,,IE,IE,57
+Viridans group streptococci,endocarditis),Temocillin,,-,-,,-,-,57
+Viridans group streptococci,endocarditis),Phenoxymethylpenicillin,,IE,IE,,IE,IE,57
+Viridans group streptococci,endocarditis),Oxacillin,,IE,IE,,IE,IE,57
+Viridans group streptococci,endocarditis),Cloxacillin,,IE,IE,,IE,IE,57
+Viridans group streptococci,endocarditis),Dicloxacillin,,IE,IE,,IE,IE,57
+Viridans group streptococci,endocarditis),Flucloxacillin,,IE,IE,,IE,IE,57
+Viridans group streptococci,endocarditis),Mecillinam oral (pivmecillinam) (uncomplicated UTI only),,-,-,,-,-,57
+Viridans group streptococci,,Cefaclor,,-,-,1.,-,-,58
+Viridans group streptococci,,Cefadroxil,,-,-,,-,-,58
+Viridans group streptococci,,Cefalexin,,-,-,A.,-,-,58
+Viridans group streptococci,,Cefazolin,,IE,IE,,IE,IE,58
+Viridans group streptococci,,Cefepime,30,25,25,,0.5,0.5,58
+Viridans group streptococci,,Cefepime-enmetazobactam1,,Note,Note,,Note1,Note1,58
+Viridans group streptococci,,Cefiderocol,,-,-,,-,-,58
+Viridans group streptococci,,Cefixime,,-,-,,-,-,58
+Viridans group streptococci,,Cefotaxime,5,23,23,,0.5,0.5,58
+Viridans group streptococci,,Cefoxitin,,IE,IE,,IE,IE,58
+Viridans group streptococci,,Cefpodoxime,,-,-,,-,-,58
+Viridans group streptococci,,Ceftaroline,,-,-,,-,-,58
+Viridans group streptococci,,Ceftazidime,,-,-,,-,-,58
+Viridans group streptococci,,Ceftazidime-avibactam,,-,-,,-,-,58
+Viridans group streptococci,,Ceftibuten,,-,-,,-,-,58
+Viridans group streptococci,,Ceftobiprole,,-,-,,-,-,58
+Viridans group streptococci,,"Ceftolozane-tazobactam1, S. anginosus group",,IE,IE,,IE,IE,58
+Viridans group streptococci,,Ceftriaxone,30,27,27,,0.5,0.5,58
+Viridans group streptococci,,Cefuroxime iv,30,26,26,,0.5,0.5,58
+Viridans group streptococci,,Cefuroxime oral,,-,-,,-,-,58
+Viridans group streptococci,,Doripenem,,Note,Note,1.,1,1,58
+Viridans group streptococci,,Ertapenem,,Note,Note,,0.5,0.5,58
+Viridans group streptococci,,Imipenem,,Note,Note,,2,2,58
+Viridans group streptococci,,Imipenem-relebactam2,,Note,Note,,21,21,58
+Viridans group streptococci,,Meropenem,,Note,Note,,2,2,58
+Viridans group streptococci,,Meropenem-vaborbactam2,,Note,Note,,Note2,Note2,58
+Viridans group streptococci,,Aztreonam,,-,-,,-,-,58
+Viridans group streptococci,,Aztreonam-avibactam,,-,-,,-,-,58
+Viridans group streptococci,,"Delafloxacin, S. anginosus group",,Note,Note,,0.03,0.03,59
+Viridans group streptococci,,Levofloxacin,,IE,IE,,IE,IE,59
+Viridans group streptococci,,Moxifloxacin,,Note,Note,,Note1,Note1,59
+Viridans group streptococci,,Nalidixic acid (screen only),,NA,NA,,NA,NA,59
+Viridans group streptococci,,Norfloxacin (uncomplicated UTI only),,-,-,,-,-,59
+Viridans group streptococci,,Ofloxacin,,-,-,,-,-,59
+Viridans group streptococci,,Amikacin,,-,-,1.,Note2,Note2,59
+Viridans group streptococci,,Gentamicin (test for acquired aminoglycoside-modifying enzyme),,-,-,,Note2,Note2,59
+Viridans group streptococci,,Netilmicin,,-,-,,Note2,Note2,59
+Viridans group streptococci,,Tobramycin,,-,-,,Note2,Note2,59
+Viridans group streptococci,,"Dalbavancin1, S. anginosus group",,Note,Note,1.,"0.1252,3",0.1252,59
+Viridans group streptococci,,"Oritavancin1, S. anginosus group",,Note,Note,,"0.252,3",0.252,59
+Viridans group streptococci,,Teicoplanin1,30,16,16,2.,2,2,59
+Viridans group streptococci,,Telavancin,,IE,IE,,IE,IE,59
+Viridans group streptococci,,Vancomycin1,5,15,15,,2,2,59
+Viridans group streptococci,,Clarithromycin,,IE,IE,,IE,IE,60
+Viridans group streptococci,,Erythromycin,15,IE,IE,,IE,IE,60
+Viridans group streptococci,,Roxithromycin,,IE,IE,,IE,IE,60
+Viridans group streptococci,,Clindamycin1,2,19,19,,0.5,0.5,60
+Viridans group streptococci,,Quinupristin-dalfopristin,,IE,IE,,IE,IE,60
+Viridans group streptococci,,Doxycycline,,-,-,,-,-,60
+Viridans group streptococci,,Eravacycline,20,17,17,,0.125,0.125,60
+Viridans group streptococci,,Minocycline,,-,-,,-,-,60
+Viridans group streptococci,,Tetracycline,,-,-,,-,-,60
+Viridans group streptococci,,Tigecycline,,IE,IE,,IE,IE,60
+Viridans group streptococci,,Linezolid,,IE,IE,1.,IE1,IE1,60
+Viridans group streptococci,,"Tedizolid, S. anginosus group",2,18,18,no,0.5,0.5,60
+Viridans group streptococci,,Colistin,,-,-,,-,-,61
+Viridans group streptococci,,Daptomycin,,IE,IE,,IE,IE,61
+Viridans group streptococci,,Fosfomycin iv,,-,-,,-,-,61
+Viridans group streptococci,,Fosfomycin oral,,-,-,,-,-,61
+Viridans group streptococci,,Fusidic acid,,-,-,,-,-,61
+Viridans group streptococci,,Lefamulin,,IE,IE,,IE,IE,61
+Viridans group streptococci,,Metronidazole,,-,-,,-,-,61
+Viridans group streptococci,,Nitrofurantoin (uncomplicated UTI only),,-,-,,-,-,61
+Viridans group streptococci,,Nitroxoline (uncomplicated UTI only),,-,-,,-,-,61
+Viridans group streptococci,,Rifampicin,,Note,Note,,Note1,Note1,61
+Viridans group streptococci,,Spectinomycin,,-,-,,-,-,61
+Viridans group streptococci,,Trimethoprim (uncomplicated UTI only),,-,-,,-,-,61
+Viridans group streptococci,,Trimethoprim-sulfamethoxazole,,-,-,,-,-,61
+Haemophilus influenzae,,Benzylpenicillin,,IE,IE,,IE,IE,62
+Haemophilus influenzae,,Benzylpenicillin (screen only)1,1 unit,12,12,,NA,NA,62
+Haemophilus influenzae,,Ampicillin (indications other than,2,18,18,,1,1,62
+Haemophilus influenzae,meningitis)2,Ampicillin iv (meningitis)2,,Note,Note,2.,Note3,Note3,62
+Haemophilus influenzae,meningitis)2,Ampicillin-sulbactam,,Note,Note,,"14,5",14.5,62
+Haemophilus influenzae,meningitis)2,Amoxicillin iv (indications other than meningitis)2,,Note,Note,,2,2,62
+Haemophilus influenzae,meningitis)2,Amoxicillin iv (meningitis)2,,Note,Note,4.,Note3,Note3,62
+Haemophilus influenzae,meningitis)2,Amoxicillin oral2,,Note,Note,,0.001,2,62
+Haemophilus influenzae,meningitis)2,Amoxicillin-clavulanic acid iv,2-1,15,15,,26,26,62
+Haemophilus influenzae,meningitis)2,Amoxicillin-clavulanic acid oral,2-1,50,15,,0.0016,26,62
+Haemophilus influenzae,meningitis)2,Piperacillin2,,IE,IE,,IE,IE,62
+Haemophilus influenzae,meningitis)2,Piperacillin-tazobactam,30-6,27,27,"26-28B,G",0.257,0.257,62
+Haemophilus influenzae,meningitis)2,Ticarcillin-clavulanic acid,,IE,IE,E.,IE,IE,62
+Haemophilus influenzae,meningitis)2,Temocillin,,IE,IE,F.,IE,IE,62
+Haemophilus influenzae,meningitis)2,Phenoxymethylpenicillin,,IE,IE,,IE,IE,62
+Haemophilus influenzae,meningitis)2,Oxacillin,,-,-,G.,-,-,62
+Haemophilus influenzae,meningitis)2,Cloxacillin,,-,-,,-,-,62
+Haemophilus influenzae,meningitis)2,Dicloxacillin,,-,-,,-,-,62
+Haemophilus influenzae,meningitis)2,Flucloxacillin,,-,-,,-,-,62
+Haemophilus influenzae,meningitis)2,Mecillinam oral (pivmecillinam) (uncomplicated UTI only),,-,-,,-,-,62
+Haemophilus influenzae,,Cefaclor,,-,-,,-,-,63
+Haemophilus influenzae,,Cefadroxil,,-,-,,-,-,63
+Haemophilus influenzae,,Cefalexin,,-,-,,-,-,63
+Haemophilus influenzae,,Cefazolin,,-,-,,-,-,63
+Haemophilus influenzae,,Cefepime,30,28,28,"28-33B,C",0.25,0.25,63
+Haemophilus influenzae,,Cefepime-enmetazobactam2,,Note,Note,,Note2,Note2,63
+Haemophilus influenzae,,Cefiderocol,,IE,IE,3.,IE,IE,63
+Haemophilus influenzae,,Cefixime,5,26,26,,0.125,0.125,63
+Haemophilus influenzae,,Cefotaxime,5,27,27,"25-27B,C",0.125,0.125,63
+Haemophilus influenzae,,Cefoxitin,,IE,IE,B.,IE,IE,63
+Haemophilus influenzae,,Cefpodoxime,10,26,26,"26-29B,C",0.25,0.25,63
+Haemophilus influenzae,,Ceftaroline,,Note,Note,,0.03,0.03,63
+Haemophilus influenzae,,Ceftazidime,,-,-,,-,-,63
+Haemophilus influenzae,,Ceftazidime-avibactam,,-,-,,-,-,63
+Haemophilus influenzae,,Ceftibuten,30,25,25,,1,1,63
+Haemophilus influenzae,,Ceftobiprole,,IE,IE,,IE,IE,63
+Haemophilus influenzae,,Ceftolozane-tazobactam (pneumonia)3,30-10,23,23,"22-23B,C",0.5,0.5,63
+Haemophilus influenzae,,Ceftriaxone,30,32,32,"31-33B,C",0.125,0.125,63
+Haemophilus influenzae,,Cefuroxime iv,30,27,25,"25-27B,C",1,2,63
+Haemophilus influenzae,,Cefuroxime oral,30,50,27,"25-27B,C",0.001,1,63
+Haemophilus influenzae,,Doripenem,10,23,23,,1,1,64
+Haemophilus influenzae,,Ertapenem,10,23,23,,0.5,0.5,64
+Haemophilus influenzae,,Imipenem,10,20,20,"6-19B,C",2,2,64
+Haemophilus influenzae,,Imipenem-relebactam3,,Note,Note,,Note3,Note3,64
+Haemophilus influenzae,,Meropenem (indications other than,10,20,20,,2,2,64
+Haemophilus influenzae,meningitis),Meropenem (meningitis),,Note,Note,,0.25,0.25,64
+Haemophilus influenzae,meningitis),Meropenem-vaborbactam3,,Note,Note,B.,Note3,Note3,64
+Haemophilus influenzae,meningitis),Aztreonam,,IE,IE,,IE,IE,64
+Haemophilus influenzae,meningitis),Aztreonam-avibactam,,IE,IE,,IE,IE,64
+Haemophilus influenzae,meningitis),Ciprofloxacin,5,32,32,A.,0.03,0.03,64
+Haemophilus influenzae,meningitis),Delafloxacin,,IE,IE,B.,IE,IE,64
+Haemophilus influenzae,meningitis),Levofloxacin,5,30,30,,0.06,0.06,64
+Haemophilus influenzae,meningitis),Moxifloxacin,5,28,28,,0.125,0.125,64
+Haemophilus influenzae,meningitis),Nalidixic acid (screen only),30,23,23,,NA,NA,64
+Haemophilus influenzae,meningitis),Norfloxacin (uncomplicated UTI only),,-,-,,-,-,64
+Haemophilus influenzae,meningitis),Ofloxacin,5,30,30,,0.06,0.06,64
+Haemophilus influenzae,meningitis),Amikacin,,IE,IE,,IE,IE,64
+Haemophilus influenzae,meningitis),Gentamicin,,IE,IE,,IE,IE,64
+Haemophilus influenzae,meningitis),Netilmicin,,IE,IE,,IE,IE,64
+Haemophilus influenzae,meningitis),Tobramycin,,IE,IE,,IE,IE,64
+Haemophilus influenzae,,Dalbavancin,,-,-,,-,-,65
+Haemophilus influenzae,,Oritavancin,,-,-,,-,-,65
+Haemophilus influenzae,,Teicoplanin,,-,-,,-,-,65
+Haemophilus influenzae,,Telavancin,,-,-,,-,-,65
+Haemophilus influenzae,,Vancomycin,,-,-,,-,-,65
+Haemophilus influenzae,,Azithromycin,,Note,Note,,Note1,Note1,65
+Haemophilus influenzae,,Clarithromycin,,Note,Note,,Note1,Note1,65
+Haemophilus influenzae,,Erythromycin,,Note,Note,,Note1,Note1,65
+Haemophilus influenzae,,Roxithromycin,,Note,Note,,Note1,Note1,65
+Haemophilus influenzae,,Clindamycin,,-,-,,-,-,65
+Haemophilus influenzae,,Quinupristin-dalfopristin,,-,-,,-,-,65
+Haemophilus influenzae,,Doxycycline,,Note,Note,,11,11,65
+Haemophilus influenzae,,Eravacycline,,IE,IE,,IE,IE,65
+Haemophilus influenzae,,Minocycline,30,24,24,,11,11,65
+Haemophilus influenzae,,Tetracycline,30,25,25,,21,21,65
+Haemophilus influenzae,,Tigecycline,,IE,IE,,IE,IE,65
+Haemophilus influenzae,,Linezolid,,-,-,,-,-,65
+Haemophilus influenzae,,Tedizolid,,-,-,,-,-,65
+Haemophilus influenzae,Chloramphenicol1,Colistin,,-,-,2.,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Daptomycin,,-,-,,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Fosfomycin iv,,IE,IE,,IE,IE,66
+Haemophilus influenzae,Chloramphenicol1,Fosfomycin oral,,-,-,,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Fusidic acid,,-,-,,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Lefamulin,,IE,IE,,IE,IE,66
+Haemophilus influenzae,Chloramphenicol1,Metronidazole,,-,-,,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Nitrofurantoin (uncomplicated UTI only),,-,-,,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Nitroxoline (uncomplicated UTI only),,-,-,,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Rifampicin (for prophylaxis only),5,18,18,,1,1,66
+Haemophilus influenzae,Chloramphenicol1,Spectinomycin,,-,-,,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Trimethoprim (uncomplicated UTI only),,-,-,,-,-,66
+Haemophilus influenzae,Chloramphenicol1,Trimethoprim-sulfamethoxazole2,1.25-23.75,23,23,,0.5,0.5,66
+Moraxella catarrhalis,,Benzylpenicillin,,-,-,1.,-,-,68
+Moraxella catarrhalis,,Ampicillin,,-,-,,-1,-1,68
+Moraxella catarrhalis,,Ampicillin-sulbactam,,Note,Note,,"12,3","12,3",68
+Moraxella catarrhalis,,Amoxicillin,,-,-,,-1,-1,68
+Moraxella catarrhalis,,Amoxicillin-clavulanic acid,2-1,19,19,,14,14,68
+Moraxella catarrhalis,,Piperacillin,,-,-,,-1,-1,68
+Moraxella catarrhalis,,Piperacillin-tazobactam,,Note,Note,,Note3,Note3,68
+Moraxella catarrhalis,,Ticarcillin-clavulanic acid,,IE,IE,,IE,IE,68
+Moraxella catarrhalis,,Temocillin,,IE,IE,,IE,IE,68
+Moraxella catarrhalis,,Phenoxymethylpenicillin,,-,-,,-,-,68
+Moraxella catarrhalis,,Oxacillin,,-,-,,-,-,68
+Moraxella catarrhalis,,Cloxacillin,,-,-,,-,-,68
+Moraxella catarrhalis,,Dicloxacillin,,-,-,,-,-,68
+Moraxella catarrhalis,,Flucloxacillin,,-,-,,-,-,68
+Moraxella catarrhalis,,Mecillinam oral (pivmecillinam) (uncomplicated UTI only),,-,-,,-,-,68
+Moraxella catarrhalis,,Cefaclor,,-,-,,-,-,69
+Moraxella catarrhalis,,Cefadroxil,,-,-,,-,-,69
+Moraxella catarrhalis,,Cefalexin,,-,-,,-,-,69
+Moraxella catarrhalis,,Cefazolin,,-,-,,-,-,69
+Moraxella catarrhalis,,Cefepime,30,20,20,,4,4,69
+Moraxella catarrhalis,,Cefepime-enmetazobactam1,,Note,Note,,Note1,Note1,69
+Moraxella catarrhalis,,Cefiderocol,,IE,IE,,IE,IE,69
+Moraxella catarrhalis,,Cefixime,5,21,21,,0.5,0.5,69
+Moraxella catarrhalis,,Cefotaxime,5,20,17,,1,2,69
+Moraxella catarrhalis,,Cefoxitin,,IE,IE,,IE,IE,69
+Moraxella catarrhalis,,Ceftaroline,,IE,IE,,IE,IE,69
+Moraxella catarrhalis,,Ceftazidime,,-,-,,-,-,69
+Moraxella catarrhalis,,Ceftazidime-avibactam,,-,-,,-,-,69
+Moraxella catarrhalis,,Ceftibuten,,IE,IE,,IE,IE,69
+Moraxella catarrhalis,,Ceftobiprole,,IE,IE,,IE,IE,69
+Moraxella catarrhalis,,Ceftolozane-tazobactam,,IE,IE,,IE,IE,69
+Moraxella catarrhalis,,Ceftriaxone,30,24,21,,1,2,69
+Moraxella catarrhalis,,Cefuroxime iv,30,21,18,,4,8,69
+Moraxella catarrhalis,,Cefuroxime oral,30,50,21,,0.001,4,69
+Moraxella catarrhalis,,Doripenem1,10,30,30,1.,1,1,69
+Moraxella catarrhalis,,Ertapenem1,10,29,29,,0.5,0.5,69
+Moraxella catarrhalis,,Imipenem1,10,29,29,,2,2,69
+Moraxella catarrhalis,,Imipenem-relebactam2,,Note,Note,,Note2,Note2,69
+Moraxella catarrhalis,,Meropenem1,10,33,33,,2,2,69
+Moraxella catarrhalis,,Meropenem-vaborbactam2,,Note,Note,,Note2,Note2,69
+Moraxella catarrhalis,,Aztreonam,,IE,IE,,IE,IE,69
+Moraxella catarrhalis,,Aztreonam-avibactam,,IE,IE,,IE,IE,69
+Moraxella catarrhalis,,Ciprofloxacin,5,31,31,A.,0.125,0.125,70
+Moraxella catarrhalis,,Delafloxacin,,IE,IE,B.,IE,IE,70
+Moraxella catarrhalis,,Levofloxacin,5,29,29,,0.125,0.125,70
+Moraxella catarrhalis,,Moxifloxacin,5,26,26,,0.25,0.25,70
+Moraxella catarrhalis,,Nalidixic acid (screen only),30,23,23,,NA,NA,70
+Moraxella catarrhalis,,Norfloxacin (uncomplicated UTI only),,-,-,,-,-,70
+Moraxella catarrhalis,,Ofloxacin,5,28,28,,0.25,0.25,70
+Moraxella catarrhalis,,Amikacin,,IE,IE,,IE,IE,70
+Moraxella catarrhalis,,Gentamicin,,IE,IE,,IE,IE,70
+Moraxella catarrhalis,,Netilmicin,,IE,IE,,IE,IE,70
+Moraxella catarrhalis,,Tobramycin,,IE,IE,,IE,IE,70
+Moraxella catarrhalis,,Dalbavancin,,-,-,,-,-,70
+Moraxella catarrhalis,,Oritavancin,,-,-,,-,-,70
+Moraxella catarrhalis,,Teicoplanin,,-,-,,-,-,70
+Moraxella catarrhalis,,Telavancin,,-,-,,-,-,70
+Moraxella catarrhalis,,Vancomycin,,-,-,,-,-,70
+Moraxella catarrhalis,,Azithromycin,,Note,Note,,0.251,0.251,70
+Moraxella catarrhalis,,Clarithromycin,,Note,Note,,0.251,0.251,70
+Moraxella catarrhalis,,Erythromycin,15,23,23,,0.25,0.25,70
+Moraxella catarrhalis,,Roxithromycin,,Note,Note,,0.51,0.51,70
+Moraxella catarrhalis,,Clindamycin,,-,-,,-,-,70
+Moraxella catarrhalis,,Quinupristin-dalfopristin,,-,-,,-,-,70
+Moraxella catarrhalis,,Doxycycline,,Note,Note,,11,11,71
+Moraxella catarrhalis,,Eravacycline,,IE,IE,,IE,IE,71
+Moraxella catarrhalis,,Minocycline,30,25,25,,11,11,71
+Moraxella catarrhalis,,Tetracycline,30,26,26,,21,21,71
+Moraxella catarrhalis,,Tigecycline,,IE,IE,,IE,IE,71
+Moraxella catarrhalis,,Linezolid,,-,-,,-,-,71
+Moraxella catarrhalis,,Tedizolid,,-,-,,-,-,71
+Moraxella catarrhalis,,Chloramphenicol,,Note,Note,,Note1,Note1,71
+Moraxella catarrhalis,,Colistin,,-,-,2.,-,-,71
+Moraxella catarrhalis,,Daptomycin,,-,-,,-,-,71
+Moraxella catarrhalis,,Fosfomycin iv,,IE,IE,,IE,IE,71
+Moraxella catarrhalis,,Fosfomycin oral,,-,-,,-,-,71
+Moraxella catarrhalis,,Fusidic acid,,-,-,,-,-,71
+Moraxella catarrhalis,,Lefamulin,,IE,IE,,IE,IE,71
+Moraxella catarrhalis,,Metronidazole,,-,-,,-,-,71
+Moraxella catarrhalis,,Nitrofurantoin (uncomplicated UTI only),,-,-,,-,-,71
+Moraxella catarrhalis,,Nitroxoline (uncomplicated UTI only),,-,-,,-,-,71
+Moraxella catarrhalis,,Rifampicin,,-,-,,-,-,71
+Moraxella catarrhalis,,Spectinomycin,,-,-,,-,-,71
+Moraxella catarrhalis,,Trimethoprim (uncomplicated UTI only),,-,-,,-,-,71
+Moraxella catarrhalis,,Trimethoprim-sulfamethoxazole2,1.25-23.75,15,15,,1,1,71
+Anaerobic bacteria,Bacteroides spp.,Ampicillin-sulbactam,10-10,25,25,1.,21,21,80
+Anaerobic bacteria,Bacteroides spp.,Amoxicillin-clavulanic acid,2-1,14,14,2.,22,22,80
+Anaerobic bacteria,Bacteroides spp.,Piperacillin-tazobactam3,30-6,24,24,3.,24,24,80
+Anaerobic bacteria,Bacteroides spp.,Ertapenem,10,23,23,,(2)5,(2)5,80
+Anaerobic bacteria,Bacteroides spp.,Imipenem,10,29,29,,1,1,80
+Anaerobic bacteria,Bacteroides spp.,Meropenem,10,28,28,,1,1,80
+Anaerobic bacteria,Bacteroides spp.,Clindamycin,2,10,10,,(4)5,(4)5,80
+Anaerobic bacteria,Bacteroides spp.,Metronidazole,5,25,25,,4,4,80
+Anaerobic bacteria,,Benzylpenicillin,1 unit,20,20,,0.51,0.51,81
+Anaerobic bacteria,,Ampicillin,2,25,25,,0.51,0.51,81
+Anaerobic bacteria,,Ampicillin-sulbactam,10-10,33,33,to,"Note1,2","Note1,2",81
+Anaerobic bacteria,,Amoxicillin,,Note,Note,,0.251,0.251,81
+Anaerobic bacteria,,Amoxicillin-clavulanic acid,2-1,24,24,,"Note1,2","Note1,2",81
+Anaerobic bacteria,,Piperacillin-tazobactam,30-6,26,26,,"Note1,2","Note1,2",81
+Anaerobic bacteria,,Ertapenem,10,29,29,,0.51,0.51,81
+Anaerobic bacteria,,Imipenem,10,35,35,,0.1251,0.1251,81
+Anaerobic bacteria,,Meropenem,10,34,34,,0.251,0.251,81
+Anaerobic bacteria,,Clindamycin,2,31,31,,0.25,0.25,81
+Anaerobic bacteria,,Metronidazole Fusobacterium necrophorum,5,22,22,,4,4,81
+Anaerobic bacteria,,Benzylpenicillin,1 unit,25,25,,0.1251,0.1251,81
+Anaerobic bacteria,,Ampicillin,2,27,27,,0.51,0.51,81
+Anaerobic bacteria,,Ampicillin-sulbactam,10-10,33,33,,"0.51,2","0.51,2",81
+Anaerobic bacteria,,Amoxicillin,,Note,Note,,0.51,0.51,81
+Anaerobic bacteria,,Amoxicillin-clavulanic acid,2-1,23,23,4.,"0.51,3","0.51,3",81
+Anaerobic bacteria,,Piperacillin-tazobactam,30-6,32,32,,"0.51,4","0.51,4",81
+Anaerobic bacteria,,Ertapenem,10,35,35,B.,0.061,0.061,81
+Anaerobic bacteria,,Imipenem,10,36,36,C.,0.1251,0.1251,81
+Anaerobic bacteria,,Meropenem,10,35,35,,0.031,0.031,81
+Anaerobic bacteria,,Clindamycin,2,30,30,,0.25,0.25,81
+Anaerobic bacteria,,Metronidazole,5,30,30,,0.5,0.5,81
+Anaerobic bacteria,,Benzylpenicillin,1 unit,15,15,,0.51,0.51,82
+Anaerobic bacteria,,Ampicillin,2,23,23,,0.251,0.251,82
+Anaerobic bacteria,,Ampicillin-sulbactam,10-10,27,27,,"0.251,2","0.251,2",82
+Anaerobic bacteria,,Amoxicillin,,Note,Note,,0.251,0.251,82
+Anaerobic bacteria,,Amoxicillin-clavulanic acid,2-1,23,23,4.,"0.251,3","0.251,3",82
+Anaerobic bacteria,,Piperacillin-tazobactam,30-6,24,24,,"0.51,4","0.51,4",82
+Anaerobic bacteria,,Ertapenem,10,24,24,B.,0.51,0.51,82
+Anaerobic bacteria,,Imipenem,10,25,25,,0.51,0.51,82
+Anaerobic bacteria,,Meropenem,10,25,25,,0.1251,0.1251,82
+Anaerobic bacteria,,Vancomycin,5,12,12,,2,2,82
+Anaerobic bacteria,,Clindamycin,2,19,19,,0.25,0.25,82
+Anaerobic bacteria,,Metronidazole Cutibacterium acnes,5,16,16,,4,4,82
+Anaerobic bacteria,,Benzylpenicillin,1 unit,24,24,,0.061,0.061,82
+Anaerobic bacteria,,Ampicillin,2,23,23,,0.251,0.251,82
+Anaerobic bacteria,,Ampicillin-sulbactam,10-10,33,33,,"Note1,2","Note1,2",82
+Anaerobic bacteria,,Amoxicillin,,Note,Note,,0.251,0.251,82
+Anaerobic bacteria,,Amoxicillin-clavulanic acid,2-1,24,24,,"Note1,2","Note1,2",82
+Anaerobic bacteria,,Piperacillin-tazobactam,30-6,27,27,,"Note1,2","Note1,2",82
+Anaerobic bacteria,,Cefotaxime,5,26,26,,NA,NA,82
+Anaerobic bacteria,,Ceftriaxone,30,33,33,,0.061,0.061,82
+Anaerobic bacteria,,Ertapenem,10,28,28,,0.251,0.251,82
+Anaerobic bacteria,,Imipenem,10,39,39,D.,0.031,0.031,82
+Anaerobic bacteria,,Meropenem,10,28,28,,0.1251,0.1251,82
+Anaerobic bacteria,,Vancomycin,5,22,22,,2,2,82
+Anaerobic bacteria,,Clindamycin,2,26,26,,0.25,0.25,82
+Anaerobic bacteria,,Linezolid,10,34,34,,2,2,82
+Listeria monocytogenes,,Benzylpenicillin (indications other than meningitis),1 unit,13,13,,1,1,85
+Listeria monocytogenes,,Benzylpenicillin (meningitis),,IE,IE,,IE,IE,85
+Listeria monocytogenes,,Ampicillin iv (all indications),2,16,16,,1,1,85
+Listeria monocytogenes,,Meropenem (all indications),10,26,26,,0.25,0.25,85
+Listeria monocytogenes,,Moxifloxacin (meningitis),,IE,IE,,IE,IE,85
+Listeria monocytogenes,,Linezolid (meningitis),,IE,IE,,IE,IE,85
+Listeria monocytogenes,meningitis),Trimethoprim-sulfamethoxazole (all indications)1,1.25-23.75,29,29,1.,0.06,0.06,86
+Pasteurella spp.,,Benzylpenicillin,1 unit,17,17,1.,0.5,0.5,87
+Pasteurella spp.,,Ampicillin,,Note,Note,,1,1,87
+Pasteurella spp.,,Amoxicillin,,Note,Note,A.,1,1,87
+Pasteurella spp.,,Amoxicillin-clavulanic acid,2-1,15,15,,11,11,87
+Pasteurella spp.,,Cefotaxime,5,26,26,,0.03,0.03,87
+Pasteurella spp.,,Ciprofloxacin,5,27,27,A.,0.06,0.06,87
+Pasteurella spp.,,Levofloxacin,5,27,27,B.,0.06,0.06,87
+Pasteurella spp.,,Nalidixic acid (screen only),30,23,23,,NA,NA,87
+Pasteurella spp.,,Tetracycline (screen only),30,24,24,,NA,NA,88
+Pasteurella spp.,,Trimethoprim-sulfamethoxazole1,1.25-23.75,23,23,1.,0.25,0.25,88
+Campylobacter jejuni and C. coli,,Ciprofloxacin,5,50,26,,0.001,0.5,89
+Campylobacter jejuni and C. coli,,Azithromycin,,Note,Note,,Note1,Note1,89
+Campylobacter jejuni and C. coli,,Clarithromycin,,Note,Note,,Note1,Note1,89
+Campylobacter jejuni and C. coli,,"Erythromycin, C. jejuni",15,20,20,,41,41,89
+Campylobacter jejuni and C. coli,,"Erythromycin, C. coli",15,18,18,,81,81,89
+Campylobacter jejuni and C. coli,,Doxycycline,,Note,Note,,Note1,Note1,89
+Campylobacter jejuni and C. coli,,Tetracycline,30,30,30,,21,21,89
+Corynebacterium spp.,EUCAST QC Tables.,Benzylpenicillin,1 unit,50,12,,0.001,1,90
+Corynebacterium spp.,EUCAST QC Tables.,Ciprofloxacin,5,50,25,,0.001,1,90
+Corynebacterium spp.,EUCAST QC Tables.,Moxifloxacin,5,25,25,,0.5,0.5,90
+Corynebacterium spp.,EUCAST QC Tables.,Gentamicin,,IE,IE,,IE,IE,90
+Corynebacterium spp.,EUCAST QC Tables.,Vancomycin,5,17,17,A.,2,2,90
+Corynebacterium spp.,,Clindamycin1,2,20,20,1.,0.5,0.5,91
+Corynebacterium spp.,,Tetracycline,30,24,24,,2,2,91
+Corynebacterium spp.,,Linezolid,10,25,25,,2,2,91
+Corynebacterium spp.,,Rifampicin,5,30,30,,0.06,0.06,91
+Corynebacterium diphtheriae and C. ulcerans,EUCAST QC Tables.,Benzylpenicillin,1 unit,50,12,,0.001,1,92
+Corynebacterium diphtheriae and C. ulcerans,EUCAST QC Tables.,Amoxicillin,,Note,Note,,11,11,92
+Corynebacterium diphtheriae and C. ulcerans,EUCAST QC Tables.,Cefotaxime,5,50,15,,0.0011,21,92
+Corynebacterium diphtheriae and C. ulcerans,EUCAST QC Tables.,Meropenem,10,24,24,,0.251,0.251,92
+Corynebacterium diphtheriae and C. ulcerans,EUCAST QC Tables.,Ciprofloxacin,5,50,24,,0.001,0.5,92
+Corynebacterium diphtheriae and C. ulcerans,,Erythromycin,15,24,24,1.,0.06,0.06,93
+Corynebacterium diphtheriae and C. ulcerans,,"Clindamycin, C. diphtheriae 1",2,15,15,,0.5,0.5,93
+Corynebacterium diphtheriae and C. ulcerans,,Doxycycline,,Note,Note,,0.51,0.51,93
+Corynebacterium diphtheriae and C. ulcerans,,Tetracycline,30,24,24,,1,1,93
+Corynebacterium diphtheriae and C. ulcerans,,Linezolid,10,25,25,,2,2,93
+Corynebacterium diphtheriae and C. ulcerans,,Rifampicin,5,24,24,1.,0.06,0.06,93
+Corynebacterium diphtheriae and C. ulcerans,,Trimethoprim-sulfamethoxazole1,1.25-23.75,23,23,,0.5,0.5,93
+Aerococcus sanguinicola and A. urinae,EUCAST QC Tables.,Benzylpenicillin,1 unit,21,21,,0.125,0.125,94
+Aerococcus sanguinicola and A. urinae,EUCAST QC Tables.,Ampicillin,2,26,26,,0.25,0.25,94
+Aerococcus sanguinicola and A. urinae,EUCAST QC Tables.,Amoxicillin,,Note,Note,,Note1,Note1,94
+Aerococcus sanguinicola and A. urinae,EUCAST QC Tables.,Meropenem,10,31,31,,0.25,0.25,94
+Aerococcus sanguinicola and A. urinae,EUCAST QC Tables.,Ciprofloxacin (uncomplicated UTI only),5,21,21,1.,2,2,94
+Aerococcus sanguinicola and A. urinae,EUCAST QC Tables.,Levofloxacin (uncomplicated UTI only),,Note,Note,,21,21,94
+Aerococcus sanguinicola and A. urinae,EUCAST QC Tables.,Norfloxacin (screen only),10,17,17,A.,NA,NA,94
+Aerococcus sanguinicola and A. urinae,,Vancomycin,5,16,16,A.,1,1,95
+Aerococcus sanguinicola and A. urinae,,Nitrofurantoin (uncomplicated UTI only),100,16,16,,16,16,95
+Aerococcus sanguinicola and A. urinae,,Rifampicin,5,25,25,,0.125,0.125,95
+Kingella kingae,QC Tables.,Benzylpenicillin,1 unit,25,25,1.,0.03,0.03,96
+Kingella kingae,QC Tables.,Ampicillin,,Note,Note,,0.062,0.062,96
+Kingella kingae,QC Tables.,Amoxicillin,,Note,Note,,0.1252,0.1252,96
+Kingella kingae,QC Tables.,Amoxicillin-clavulanic acid,2-1,22,22,,Note3,Note3,96
+Kingella kingae,QC Tables.,Cefotaxime,5,27,27,,0.125,0.125,96
+Kingella kingae,QC Tables.,Ceftriaxone,30,30,30,,0.06,0.06,96
+Kingella kingae,QC Tables.,Cefuroxime iv,30,29,29,,0.5,0.5,96
+Kingella kingae,QC Tables.,Meropenem,10,30,30,,0.03,0.03,96
+Kingella kingae,QC Tables.,Ciprofloxacin,5,28,28,,0.06,0.06,96
+Kingella kingae,QC Tables.,Levofloxacin,5,28,28,,0.125,0.125,96
+Kingella kingae,,Clarithromycin,,Note,Note,,0.51,0.51,97
+Kingella kingae,,Erythromycin,15,20,20,A.,0.5,0.5,97
+Kingella kingae,,Clindamycin,,-,-,,-,-,97
+Kingella kingae,,Doxycycline,,Note,Note,,0.51,0.51,97
+Kingella kingae,,Tetracycline,30,28,28,,0.5,0.5,97
+Kingella kingae,,Rifampicin,5,20,20,1.,0.5,0.5,97
+Kingella kingae,,Trimethoprim-sulfamethoxazole1,1.25-23.75,28,28,,0.25,0.25,97
+Aeromonas spp.,EUCAST QC Tables.,Cefepime,30,27,24,,1,4,98
+Aeromonas spp.,EUCAST QC Tables.,Ceftazidime,10,24,21,,1,4,98
+Aeromonas spp.,EUCAST QC Tables.,Aztreonam,30,29,26,,1,4,98
+Aeromonas spp.,EUCAST QC Tables.,Ciprofloxacin,5,27,24,,0.25,0.5,98
+Aeromonas spp.,EUCAST QC Tables.,Levofloxacin,5,27,24,,0.5,1,98
+Achromobacter xylosoxidans,,Piperacillin-tazobactam,30-6,26,26,1.,41,41,100
+Achromobacter xylosoxidans,,Cefiderocol1,30,Note,Note,1.,Note2,Note2,100
+Achromobacter xylosoxidans,,Meropenem,10,26,20,,1,4,100
+Vibrio spp.,,Piperacillin-tazobactam,30-6,26,26,1.,11,11,102
+Vibrio spp.,,Cefotaxime,5,21,21,,0.25,0.25,102
+Vibrio spp.,,"Cefotaxime, V. fluvialis",,IE,IE,,IE,IE,102
+Vibrio spp.,,Ceftazidime,10,22,22,,1,1,102
+Vibrio spp.,,Meropenem,10,24,24,,0.5,0.5,102
+Vibrio spp.,,Ciprofloxacin,5,23,23,A.,0.25,0.25,102
+Vibrio spp.,,Levofloxacin,5,23,23,,0.25,0.25,102
+Vibrio spp.,,Pefloxacin (screen only),5,22,22,,NA,NA,102
+Vibrio spp.,,Erythromycin (screen only)1,15,12,12,,NA,NA,103
+Vibrio spp.,,Doxycycline,,Note,Note,,0.5,0.5,103
+Vibrio spp.,,Tetracycline (screen only)1,30,20,20,,NA,NA,103
+Vibrio spp.,,Trimethoprim-sulfamethoxazole1,1.25-23.75,21,21,1.,0.25,0.25,103
+Bacillus spp.,QC Tables.,Imipenem,10,30,30,,0.5,0.5,104
+Bacillus spp.,QC Tables.,Meropenem,10,25,25,,0.25,0.25,104
+Bacillus spp.,QC Tables.,Ciprofloxacin,5,50,23,A.,0.001,0.5,104
+Bacillus spp.,QC Tables.,Levofloxacin,5,50,23,B.,0.001,1,104
+Bacillus spp.,QC Tables.,Norfloxacin (screen only),10,21,21,,NA,NA,104
+Bacillus spp.,QC Tables.,Vancomycin,5,10,10,A.,2,2,104
+Bacillus spp.,,Erythromycin,15,24,24,,0.5,0.5,105
+Bacillus spp.,,Clindamycin,2,17,17,,1,1,105
+Bacillus spp.,,Linezolid,10,22,22,,2,2,105
+Bacillus anthracis,,Benzylpenicillin,1 unit,50,18,,0.001,0.5,106
+Bacillus anthracis,,Amoxicillin iv,,Note,Note,,0.1251,0.1251,106
+Bacillus anthracis,,Ciprofloxacin,5,50,24,,0.001,0.25,106
+Bacillus anthracis,,Levofloxacin,5,50,23,,0.001,0.5,106
+Bacillus anthracis,,Vancomycin,5,10,10,,(4)1,(4)1,106
+Bacillus anthracis,,Doxycycline,,Note,Note,,0.061,0.061,107
+Bacillus anthracis,,Tetracycline,30,26,26,,0.125,0.125,107
+Bacillus anthracis,,Linezolid,10,20,20,,2,2,107
+Bacillus anthracis,,Rifampicin,5,12,12,,(1)1,(1)1,107
+Brucella melitensis,QC Tables.,Ceftriaxone (meningitis),30,30,30,,(2)1,(2)1,108
+Brucella melitensis,QC Tables.,Ciprofloxacin,5,50,27,,0.001,1,108
+Brucella melitensis,QC Tables.,Levofloxacin,5,50,28,,0.001,1,108
+Brucella melitensis,QC Tables.,Gentamicin,10,23,23,,(0.5)1,(0.5)1,108
+Brucella melitensis,QC Tables.,Streptomycin,10,15,15,,(1)1,(1)1,108
+Brucella melitensis,QC Tables.,Doxycycline,,Note,Note,,0.251,0.251,108
+Brucella melitensis,QC Tables.,Tetracycline,30,42,42,,0.5,0.5,108
+Brucella melitensis,,Trimethoprim-sulfamethoxazole2,1.25-23.75,29,29,B.,0.125,0.125,109
+Burkholderia pseudomallei,,Amoxicillin-clavulanic acid,20-10,50,22,1.,0.0011,81,110
+Burkholderia pseudomallei,,Ceftazidime,10,50,18,,0.001,8,110
+Burkholderia pseudomallei,,Imipenem,10,29,29,,2,2,110
+Burkholderia pseudomallei,,Meropenem,10,24,24,,2,2,110
+Burkholderia pseudomallei,,Doxycycline,,Note,Note,A.,0.001,2,110
+Burkholderia pseudomallei,,Tetracycline (screen only),30,23,23,,NA,NA,110
+Burkholderia pseudomallei,,Trimethoprim-sulfamethoxazole1,1.25-23.75,50,17,,0.001,4,111
+Topical agents,,Disk,10,10,5,10,content,,115
+Topical agents,,MIC Enterobacterales,2,2,,,,,115
+Topical agents,,Zone,17,16,24,,diameter,,115
+Topical agents,,MIC P. aeruginosa,8,2,,,,,115
+Topical agents,,Zone,15,18,,,diameter,,115
+Topical agents,,MIC Acinetobacter spp.,4,4,,,,,115
+Topical agents,,Zone,17,17,,,diameter,,115
+Topical agents,,MIC S. aureus,2,2,,,,,115
+Topical agents,,Zone MIC S. pneumoniae,18,18,,17,diameter,,115
+Topical agents,Streptococcus groups MIC,MIC H. influenzae,4,8,,,,,115

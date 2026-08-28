@@ -565,6 +565,18 @@ cfg.halo_fusion_otsu_percentile = 90.0  # آماره‌ی شعاعِ شاخه‌
 print("[Module 1.1b] پارامترهای نسبی ماژول‌های ۴/۶/۷/۸/۱۲/۱۳/۱۷ اضافه شدند (بدون هیچ مقدار پیکسلی مطلق جدید).")
 print("[Config Extension] پارامترهای نسبی با موفقیت به cfg اضافه شدند.")
 
+
+# --- ماژول ۱۸ — طبقه‌بندیِ بالینیِ EUCAST ---
+# مسیرِ جدولِ نقاطِ شکست، استخراج‌شده از PDF رسمیِ EUCAST v16.0 توسطِ
+# ground_truth/eucast/parse_breakpoints.py
+cfg.eucast_breakpoint_csv = os.path.join("ground_truth", "eucast",
+                                         "eucast_v16_zone_breakpoints.csv")
+# این دو از تصویر به‌دست نمی‌آیند و باید از آزمایشگاه گرفته شوند. تا وقتی None/خالی
+# باشند، ماژولِ ۱۸ دسته اعلام نمی‌کند و فقط بازه‌ی دسته‌هایِ ممکن را نشان می‌دهد --
+# که صادقانه‌تر از حدس زدنِ آنتی‌بیوتیک است.
+cfg.eucast_organism = None              # مثلاً "Enterobacterales"
+cfg.eucast_disk_agents = {}             # مثلاً {1: "Ciprofloxacin", 2: "Gentamicin"}
+
 # %% [markdown]
 # ## ۲) توابع کمکی (Helper Functions)
 # تابع ساخت کرنل بیضوی و تابع نمایش تصویر — این‌ها «فیلتر» نیستند، فقط ابزار مشترک بقیه‌ی سلول‌ها.
@@ -4872,7 +4884,175 @@ for dish in dishes:
         print(line)
 
 # %% [markdown]
-# ## ۱۸) گزارش نهایی یکپارچه
+# ## ۱۸) طبقه‌بندیِ بالینیِ S/I/R طبقِ EUCAST v16.0
+#
+# قطرِ هاله به‌تنهایی برایِ آزمایشگاه بی‌معنی است؛ آن‌چه گزارش می‌شود **دسته** است:
+# حساس (S)، حساس با مواجهه‌ی افزایش‌یافته (I)، یا مقاوم (R). این ماژول قطرِ اندازه‌گیری‌شده‌ی
+# ماژولِ ۱۶.۷ را با جدولِ نقاطِ شکستِ EUCAST تطبیق می‌دهد.
+#
+# قاعده‌ی EUCAST کاملاً قطعی است و هیچ پارامترِ قابلِ تنظیمی ندارد:
+#
+# ```
+# قطر ≥ S      ->  S
+# قطر <  R     ->  R
+# R ≤ قطر < S  ->  I
+# ```
+#
+# اگر قطر داخلِ **ATU** (ناحیه‌ی عدمِ قطعیتِ فنی) بیفتد، EUCAST می‌گوید نتیجه نباید
+# مستقیماً گزارش شود — این‌جا با پرچمِ `atu=True` علامت می‌خورد.
+#
+# **ورودیِ لازم که از تصویر به‌دست نمی‌آید:** طبقه‌بندی به گونه‌ی باکتری و آنتی‌بیوتیکِ
+# هر دیسک نیاز دارد. این دو در تصویر نیستند (برچسبِ رویِ دیسک خوانده نمی‌شود)، پس باید
+# از کاربر گرفته شوند: `cfg.eucast_organism` برایِ کلِ پلیت و `cfg.eucast_disk_agents`
+# برایِ هر دیسک. اگر داده نشوند، ماژول دسته را اعلام نمی‌کند و به‌جایش **بازه‌ی
+# دسته‌هایِ ممکن** رویِ همه‌ی نقاطِ شکستِ آن ارگانیسم را نشان می‌دهد.
+
+# %%
+# ── ماژول ۱۸ (جدید) — طبقه‌بندیِ بالینیِ S/I/R طبقِ EUCAST v16.0 ─────────────
+# جدولِ نقاطِ شکست از خودِ PDF رسمیِ EUCAST استخراج شده است
+# (ground_truth/eucast/parse_breakpoints.py -> eucast_v16_zone_breakpoints.csv).
+#
+# چرا این ماژول مهم است -- و عددی که از آن بیرون آمد:
+# سنجشِ توافقِ دسته‌ای رویِ هر ۱۱ عکس و همه‌ی ۳۴۹ نقطه‌ی شکستِ معتبرِ EUCAST نشان داد
+# MAE=۳.۸۵mm در عمل یعنی:
+#     توافقِ دسته‌ای (CA)      ۸۲.۵٪
+#     خطایِ بسیار عمده (VME)   ۶.۹٪   -- سقفِ مرسومِ پذیرش ۱.۵٪
+#     خطایِ عمده (ME)          ۹.۲٪   -- سقفِ مرسومِ پذیرش ۳.۰٪
+# یعنی سیستم در وضعِ فعلی **به آستانه‌ی پذیرشِ بالینی نمی‌رسد** و برایِ رسیدن به آن،
+# MAE باید تا حدودِ ۱.۰mm پایین بیاید. جزئیات: ground_truth/eucast/.
+
+import csv as _csv
+import os as _os
+import re as _re
+
+# پارامترها در سلولِ Config Extension تعریف شده‌اند (همان الگویِ بقیه‌ی ماژول‌ها)،
+# تا کاربر بتواند پیش از اجرا مقدارشان را عوض کند.
+
+
+def _parse_range(text):
+    """بازه‌ی ATU را از متنِ سند بیرون می‌کشد؛ مثلِ '22-24' یا '15-19A'."""
+    if not text:
+        return None
+    m = _re.search(r"(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)", text)
+    if not m:
+        return None
+    lo, hi = float(m.group(1)), float(m.group(2))
+    return (min(lo, hi), max(lo, hi))
+
+
+def load_eucast_breakpoints(path: str) -> List[Dict[str, Any]]:
+    """جدولِ نقاطِ شکستِ ناحیه‌ای را می‌خواند و فقط سطرهایِ عددیِ قابلِ‌استفاده را نگه می‌دارد."""
+    if not _os.path.exists(path):
+        return []
+    out: List[Dict[str, Any]] = []
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in _csv.DictReader(f):
+            try:
+                s_ge = float(row["zone_S_ge_mm"])
+                r_lt = float(row["zone_R_lt_mm"])
+            except (ValueError, KeyError):
+                continue
+            # EUCAST برایِ «دسته‌ی S عملاً وجود ندارد» عددِ دست‌نیافتنیِ ۵۰ می‌گذارد.
+            if s_ge >= 50.0 or r_lt >= 50.0 or s_ge < r_lt:
+                continue
+            out.append({
+                "organism": row["organism"],
+                "agent": row["agent"],
+                "disk_content_ug": row.get("disk_content_ug", ""),
+                "s_ge": s_ge,
+                "r_lt": r_lt,
+                "atu": _parse_range(row.get("zone_ATU", "")),
+            })
+    return out
+
+
+def classify_zone_eucast(diameter_mm: float, bp: Dict[str, Any]) -> Dict[str, Any]:
+    """قاعده‌ی قطعیِ EUCAST -- بدونِ هیچ پارامترِ تنظیم‌شونده."""
+    if diameter_mm >= bp["s_ge"]:
+        cat = "S"
+    elif diameter_mm < bp["r_lt"]:
+        cat = "R"
+    else:
+        cat = "I"
+    atu = bp.get("atu")
+    in_atu = bool(atu and atu[0] <= diameter_mm <= atu[1])
+    return {"category": cat, "atu": in_atu,
+            "s_ge": bp["s_ge"], "r_lt": bp["r_lt"], "agent": bp["agent"]}
+
+
+def possible_categories(diameter_mm: float,
+                        breakpoints: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """وقتی آنتی‌بیوتیک معلوم نیست: بازه‌ی دسته‌هایِ ممکن رویِ همه‌ی نقاطِ شکست.
+
+    این جایگزینِ صادقانه‌ی «حدس زدنِ آنتی‌بیوتیک» است -- به‌جایِ یک دسته‌ی نادرست،
+    می‌گوید با این قطر چه دسته‌هایی اصلاً ممکن است و هرکدام چقدر محتمل‌اند.
+    """
+    if not breakpoints:
+        return {"categories": {}, "n": 0}
+    counts = {"S": 0, "I": 0, "R": 0}
+    for bp in breakpoints:
+        counts[classify_zone_eucast(diameter_mm, bp)["category"]] += 1
+    n = len(breakpoints)
+    return {"categories": {k: v / n for k, v in counts.items() if v}, "n": n}
+
+
+_eucast_bps = load_eucast_breakpoints(cfg.eucast_breakpoint_csv)
+if not _eucast_bps:
+    print(f"[ماژول ۱۸] جدولِ نقاطِ شکست پیدا نشد ({cfg.eucast_breakpoint_csv}) — "
+          f"طبقه‌بندی انجام نمی‌شود. برایِ ساختنش: "
+          f"python3 ground_truth/eucast/parse_breakpoints.py")
+else:
+    _org = cfg.eucast_organism
+    _pool = [b for b in _eucast_bps if not _org or b["organism"] == _org]
+    print(f"[ماژول ۱۸] {len(_eucast_bps)} نقطه‌ی شکستِ EUCAST v16.0 بارگذاری شد"
+          + (f" — ارگانیسم: {_org} ({len(_pool)} عامل)" if _org
+             else " — ارگانیسم اعلام نشده"))
+
+    for dish in dishes:
+        ppm = dish.get("px_per_mm_est")
+        results: List[Dict[str, Any]] = []
+        for i, res in enumerate(dish.get("halo_results", []), start=1):
+            rec: Dict[str, Any] = {"disk_index": i, "category": None,
+                                   "atu": False, "agent": None, "possible": None}
+            if not ppm or res.get("status") != "ok":
+                # رشد تا لبه‌ی دیسک: قطرِ ناحیه = قطرِ خودِ دیسک، که زیرِ هر نقطه‌ی
+                # شکستی است -- یعنی از نظرِ بالینی مقاوم، نه «نامعلوم».
+                rec["zone_mm"] = 6.0   # قطرِ استانداردِ دیسکِ کاغذی
+            else:
+                rec["zone_mm"] = 2.0 * res["halo_radius_px"] / ppm
+
+            agent = (cfg.eucast_disk_agents or {}).get(i)
+            match = None
+            if agent and _org:
+                for b in _pool:
+                    if b["agent"].lower().startswith(agent.lower()):
+                        match = b
+                        break
+            if match:
+                rec.update(classify_zone_eucast(rec["zone_mm"], match))
+                rec["agent"] = match["agent"]
+            else:
+                rec["possible"] = possible_categories(rec["zone_mm"], _pool)
+            results.append(rec)
+            res["eucast"] = rec
+        dish["eucast_results"] = results
+
+        print(f"[Dish #{dish['index']}] طبقه‌بندیِ EUCAST:")
+        for rec in results:
+            if rec["category"]:
+                flag = "  ⚠ داخلِ ATU — طبقِ EUCAST مستقیماً گزارش نشود" if rec["atu"] else ""
+                print(f"    دیسک {rec['disk_index']}: {rec['zone_mm']:5.1f} mm → "
+                      f"{rec['category']}  ({rec['agent']}, S≥{rec['s_ge']:.0f} "
+                      f"R<{rec['r_lt']:.0f}){flag}")
+            else:
+                p = rec["possible"] or {"categories": {}}
+                share = "، ".join(f"{k} {100*v:.0f}٪"
+                                  for k, v in sorted(p["categories"].items()))
+                print(f"    دیسک {rec['disk_index']}: {rec['zone_mm']:5.1f} mm → "
+                      f"دسته اعلام نشد (آنتی‌بیوتیک نامعلوم)؛ ممکن‌ها: {share or '—'}")
+
+# %% [markdown]
+# ## ۱۹) گزارش نهایی یکپارچه
 # برای هر پتری و هر دیسک: قطر دیسک (mm) → قطر هاله (mm یا «تشکیل نشد») → رخدادهای حباب (تعداد + مساحت + حجم تقریبی).
 
 # %%
@@ -4911,6 +5091,13 @@ for dish in dishes:
 
         if bubble_res is not None and bubble_res["bubble_count"] > 0:
             line += f" | رخداد حباب: {bubble_res['bubble_count']} عدد"
+
+        # دسته‌ی بالینی (ماژول ۱۸) — همان چیزی که واقعاً به آزمایشگاه گزارش می‌شود
+        eu = (halo_res or {}).get("eucast") if halo_res is not None else None
+        if eu and eu.get("category"):
+            line += f" | EUCAST: {eu['category']}"
+            if eu.get("atu"):
+                line += " (داخلِ ATU — گزارش نشود)"
 
         print(line)
 
