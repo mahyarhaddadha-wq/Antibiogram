@@ -546,6 +546,18 @@ cfg.halo_stat_z_gate = 1.0              # چند انحرافِ‌معیارِ �
 cfg.halo_stat_ring_frac = 0.15          # پهنایِ هر حلقه × r_disk
 cfg.halo_stat_max_gap_frac = 0.10       # شکافِ مجاز (کسری از تعدادِ حلقه‌ها)
 
+# --- شاخه‌ی موازیِ مدلِ رشد / برازشِ لجستیک (ماژولِ ۱۵.۹) ---
+cfg.halo_fit_ring_frac = 0.10           # پهنایِ هر حلقه × r_disk
+cfg.halo_fit_min_ring_count = 20        # حداقلِ پیکسل در یک حلقه تا معتبر شمرده شود
+cfg.halo_fit_grid_r0 = 60               # وضوحِ شبکه‌ی جست‌وجو رویِ r0
+cfg.halo_fit_grid_w = 40                # وضوحِ شبکه‌ی جست‌وجو رویِ w (لگاریتمی)
+cfg.halo_fit_w_min_frac = 0.05          # کمینه‌ی پهنایِ گذار × r_disk
+cfg.halo_fit_w_max_frac = 3.0           # بیشینه‌ی پهنایِ گذار × r_disk
+cfg.halo_fit_refine_iters = 40          # تکرارهایِ پالایشِ محلی
+cfg.halo_fit_min_r2 = 0.20              # کفِ R² -- نگهبانِ برازشِ تباه
+cfg.halo_fit_min_amp_sd = 1.0           # حداقلِ دامنه‌ی گذار × انحرافِ‌معیارِ لَون
+cfg.halo_fit_bio_frac = 0.05            # «جدا شدن از مجانب» برایِ مقدارِ زیستی
+
 # --- ادغامِ شاخه‌هایِ هاله (ماژولِ ۱۶.۷) ---
 cfg.halo_fusion_otsu_percentile = 90.0  # آماره‌ی شعاعِ شاخه‌ی Otsu (تجربی: بهتر از میانگین)
 
@@ -1286,6 +1298,214 @@ def _effect_size_vs_reference(values: np.ndarray, ref: Dict[str, Any]) -> float:
     if values.size < 8 or ref is None:
         return 0.0
     return float((float(np.mean(values)) - ref["mean"]) / ref["std"])
+
+
+def _fit_growth_logistic(r: np.ndarray, y: np.ndarray, B: float,
+                         r_disk: float, cfg) -> Optional[Dict[str, Any]]:
+    """
+    برازشِ منحنیِ لجستیکِ چگالیِ رشد به پروفایلِ شعاعی:
+
+        y(r) = A + (B - A) / (1 + exp(-(r - r0)/w))
+
+    مبنایِ فیزیکی: آنتی‌بیوتیک طبقِ قانونِ فیک نفوذ می‌کند و رشد جایی متوقف می‌شود که
+    غلظت از MIC بگذرد. آن‌چه دوربین می‌بیند غلظت نیست، *چگالیِ رشدِ آستانه‌خورده* است --
+    یعنی یک گذارِ سیگموئیدی، نه نمایی یا لگاریتمیِ خالص.
+
+    ساختارِ گذرا/دائمی: صورتِ معادلِ  y = B - (B-A)·σ(-(r-r0)/w)  نشان می‌دهد B همان
+    جوابِ حالتِ دائمی (سطحِ لَون) است و جمله‌ی سیگموئید پاسخِ گذرا که با دور شدن از دیسک
+    میرا می‌شود. B این‌جا پارامترِ آزاد *نیست* -- مستقلاً از میدانِ دور اندازه گرفته شده.
+    پس فقط دو پارامترِ آزاد می‌ماند (r0, w)، و A به‌صورتِ بسته و خطی حل می‌شود؛ کمترین
+    پارامترِ آزاد یعنی پایدارترین برازش و کمترین ریسکِ overfitting.
+
+    بدونِ scipy -- جست‌وجویِ شبکه‌ای + پالایشِ محلی، فقط با numpy. هم قطعی است (مستقل از
+    نقطه‌ی شروع و الگوریتمِ بهینه‌سازی) هم مستقیماً به C++ ترجمه می‌شود، که الزامِ مستندِ
+    پروژه است.
+
+    خروجی: {"A","B","r0","w","r2"} یا None.
+    """
+    r = np.asarray(r, dtype=np.float64)
+    y = np.asarray(y, dtype=np.float64)
+    if len(r) < 8:
+        return None
+
+    r0_grid = np.linspace(r[0], r[-1], int(cfg.halo_fit_grid_r0))
+    w_lo = max(float(cfg.halo_fit_w_min_frac) * r_disk, 1e-3)
+    w_hi = max(float(cfg.halo_fit_w_max_frac) * r_disk, w_lo * 2.0)
+    w_grid = np.exp(np.linspace(np.log(w_lo), np.log(w_hi), int(cfg.halo_fit_grid_w)))
+
+    best = None
+    for w in w_grid:
+        for r0 in r0_grid:
+            s = 1.0 / (1.0 + np.exp(-np.clip((r - r0) / w, -60.0, 60.0)))
+            den = float(np.sum((1.0 - s) ** 2))
+            if den < 1e-9:
+                continue
+            A = float(np.sum((y - B * s) * (1.0 - s)) / den)
+            sse = float(np.sum((y - (A + (B - A) * s)) ** 2))
+            if best is None or sse < best[0]:
+                best = (sse, A, float(r0), float(w))
+    if best is None:
+        return None
+
+    sse, A, r0, w = best
+    step_r = (r[-1] - r[0]) / float(cfg.halo_fit_grid_r0)
+    step_w = w * 0.5
+    for _ in range(int(cfg.halo_fit_refine_iters)):
+        improved = False
+        for dr, dw in ((step_r, 0.0), (-step_r, 0.0), (0.0, step_w), (0.0, -step_w)):
+            r0n, wn = r0 + dr, max(w + dw, 1e-4)
+            s = 1.0 / (1.0 + np.exp(-np.clip((r - r0n) / wn, -60.0, 60.0)))
+            den = float(np.sum((1.0 - s) ** 2))
+            if den < 1e-9:
+                continue
+            An = float(np.sum((y - B * s) * (1.0 - s)) / den)
+            e = float(np.sum((y - (An + (B - An) * s)) ** 2))
+            if e < sse:
+                sse, A, r0, w = e, An, r0n, wn
+                improved = True
+        if not improved:
+            step_r *= 0.5
+            step_w *= 0.5
+            if step_r < 1e-4 and step_w < 1e-4:
+                break
+
+    sst = float(np.sum((y - np.mean(y)) ** 2))
+    r2 = 1.0 - sse / sst if sst > 1e-9 else 0.0
+    return {"A": float(A), "B": float(B), "r0": float(r0), "w": float(w), "r2": float(r2)}
+
+
+def segment_halos_growth_model(canvas: np.ndarray, agar_mask: np.ndarray,
+                               dish_mask: np.ndarray, disks: List[Dict[str, Any]],
+                               far_ref: Optional[Dict[str, Any]], cfg) -> Dict[str, Any]:
+    """
+    شاخه‌ی موازیِ پنجم -- مرزِ هاله از برازشِ مدلِ رشد، نه از آستانه یا ناحیه.
+
+    مرزِ گزارشی **نقطه‌ی عطف (r0)** است. این تصمیم از داده آمد نه از فرض: در مطالعه‌ی
+    امکان‌سنجی (۵۷ دیسک، مقایسه‌ی جفتی) نقطه‌ی عطف میانه‌ی قدرِمطلقِ خطا را از ۲.۱۰ به
+    ۱.۰۳ میلی‌متر نصف کرد (آزمونِ علامت z=+۲.۵۲)، درحالی‌که «نقطه‌ی جدا شدن از مجانبِ
+    هاله» -- که از نظرِ زیستی به «غیبتِ کاملِ رشد» نزدیک‌تر است -- MAE=۲۰.۴۴ با بایاسِ
+    ۱۸.۲۶− داد.
+
+    توضیحِ این تفاوت مهم است: مرجعِ ما حقیقتِ زیستی نیست، خوانشِ کارشناس با کولیس رویِ
+    عکس است، و ادراکِ انسانی از لبه نزدیکِ تیزترین نقطه‌ی گذار می‌نشیند نه در آغازِ آن.
+    پس این شاخه *اندازه‌گیریِ کارشناس* را مدل می‌کند. مقدارِ زیستی (r0 - k·w) هم در
+    کنارش برگردانده می‌شود تا هر دو در دسترس باشند.
+
+    نگهبان‌هایِ اعتبار -- هر سه از خرابیِ *مشاهده‌شده* در مطالعه آمده‌اند، نه از حدس:
+      • قطرِ غیرفیزیکی (کوچک‌تر از خودِ دیسک یا بیرونِ پنجره) -- یک برازش قطرِ منفی داد.
+      • برازشِ تباه (R² زیرِ کف) -- برازشِ دیگری ۸۰mm با R²≈۰ داد.
+      • دامنه‌ی ناچیز نسبت به پراکندگیِ لَون -- یعنی اصلاً گذاری در کار نیست.
+
+    پهنایِ گذار w به‌عنوانِ **معیارِ اعتماد** برگردانده می‌شود، نه جمله‌ی تصحیح:
+    اندازه‌گیری نشان داد خطایِ مرز رویِ لبه‌هایِ تیز ۲.۳۸ و رویِ لبه‌هایِ پهن ۴.۳۸
+    میلی‌متر است -- تقریباً دو برابر، که سیگنالِ وزن‌دهیِ قابلِ‌اتکایی است.
+
+    خروجی: {"status", "per_disk": [...]}
+    """
+    h, w_img = canvas.shape[:2]
+    out: Dict[str, Any] = {"status": "ok", "per_disk": []}
+    blank = {"has_zone": False, "final_radii": None, "r_boundary_px": 0.0,
+             "r_bio_px": 0.0, "w": 0.0, "r2": 0.0}
+    if not disks or far_ref is None:
+        out["status"] = "no_reference"
+        out["per_disk"] = [dict(blank) for _ in disks]
+        return out
+
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w_img), 255, dtype=np.uint8)
+    dt_edge = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    lawn_mean, lawn_std = far_ref["mean"], far_ref["std"]
+    f_bio = float(cfg.halo_fit_bio_frac)
+    k_bio = float(abs(np.log(f_bio / (1.0 - f_bio))))
+
+    for i, d in enumerate(disks):
+        r_disk = float(d["r"])
+        cx, cy = float(d["x"]), float(d["y"])
+        rec = dict(blank)
+
+        # از مرزِ ماسکِ آگار شروع کن، نه از لبه‌ی دیسک: حلقه‌هایِ بینِ این دو هیچ
+        # پیکسلی ندارند (دیسک از ماسک حذف شده) و مقدارِ صفرشان یک لبه‌ی مصنوعی
+        # می‌سازد که برازش رویِ همان می‌نشیند -- خرابیِ مشاهده‌شده در مطالعه.
+        r_in = r_disk * float(cfg.agar_disk_exclude_scale)
+        r_out = max(r_in + 8.0, float(dt_edge[int(round(cy)), int(round(cx))]) - 2.0)
+        if r_out <= r_in + 8.0:
+            out["per_disk"].append(rec)
+            continue
+
+        R = int(np.ceil(r_out)) + 2
+        x0, y0 = max(0, int(cx) - R), max(0, int(cy) - R)
+        x1, y1 = min(w_img, int(cx) + R + 1), min(h, int(cy) + R + 1)
+        patch = canvas[y0:y1, x0:x1].astype(np.float32)
+        pm = agar_mask[y0:y1, x0:x1] > 0
+        yy, xx = np.ogrid[:patch.shape[0], :patch.shape[1]]
+        rad = np.sqrt((xx - (cx - x0)) ** 2 + (yy - (cy - y0)) ** 2)
+
+        safe = np.ones(patch.shape, dtype=bool)
+        for j, o in enumerate(disks):
+            if j == i:
+                continue
+            dx, dy = float(o["x"]) - cx, float(o["y"]) - cy
+            d2 = dx * dx + dy * dy
+            if d2 < 1e-6:
+                continue
+            proj = (xx + x0 - cx) * dx + (yy + y0 - cy) * dy
+            safe &= (proj < 0.5 * d2)
+
+        ring_w = max(2.0, float(cfg.halo_fit_ring_frac) * r_disk)
+        n_rings = max(8, int(np.ceil((r_out - r_in) / ring_w)))
+        edges = np.linspace(r_in, r_out, n_rings + 1)
+        centers = 0.5 * (edges[:-1] + edges[1:])
+        idx = np.digitize(rad, edges) - 1
+        valid = (idx >= 0) & (idx < n_rings) & pm & safe
+        if int(np.count_nonzero(valid)) < 64:
+            out["per_disk"].append(rec)
+            continue
+        sums = np.bincount(idx[valid], weights=patch[valid], minlength=n_rings)
+        cnts = np.bincount(idx[valid], minlength=n_rings)
+
+        ok = cnts >= int(cfg.halo_fit_min_ring_count)
+        if int(np.count_nonzero(ok)) < 8:
+            out["per_disk"].append(rec)
+            continue
+        rr = centers[ok]
+        yp = sums[ok] / np.maximum(cnts[ok], 1)
+
+        fit = _fit_growth_logistic(rr, yp, lawn_mean, r_disk, cfg)
+        if fit is None:
+            out["per_disk"].append(rec)
+            continue
+
+        rec["r2"] = fit["r2"]
+        rec["w"] = fit["w"]
+        r0 = fit["r0"]
+
+        physical = (r0 > r_disk) and (r0 <= r_out)
+        well_fit = fit["r2"] >= float(cfg.halo_fit_min_r2)
+        amplitude = abs(fit["B"] - fit["A"]) >= float(cfg.halo_fit_min_amp_sd) * lawn_std
+        big_enough = r0 > r_disk * float(cfg.halo_otsu_min_radius_scale)
+
+        if physical and well_fit and amplitude and big_enough:
+            radii = np.full(n_angles, r0, dtype=np.float32)
+            for j, o in enumerate(disks):
+                if j == i:
+                    continue
+                dx, dy = float(o["x"]) - cx, float(o["y"]) - cy
+                dist = float(np.hypot(dx, dy))
+                if dist < 1e-6:
+                    continue
+                phi = float(np.arctan2(dy, dx))
+                cosd = np.cos(angles - phi)
+                cap = np.where(cosd > 1e-6, 0.5 * dist / np.maximum(cosd, 1e-6), np.inf)
+                radii = np.minimum(radii, cap.astype(np.float32))
+            radii = np.maximum(radii, r_disk).astype(np.float32)
+            rec.update({"has_zone": True, "final_radii": radii,
+                        "r_boundary_px": float(np.mean(radii)),
+                        "r_bio_px": float(max(r0 - k_bio * fit["w"], r_disk))})
+        out["per_disk"].append(rec)
+
+    return out
 
 
 def segment_halos_statistical(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.ndarray,
@@ -3326,6 +3546,59 @@ for dish in dishes:
                             c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
             cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (40, 220, 255), 3)
     show(vis, f"[Dish #{dish['index']}] شاخه‌ی آماری — مرزِ «هنوز لَون نیست»", cfg=cfg)
+
+# %% [markdown]
+# ## 15.9) شاخه‌ی موازیِ مدلِ رشد — برازشِ لجستیک به گذارِ شعاعی
+#
+
+# %%
+# ── ماژول ۱۵.۹ (جدید) — شاخه‌ی موازیِ مدلِ رشد (برازشِ لجستیک) ────────────────
+# پنجمین و آخرین شاخه‌ی مستقل. چهار شاخه‌ی دیگر مرز را از رویِ *شواهدِ محلیِ تصویر*
+# پیدا می‌کنند (آستانه، ناحیه، همگرایی، آزمونِ آماری). این شاخه به‌جایِ آن یک
+# **مدلِ فیزیکی** به کلِ پروفایل برازش می‌دهد و مرز را از پارامترِ مدل می‌خواند.
+#
+# چرا این پرسشِ متفاوتی است: برازش از *همه‌ی* حلقه‌ها هم‌زمان استفاده می‌کند، پس یک
+# حلقه‌ی نویزی نمی‌تواند مرز را جابه‌جا کند -- برخلافِ روش‌هایی که به گذار از یک آستانه
+# در یک نقطه تکیه دارند. در عوض، اگر شکلِ واقعی از سیگموئید فاصله بگیرد، برازش
+# سیستماتیک خطا می‌کند. یعنی حالتِ شکستش با بقیه فرق دارد -- که شرطِ مفید بودنِ یک
+# شاخه‌ی موازی است.
+#
+# مبنایِ فیزیکی و انتخابِ نقطه‌ی عطف به‌عنوانِ مرز، در docstringِ
+# segment_halos_growth_model مستند است (هردو از اندازه‌گیری آمده‌اند، نه از فرض).
+#
+# فعلاً فقط محاسبه/نمایش -- ورودش به ادغام مشروط به سنجشِ کمّی رویِ هر ۱۱ عکس است.
+
+for dish in dishes:
+    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+    gm = segment_halos_growth_model(dish["agar_canvas"], dish["agar_mask"],
+                                    dish["processing_mask_roi"], disks_in,
+                                    dish.get("far_field_ref"), cfg)
+    dish["halo_growth_model"] = gm
+
+    n_zone = sum(1 for p in gm["per_disk"] if p["has_zone"])
+    print(f"[Dish #{dish['index']}] شاخه‌ی مدلِ رشد: status={gm['status']} "
+          f"| {n_zone} دیسک دارایِ هاله")
+    for i_d, p in enumerate(gm["per_disk"], start=1):
+        if p["has_zone"]:
+            r_d = disks_in[i_d - 1]["r"]
+            print(f"    دیسک {i_d}: مرز={p['r_boundary_px']:.1f}px "
+                  f"({p['r_boundary_px'] / max(r_d, 1e-6):.2f}×)  "
+                  f"زیستی={p['r_bio_px']:.1f}px  w={p['w']:.1f}px  R²={p['r2']:.2f}")
+
+    vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+    for c, p in zip(dish["final_candidates"], gm["per_disk"]):
+        cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                   int(round(c["r"])), (255, 40, 40), 2)
+        if p["has_zone"] and p["final_radii"] is not None:
+            ang = np.linspace(0.0, 2.0 * np.pi, int(cfg.halo_num_angles), endpoint=False)
+            pts = np.stack([c["x"] + p["final_radii"] * np.cos(ang),
+                            c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
+            cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (255, 200, 40), 3)
+            if p["r_bio_px"] > c["r"]:
+                cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                           int(round(p["r_bio_px"])), (120, 255, 120), 1)
+    show(vis, f"[Dish #{dish['index']}] مدلِ رشد — زرد: مرزِ گزارشی (نقطه‌ی عطف)، "
+              f"سبز: مرزِ زیستی", cfg=cfg)
 
 # %% [markdown]
 # ## ۱۶)  تشخیص هاله‌ی مهار
