@@ -537,6 +537,10 @@ cfg.halo_otsu_morph_frac = 0.25         # کرنلِ پاک‌سازیِ مور�
 cfg.halo_otsu_min_radius_scale = 1.20   # هاله باید دستِ‌کم این ضریب از شعاعِ دیسک بزرگ‌تر باشد
 cfg.halo_region_max_gap_frac = 0.35     # شکافِ مجاز پیشِ اعلامِ پایانِ ناحیه × r_disk
 
+# --- شاخه‌ی موازیِ Watershed رویِ بومِ آگار (ماژولِ ۱۵.۷) ---
+cfg.halo_ws_seed_scale = 1.10           # شعاعِ هسته‌ی نشانگرِ هر دیسک × r_disk
+cfg.halo_region_min_effect = 1.0        # حداقلِ اندازه‌ی اثر در برابرِ توزیعِ لَون (بی‌بعد)
+
 print("[Module 1.1b] پارامترهای نسبی ماژول‌های ۴/۶/۷/۸/۱۲/۱۳/۱۷ اضافه شدند (بدون هیچ مقدار پیکسلی مطلق جدید).")
 print("[Config Extension] پارامترهای نسبی با موفقیت به cfg اضافه شدند.")
 
@@ -1220,6 +1224,157 @@ def _radii_from_region_mask(region: np.ndarray, cx: float, cy: float,
                     break
             r += step
         out[j] = last_in if seen_any else float(r_start)
+    return out
+
+
+def build_far_field_reference(canvas: np.ndarray, agar_mask: np.ndarray,
+                             disks: List[Dict[str, Any]], far_field_frac: float) -> Dict[str, Any]:
+    """
+    مدلِ مرجعِ «قطعاً بیرونِ هر هاله» -- ایده‌ی مستقیمِ کاربر.
+
+    دورترین پیکسل‌هایِ آگار از *همه‌ی* دیسک‌ها انتخاب می‌شوند. چون هاله همیشه حولِ یک
+    دیسک شکل می‌گیرد، پیکسلی که از هر دیسکی دور است به‌لحاظِ فیزیکی نمی‌تواند داخلِ
+    هیچ هاله‌ای باشد -- پس توزیعِ شدتِ آن‌جا تعریفِ عملیاتیِ «لَونِ باکتری» است.
+
+    این جایگزینِ یک عددِ اسکالرِ نویز (`_compute_dish_background_noise`) با یک *توزیعِ
+    مرجع* است: هم میانگین، هم پراکندگی. داشتنِ توزیع (نه فقط نویز) چیزی است که آزمونِ
+    آماریِ «آیا این ناحیه با لَون تفاوتِ معنادار دارد» را ممکن می‌کند.
+
+    خروجی: {"mask", "mean", "std", "median", "n"} یا None اگر نمونه کافی نباشد.
+    """
+    agar = (agar_mask > 0)
+    if int(np.count_nonzero(agar)) < 64 or not disks:
+        return None
+    h, w = canvas.shape[:2]
+    seeds = np.full((h, w), 255, dtype=np.uint8)
+    for d in disks:
+        cv2.circle(seeds, (int(round(d["x"])), int(round(d["y"]))),
+                   max(1, int(round(d["r"]))), 0, -1)
+    dist = cv2.distanceTransform(seeds, cv2.DIST_L2, 5)
+    cut = float(np.percentile(dist[agar], 100.0 * (1.0 - float(far_field_frac))))
+    far = agar & (dist >= cut)
+    n = int(np.count_nonzero(far))
+    if n < 64:
+        return None
+    vals = canvas[far].astype(np.float32)
+    return {"mask": far, "mean": float(np.mean(vals)), "std": float(max(np.std(vals), 1e-3)),
+            "median": float(np.median(vals)), "n": n, "dist_from_disks": dist}
+
+
+def _effect_size_vs_reference(values: np.ndarray, ref: Dict[str, Any]) -> float:
+    """
+    فاصله‌ی استانداردشده‌ی یک ناحیه از توزیعِ مرجعِ لَون:  (mean_region - mean_lawn) / std_lawn
+
+    چرا اندازه‌ی اثر و نه خودِ آماره‌ی t: کاربر «آزمونِ فرض رویِ تفاوتِ شدت» را خواست،
+    که از نظرِ آماری درست است -- ولی در این مقیاسِ نمونه (هزاران پیکسل در هر ناحیه)
+    آماره‌ی t تقریباً همیشه معنادار می‌شود، حتی برایِ اختلافِ نیم‌واحدِ شدت که هیچ
+    معنایِ زیستی ندارد؛ یعنی آزمون بیش‌ازحد پرتوان است و عملاً همه‌چیز را «هاله»
+    اعلام می‌کند. آماره‌ی درست برایِ همین فرض در این مقیاس، *اندازه‌ی اثر* است: تفاوتِ
+    میانگین بر حسبِ انحرافِ‌معیارِ خودِ لَون -- که مستقل از تعدادِ پیکسل است و دقیقاً
+    همان چیزی را می‌سنجد که مهم است: «آیا این ناحیه از پراکندگیِ طبیعیِ خودِ لَون
+    بیرون زده است؟»
+    """
+    if values.size < 8 or ref is None:
+        return 0.0
+    return float((float(np.mean(values)) - ref["mean"]) / ref["std"])
+
+
+def segment_halos_watershed(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.ndarray,
+                            disks: List[Dict[str, Any]], far_ref: Optional[Dict[str, Any]],
+                            cfg) -> Dict[str, Any]:
+    """
+    شاخه‌ی موازیِ سومِ سگمنت‌کردنِ هاله -- Watershed با نشانگرِ کنترل‌شده رویِ بومِ آگار.
+
+    این همان DT/Watershedی است که تا امروز رویِ *ماسکِ باینریِ تشخیصِ دیسک* اجرا
+    می‌شد. ممیزیِ کمّی (۹۲ دیسک، ۱۱ عکس) نشان داد آن‌جا هیچ سهمی نداشت: شاخه‌ی Blob
+    حتی یک دیسک هم پیدا نکرد که Hough از دستش داده باشد، و رویِ ۵ عکس از ۱۱ اصلاً
+    کاندیدی تولید نکرد. اما خودِ ابزار بد نیست -- به هدفِ اشتباه نشانه رفته بود.
+    این‌جا به مسئله‌ای هدایت می‌شود که واقعاً در آن ضعف داریم: جداکردنِ هاله‌هایِ
+    مجاور/به‌هم‌چسبیده، که در کاتالوگِ خطاها هم به‌عنوانِ FP_neighbour_leak و هم
+    به‌عنوانِ بخشِ بزرگی از بیش‌برآوردها ظاهر شد.
+
+    چرا مستقل از شاخه‌ی Otsu است (و نه صرفاً پالایشِ آن): هیچ آستانه‌ی سراسری‌ای
+    به‌کار نمی‌رود. Watershed مستقیماً از رویِ *لبه‌هایِ واقعیِ* بومِ آگار سیلاب
+    می‌کند، با نشانگرهایِ:
+        • هر دیسک -> یک برچسبِ مجزا (هسته‌ی هاله‌ی همان دیسک)
+        • میدانِ دور -> برچسبِ «لَون» (پس‌زمینه‌ی قطعی)
+    پس دو ناحیه‌ی مجاور به‌طورِ طبیعی رویِ لبه‌ی واقعیِ بینشان تقسیم می‌شوند، نه با
+    یک نیمسازِ هندسیِ کور.
+
+    چون Watershed برایِ دیسکِ *بدونِ* هاله هم ناحیه‌ای می‌سازد (رشد تا رسیدن به
+    قلمروِ لَون)، هر ناحیه با یک آزمونِ آماری در برابرِ توزیعِ مرجعِ میدانِ دور
+    اعتبارسنجی می‌شود: ناحیه‌ای که از پراکندگیِ طبیعیِ خودِ لَون بیرون نزده، هاله
+    نیست.
+
+    خروجی: {"status", "labels", "per_disk": [{"has_zone","final_radii","r_mean_px","effect"}]}
+    """
+    h, w = canvas.shape[:2]
+    out: Dict[str, Any] = {"status": "ok", "labels": None, "per_disk": []}
+    if not disks or far_ref is None:
+        out["status"] = "no_reference"
+        out["per_disk"] = [{"has_zone": False, "final_radii": None,
+                            "r_mean_px": 0.0, "effect": 0.0} for _ in disks]
+        return out
+
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w), 255, dtype=np.uint8)
+
+    # ترتیبِ نشانگرها مهم است (باگِ کشف‌شده در اولین اجرا): ابتدا پس‌زمینه، سپس
+    # هسته‌ی دیسک‌ها. در نسخه‌ی اول، خطِ «بیرون = پس‌زمینه» بعد از رسمِ هسته‌ها اجرا
+    # می‌شد و چون خودِ دیسک‌ها از *ماسکِ آگار* حذف شده‌اند، همان خط هسته‌ی هر دیسک را
+    # هم پاک می‌کرد -- نتیجه: هیچ ناحیه‌ای برایِ هیچ دیسکی ساخته نمی‌شد.
+    #
+    # همچنین ناحیه‌ی قابلِ‌سیلاب با ماسکِ *ظرف* تعریف می‌شود نه ماسکِ آگار: حلقه‌ی
+    # بینِ لبه‌ی دیسک و مرزِ کنارگذاریِ آگار، بخشِ آغازینِ هر هاله‌ی احتمالی است و
+    # نباید از پیش «لَون» علامت بخورد.
+    markers = np.zeros((h, w), dtype=np.int32)
+    markers[~(mask_u8 > 0)] = 1              # بیرونِ ظرف: پس‌زمینه‌ی قطعی
+    markers[far_ref["mask"]] = 1             # میدانِ دور: لَونِ قطعی
+    for i, d in enumerate(disks):            # هسته‌ی هر دیسک، آخر از همه
+        cv2.circle(markers, (int(round(d["x"])), int(round(d["y"]))),
+                   max(1, int(round(d["r"] * float(cfg.halo_ws_seed_scale)))), i + 2, -1)
+
+    bgr = cv2.cvtColor(canvas, cv2.COLOR_GRAY2BGR)
+    cv2.watershed(bgr, markers)
+    out["labels"] = markers
+
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    dt_edge = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
+
+    r_ref = float(np.median([d["r"] for d in disks]))
+    k = _safe_odd_ksize(int(round(cfg.halo_otsu_morph_frac * r_ref)), minimum=3)
+    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
+
+    for i, d in enumerate(disks):
+        r_disk = float(d["r"])
+        cx, cy = float(d["x"]), float(d["y"])
+        region = (markers == i + 2).astype(np.uint8)
+        # فقط پیکسل‌هایِ آگار (نه خودِ دیسک) وارد آزمونِ آماری می‌شوند.
+        test_zone = region.copy()
+        cv2.circle(test_zone, (int(round(cx)), int(round(cy))),
+                   max(1, int(round(r_disk * float(cfg.agar_disk_exclude_scale)))), 0, -1)
+        vals = canvas[test_zone > 0].astype(np.float32)
+        effect = _effect_size_vs_reference(vals, far_ref)
+
+        region = cv2.morphologyEx(region, cv2.MORPH_OPEN, kern)
+        cv2.circle(region, (int(round(cx)), int(round(cy))),
+                   max(1, int(round(r_disk * 1.05))), 1, -1)
+        r_cap = max(r_disk + 2.0, float(dt_edge[int(round(cy)), int(round(cx))]) - 2.0)
+        radii = _radii_from_region_mask(region, cx, cy, angles, r_disk * 1.05, r_cap,
+                                        max_gap_px=cfg.halo_region_max_gap_frac * r_disk)
+        r_mean = float(np.mean(radii))
+
+        big_enough = r_mean > r_disk * float(cfg.halo_otsu_min_radius_scale)
+        distinct = abs(effect) >= float(cfg.halo_region_min_effect)
+        has_zone = bool(big_enough and distinct)
+        out["per_disk"].append({
+            "has_zone": has_zone,
+            "final_radii": radii if has_zone else None,
+            "r_mean_px": r_mean if has_zone else 0.0,
+            "effect": effect,
+        })
+
     return out
 
 
@@ -2921,6 +3076,68 @@ for dish in dishes:
     else:
         show(dish["agar_canvas"],
              f"[Dish #{dish['index']}] شاخه‌ی Otsu — {otsu_res['status']} (ناحیه‌ای یافت نشد)", cfg=cfg)
+
+# %% [markdown]
+# ## 15.7) شاخه‌ی موازیِ Watershed — جداکردنِ هاله‌های مجاور رویِ بومِ آگار
+#
+
+# %%
+# ── ماژول ۱۵.۷ (جدید) — شاخه‌ی موازیِ Watershed + مدلِ مرجعِ میدانِ دور ──────────
+# سومین شاخه‌ی مستقلِ سگمنت‌کردنِ هاله. همان DT/Watershedی که تا امروز در مسیرِ
+# تشخیصِ دیسک بی‌فایده بود (ممیزی: صفر دیسکِ منحصربه‌فرد از ۹۲)، این‌بار به مسئله‌ای
+# هدایت شده که واقعاً در آن ضعف داریم -- جداکردنِ هاله‌هایِ مجاور.
+#
+# سه شاخه اکنون سازوکارِ کاملاً متفاوتی دارند، پس حالت‌هایِ شکستِ متفاوتی هم دارند:
+#   ماژول ۱۶   -- پروفایلِ شعاعیِ یک‌بعدی + همگرایی به پس‌زمینه
+#   ماژول ۱۵.۶ -- آستانه‌ی سراسریِ دوبعدی (Otsu)
+#   ماژول ۱۵.۷ -- سیلابِ ناحیه‌ای از رویِ لبه‌هایِ واقعی، بدونِ هیچ آستانه‌ی سراسری
+#
+# مدلِ مرجعِ «میدانِ دور» هم این‌جا ساخته می‌شود: دورترین پیکسل‌هایِ آگار از همه‌ی
+# دیسک‌ها، که به‌لحاظِ فیزیکی نمی‌توانند داخلِ هیچ هاله‌ای باشند -- یعنی تعریفِ
+# عملیاتیِ «لَونِ باکتری». این مرجع هم نشانگرِ پس‌زمینه‌ی Watershed است و هم مبنایِ
+# آزمونِ آماریِ اعتبارسنجیِ هر ناحیه.
+#
+# فعلاً فقط محاسبه/نمایش -- هنوز هیچ خروجیِ نهایی‌ای مصرف نمی‌شود.
+
+for dish in dishes:
+    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+
+    far_ref = build_far_field_reference(dish["agar_canvas"], dish["agar_mask"],
+                                        disks_in, cfg.halo_far_field_frac)
+    dish["far_field_ref"] = far_ref
+
+    ws = segment_halos_watershed(dish["agar_canvas"], dish["agar_mask"],
+                                 dish["processing_mask_roi"], disks_in, far_ref, cfg)
+    dish["halo_watershed"] = ws
+
+    if far_ref is None:
+        print(f"[Dish #{dish['index']}] مرجعِ میدانِ دور ساخته نشد — شاخه‌ی Watershed رد شد.")
+    else:
+        n_zone = sum(1 for p in ws["per_disk"] if p["has_zone"])
+        print(f"[Dish #{dish['index']}] مرجعِ لَون: mean={far_ref['mean']:.1f} "
+              f"std={far_ref['std']:.1f} (n={far_ref['n']}) "
+              f"| Watershed: {n_zone} دیسک دارایِ هاله")
+        for i_d, p in enumerate(ws["per_disk"], start=1):
+            r_d = disks_in[i_d - 1]["r"]
+            flag = "هاله" if p["has_zone"] else "—"
+            print(f"    دیسک {i_d}: r_mean={p['r_mean_px']:.1f}px "
+                  f"({p['r_mean_px'] / max(r_d, 1e-6):.2f}×) اثر={p['effect']:+.2f} {flag}")
+
+    if ws["labels"] is not None:
+        vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+        lab = ws["labels"]
+        overlay = vis.copy()
+        rng = np.random.RandomState(0)  # رنگ‌بندیِ قطعی (determinism)
+        for i_d in range(len(disks_in)):
+            if not ws["per_disk"][i_d]["has_zone"]:
+                continue
+            col = tuple(int(v) for v in rng.randint(60, 255, size=3))
+            overlay[lab == i_d + 2] = col
+        vis = cv2.addWeighted(overlay, 0.40, vis, 0.60, 0)
+        for c in dish["final_candidates"]:
+            cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                       int(round(c["r"])), (255, 40, 40), 2)
+        show(vis, f"[Dish #{dish['index']}] شاخه‌ی Watershed — نواحیِ تاییدشده‌ی هاله", cfg=cfg)
 
 # %% [markdown]
 # ## ۱۶)  تشخیص هاله‌ی مهار
