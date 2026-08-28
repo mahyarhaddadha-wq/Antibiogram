@@ -528,6 +528,14 @@ cfg.dish_detect_split_min_dist_frac = 0.9     # حداقل فاصله‌ی نش�
 # گذاشته می‌شوند) -- رجوع به توضیحِ کاملِ build_agar_canvas در سلولِ توابعِ کمکی.
 cfg.agar_illum_kernel_frac = 0.25       # کرنلِ گاوسیِ تخمینِ روشنایی × min(h,w) ROI
 cfg.agar_disk_exclude_scale = 1.35      # شعاعِ کنارگذاریِ هر دیسک از تخمین × r_disk
+cfg.agar_rim_exclude_frac = 0.06        # کنارگذاریِ نوارِ لبه/دیواره‌ی ظرف × شعاعِ پتری
+
+# --- شاخه‌ی موازیِ Otsu رویِ بومِ آگار (ماژولِ ۱۵.۶) ---
+cfg.halo_otsu_min_separability = 0.15   # فقط نگهبانِ هیستوگرامِ کاملاً تباه؛ *نه* آزمونِ حضورِ هاله
+cfg.halo_far_field_frac = 0.20          # کسری از آگار که «میدانِ دور» شمرده می‌شود (تعیینِ پلاریته)
+cfg.halo_otsu_morph_frac = 0.25         # کرنلِ پاک‌سازیِ مورفولوژی × r_disk (ظریف‌تر از تشخیصِ دیسک)
+cfg.halo_otsu_min_radius_scale = 1.20   # هاله باید دستِ‌کم این ضریب از شعاعِ دیسک بزرگ‌تر باشد
+cfg.halo_region_max_gap_frac = 0.35     # شکافِ مجاز پیشِ اعلامِ پایانِ ناحیه × r_disk
 
 print("[Module 1.1b] پارامترهای نسبی ماژول‌های ۴/۶/۷/۸/۱۲/۱۳/۱۷ اضافه شدند (بدون هیچ مقدار پیکسلی مطلق جدید).")
 print("[Config Extension] پارامترهای نسبی با موفقیت به cfg اضافه شدند.")
@@ -1051,7 +1059,8 @@ def illumination_normalize(gray: np.ndarray, kernel_frac: float) -> np.ndarray:
 
 def build_agar_canvas(gray: np.ndarray, dish_mask: np.ndarray,
                      disks: List[Dict[str, Any]], kernel_frac: float,
-                     disk_exclude_scale: float) -> Dict[str, Any]:
+                     disk_exclude_scale: float, petri_radius_px: float = 0.0,
+                     rim_exclude_frac: float = 0.0) -> Dict[str, Any]:
     """
     «بومِ آگار»: تصویرِ خاکستریِ داخلِ پتری با نورِ ناهموارِ تصحیح‌شده، که در آن میدانِ
     روشنایی **فقط از رویِ خودِ آگار** تخمین زده می‌شود -- دیسک‌ها پیش از تخمین کنار
@@ -1090,6 +1099,19 @@ def build_agar_canvas(gray: np.ndarray, dish_mask: np.ndarray,
     # ماسکِ آگار = داخلِ پتری، منهایِ دیسک‌ها (با کمی حاشیه‌ی امن حولِ هر دیسک، چون
     # لبه‌ی خودِ دیسک هم روشن است و نباید وارد تخمین شود).
     agar_mask = (mask_u8 > 0).astype(np.uint8)
+
+    # کنارگذاریِ لبه/دیواره‌ی خودِ ظرف: باگِ کشف‌شده هنگامِ ساختِ شاخه‌ی Otsu -- ماسکِ
+    # پتری تا خودِ دیواره‌ی پلاستیکی ادامه دارد، و آن نوار نه آگار است نه لَون بلکه
+    # یک کلاسِ نوریِ سوم (بازتابِ شیشه/پلاستیک). حضورش دو خرابیِ هم‌زمان می‌سازد:
+    # (۱) آستانه‌ی سراسری را به‌سمتِ جداکردنِ «دیواره از بقیه» می‌کشاند نه «هاله از
+    # لَون»، و (۲) چون دیواره دورترین نقطه از همه‌ی دیسک‌هاست، دقیقاً همان جایی است
+    # که «میدانِ دور» برایِ تعیینِ پلاریته نمونه‌برداری می‌کند -- یعنی پلاریته را هم
+    # از رویِ ماده‌ی اشتباه تعیین می‌کرد.
+    if petri_radius_px > 0 and rim_exclude_frac > 0:
+        er = max(1, int(round(rim_exclude_frac * float(petri_radius_px))))
+        kk = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * er + 1, 2 * er + 1))
+        agar_mask = cv2.erode(agar_mask, kk)
+
     for d in disks or []:
         r_ex = max(1, int(round(float(d["r"]) * float(disk_exclude_scale))))
         cv2.circle(agar_mask, (int(round(d["x"])), int(round(d["y"]))), r_ex, 0, -1)
@@ -1116,6 +1138,176 @@ def build_agar_canvas(gray: np.ndarray, dish_mask: np.ndarray,
 
     return {"canvas": canvas, "illum_field": illum,
             "agar_mask": agar_mask, "agar_mean": agar_mean}
+
+
+def _otsu_with_separability(values: np.ndarray) -> Tuple[int, float]:
+    """
+    آستانه‌ی Otsu به‌همراهِ معیارِ جداپذیریِ خودِ Otsu:
+        eta = واریانسِ بین‌کلاسی / واریانسِ کل   (بینِ ۰ و ۱)
+
+    چرا eta لازم است: Otsu *همیشه* یک آستانه برمی‌گرداند -- حتی وقتی هیستوگرام
+    تک‌قله‌ای است و هیچ دو کلاسِ واقعی‌ای وجود ندارد. رویِ پتری‌ای که هیچ دیسکش هاله
+    ندارد، Otsu لَونِ یکنواخت را الکی به دو نیمه می‌شکند و یک «هاله»ی کاملاً ساختگی
+    تولید می‌کند. eta دقیقاً همان آماره‌ی استانداردی است که این دو حالت را جدا
+    می‌کند (دوقله‌ایِ واقعی -> eta بالا، تک‌قله‌ای -> eta پایین) و چون یک نسبتِ
+    بی‌بعد است، به روشنایی/کنتراستِ مطلقِ تصویر وابسته نیست.
+    """
+    v = values.astype(np.uint8).ravel()
+    if v.size < 16:
+        return 0, 0.0
+    hist = np.bincount(v, minlength=256).astype(np.float64)
+    total = hist.sum()
+    if total <= 0:
+        return 0, 0.0
+    p = hist / total
+    levels = np.arange(256, dtype=np.float64)
+    omega = np.cumsum(p)
+    mu = np.cumsum(p * levels)
+    mu_t = mu[-1]
+    denom = omega * (1.0 - omega)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        sigma_b = np.where(denom > 1e-12, (mu_t * omega - mu) ** 2 / np.maximum(denom, 1e-12), 0.0)
+    t = int(np.argmax(sigma_b))
+    sigma_total = float(np.sum(p * (levels - mu_t) ** 2))
+    eta = float(sigma_b[t] / sigma_total) if sigma_total > 1e-9 else 0.0
+    return t, eta
+
+
+def _radii_from_region_mask(region: np.ndarray, cx: float, cy: float,
+                            angles: np.ndarray, r_start: float, r_max: float,
+                            max_gap_px: float) -> np.ndarray:
+    """
+    شعاعِ per-angle از رویِ یک ماسکِ ناحیه‌ای: در هر جهت از r_start به بیرون گام
+    برداشته می‌شود و مرز جایی است که ناحیه **به‌طورِ پایدار** تمام شود.
+
+    «پایدار» یعنی یک شکافِ کوتاه‌ترِ از max_gap_px مرزِ واقعی حساب نمی‌شود. این دقیقاً
+    همان اصلی است که کاربر برایِ تعریفِ مرز تصریح کرد (غیبتِ *کاملِ* رشد، نه اولین
+    نوسان)، و در عمل دو مشکلِ واقعیِ مشاهده‌شده را هم‌زمان حل می‌کند:
+
+    ۱) باگِ کشف‌شده در اولین اجرایِ این شاخه: بینِ لبه‌ی روشنِ خودِ دیسک و شروعِ آگارِ
+       شفاف یک حلقه‌ی نازکِ گذار وجود دارد که در هیچ‌کدام از دو کلاسِ آستانه نمی‌افتد.
+       نسخه‌ی «اولین صفر = مرز» در همان قدمِ اول متوقف می‌شد و شعاعِ *همه‌ی* دیسک‌ها را
+       برابرِ شعاعِ شروع برمی‌گرداند -- یعنی شاخه عملاً هیچ هاله‌ای پیدا نمی‌کرد،
+       حتی وقتی ماسکِ ناحیه‌ای کاملاً درست بود.
+    ۲) لکه‌ها/حباب‌هایِ ریزِ داخلِ خودِ هاله (رشدِ جزئی، نویزِ بافت) که نباید مرزِ هاله
+       را به‌طورِ کاذب کوچک کنند.
+
+    max_gap_px نسبی است (کسری از شعاعِ خودِ دیسک) -- بدونِ هیچ مقدارِ پیکسلیِ مطلق.
+    """
+    h, w = region.shape[:2]
+    n = len(angles)
+    out = np.full(n, float(r_start), dtype=np.float32)
+    step = 1.0
+    gap_allow = max(1.0, float(max_gap_px))
+    cos_a, sin_a = np.cos(angles), np.sin(angles)
+    for j in range(n):
+        r = float(r_start)
+        last_in = float(r_start)
+        gap = 0.0
+        seen_any = False
+        while r <= r_max:
+            xi = int(round(cx + r * cos_a[j]))
+            yi = int(round(cy + r * sin_a[j]))
+            if xi < 0 or yi < 0 or xi >= w or yi >= h:
+                break
+            if region[yi, xi] != 0:
+                last_in = r
+                gap = 0.0
+                seen_any = True
+            else:
+                gap += step
+                if gap > gap_allow:
+                    break
+            r += step
+        out[j] = last_in if seen_any else float(r_start)
+    return out
+
+
+def segment_halos_otsu(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.ndarray,
+                       disks: List[Dict[str, Any]], cfg) -> Dict[str, Any]:
+    """
+    شاخه‌ی موازیِ دومِ سگمنت‌کردنِ هاله -- آستانه‌گذاریِ سراسری رویِ «بومِ آگار».
+
+    چرا این شاخه حالا ممکن شده و قبلاً نبود: یک آستانه‌ی *سراسری* فقط وقتی معنا دارد
+    که روشنایی در سرتاسرِ قاب یکنواخت باشد. رویِ تصویرِ خام، شیبِ نورِ ناهموار باعث
+    می‌شد آگارِ روشنِ یک گوشه با لَونِ تاریکِ گوشه‌ی دیگر هم‌مقدار شود و هر آستانه‌ی
+    سراسری بی‌معنا گردد. بومِ آگار (ماژولِ ۱۵.۵) دقیقاً همین مانع را برداشته است.
+
+    پلاریته (این‌که کلاسِ تاریک «هاله» است یا «لَون») حدس زده نمی‌شود: از رویِ
+    میدانِ دور -- پیکسل‌هایی که از هر دیسکی دورترند و به‌طورِ فیزیکی نمی‌توانند داخلِ
+    هیچ هاله‌ای باشند -- تعیین می‌شود. هر کلاسی که میدانِ دور را در اختیار دارد،
+    لَون است؛ کلاسِ دیگر هاله است.
+
+    خروجی: {"status", "threshold", "eta", "zone_mask", "per_disk": [{...}]}
+      per_disk[i]: {"has_zone", "final_radii", "r_mean_px"}
+    """
+    h, w = canvas.shape[:2]
+    out: Dict[str, Any] = {"status": "ok", "threshold": 0, "eta": 0.0,
+                           "zone_mask": None, "per_disk": []}
+    agar = (agar_mask > 0)
+    if int(np.count_nonzero(agar)) < 64 or not disks:
+        out["status"] = "insufficient_agar"
+        return out
+
+    thr, eta = _otsu_with_separability(canvas[agar])
+    out["threshold"], out["eta"] = thr, float(eta)
+
+    if eta < float(cfg.halo_otsu_min_separability):
+        # هیستوگرامِ تک‌قله‌ای -- هیچ دو کلاسِ واقعی‌ای وجود ندارد، یعنی این پتری
+        # هیچ هاله‌ای ندارد. برگرداندنِ «هیچ» به‌مراتب درست‌تر از شکستنِ الکیِ لَون است.
+        out["status"] = "unimodal_no_zone"
+        out["per_disk"] = [{"has_zone": False, "final_radii": None, "r_mean_px": 0.0}
+                           for _ in disks]
+        return out
+
+    dark = ((canvas <= thr) & agar).astype(np.uint8)
+    bright = ((canvas > thr) & agar).astype(np.uint8)
+
+    # میدانِ دور: دورترین پیکسل‌هایِ آگار از همه‌ی دیسک‌ها -- قطعاً بیرونِ هر هاله‌ای.
+    disk_seeds = np.full((h, w), 255, dtype=np.uint8)
+    for d in disks:
+        cv2.circle(disk_seeds, (int(round(d["x"])), int(round(d["y"]))),
+                   max(1, int(round(d["r"]))), 0, -1)
+    dist_from_disks = cv2.distanceTransform(disk_seeds, cv2.DIST_L2, 5)
+    far_cut = float(np.percentile(dist_from_disks[agar], 100.0 * (1.0 - cfg.halo_far_field_frac)))
+    far_field = agar & (dist_from_disks >= far_cut)
+
+    dark_share_far = float(np.count_nonzero(dark[far_field])) / max(int(np.count_nonzero(far_field)), 1)
+    zone_is_dark = dark_share_far < 0.5
+    zone_raw = dark if zone_is_dark else bright
+    out["zone_is_dark"] = bool(zone_is_dark)
+
+    # پاک‌سازیِ مورفولوژیِ نسبی -- ظریف‌تر از دودویی‌سازیِ تشخیصِ دیسک (کسری از شعاعِ
+    # خودِ دیسک، نه از قطرِ پتری) تا جزئیاتِ مرزِ هاله از بین نرود.
+    r_ref = float(np.median([d["r"] for d in disks]))
+    k = _safe_odd_ksize(int(round(cfg.halo_otsu_morph_frac * r_ref)), minimum=3)
+    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
+    zone = cv2.morphologyEx(zone_raw, cv2.MORPH_OPEN, kern)
+    zone = cv2.morphologyEx(zone, cv2.MORPH_CLOSE, kern)
+    out["zone_mask"] = (zone * 255).astype(np.uint8)
+
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w), 255, dtype=np.uint8)
+    dt_edge = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
+
+    for d in disks:
+        r_disk = float(d["r"])
+        cx, cy = float(d["x"]), float(d["y"])
+        r_cap = max(r_disk + 2.0, float(dt_edge[int(round(cy)), int(round(cx))]) - 2.0)
+        radii = _radii_from_region_mask(zone, cx, cy, angles, r_disk * 1.05, r_cap,
+                                        max_gap_px=cfg.halo_region_max_gap_frac * r_disk)
+        r_mean = float(np.mean(radii))
+        # هاله فقط وقتی «واقعی» است که به‌طورِ محسوس از خودِ دیسک بزرگ‌تر باشد.
+        has_zone = bool(r_mean > r_disk * float(cfg.halo_otsu_min_radius_scale))
+        out["per_disk"].append({
+            "has_zone": has_zone,
+            "final_radii": radii if has_zone else None,
+            "r_mean_px": r_mean if has_zone else 0.0,
+        })
+
+    return out
 
 
 def _multi_otsu_threshold(gray_small: np.ndarray) -> Tuple[int, int]:
@@ -2663,7 +2855,9 @@ for dish in dishes:
     disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
     agar = build_agar_canvas(dish["roi_gray_masked"], dish["processing_mask_roi"],
                              disks_in, cfg.agar_illum_kernel_frac,
-                             cfg.agar_disk_exclude_scale)
+                             cfg.agar_disk_exclude_scale,
+                             petri_radius_px=0.5 * dish["diameter_px"],
+                             rim_exclude_frac=cfg.agar_rim_exclude_frac)
     dish["agar_canvas"] = agar["canvas"]
     dish["agar_mask"] = agar["agar_mask"]
     dish["agar_illum_field"] = agar["illum_field"]
@@ -2677,6 +2871,56 @@ for dish in dishes:
     show(dish["agar_canvas"],
          f"[Dish #{dish['index']}] بومِ آگار (نورِ ناهموار تصحیح‌شده، تخمین فقط از آگار)",
          cfg=cfg)
+
+# %% [markdown]
+# ## 15.6) شاخه‌ی موازیِ Otsu — سگمنت‌کردنِ هاله با آستانه‌ی سراسری رویِ بومِ آگار
+#
+
+# %%
+# ── ماژول ۱۵.۶ (جدید) — شاخه‌ی موازیِ Otsu برایِ مرزِ هاله ────────────────────
+# این دومین شاخه‌ی *مستقلِ* سگمنت‌کردنِ هاله است، در کنارِ پروفایلِ شعاعیِ ماژولِ ۱۶.
+# دو شاخه عمداً سازوکارِ متفاوتی دارند تا حالت‌هایِ شکستِ متفاوتی داشته باشند:
+#   • ماژول ۱۶  : میانگینِ حلقه‌ای + همگراییِ آماری به پس‌زمینه (یک‌بعدی، شعاعی).
+#   • ماژول ۱۵.۶: آستانه‌ی سراسری رویِ کلِ بومِ آگار (دوبعدی، ناحیه‌ای).
+# جایی که مرزِ هاله تیز و کنتراست خوب است ولی گذارِ شعاعی تدریجی به‌نظر می‌رسد،
+# شاخه‌ی ناحیه‌ای برنده است؛ جایی که هاله کم‌کنتراست ولی هم‌مرکز و منظم است، شاخه‌ی
+# شعاعی برنده است. ادغامِ این دو کارِ ماژولِ آینده‌ی fusionِ هاله است.
+#
+# نکته‌ی کلیدی: آستانه‌ی سراسری فقط رویِ بومِ آگار (ماژولِ ۱۵.۵) معنا دارد -- رویِ
+# تصویرِ خام، شیبِ نور آن را بی‌معنا می‌کرد.
+#
+# فعلاً فقط محاسبه/نمایش -- هنوز هیچ خروجیِ نهایی‌ای از این شاخه مصرف نمی‌شود.
+
+for dish in dishes:
+    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+    otsu_res = segment_halos_otsu(dish["agar_canvas"], dish["agar_mask"],
+                                  dish["processing_mask_roi"], disks_in, cfg)
+    dish["halo_otsu"] = otsu_res
+
+    n_zone = sum(1 for p in otsu_res["per_disk"] if p["has_zone"])
+    print(f"[Dish #{dish['index']}] شاخه‌ی Otsu: status={otsu_res['status']} "
+          f"thr={otsu_res['threshold']} eta={otsu_res['eta']:.3f} "
+          f"| {n_zone} دیسک دارایِ هاله")
+
+    # نکته: px_per_mm_est در ماژولِ ۱۶ محاسبه می‌شود که *بعد* از این سلول اجرا می‌شود،
+    # پس در این مرحله هنوز در دسترس نیست و شعاع به پیکسل گزارش می‌شود.
+    for i_d, p in enumerate(otsu_res["per_disk"], start=1):
+        if p["has_zone"]:
+            print(f"    دیسک {i_d}: r_mean={p['r_mean_px']:.1f}px "
+                  f"({p['r_mean_px'] / max(disks_in[i_d - 1]['r'], 1e-6):.2f}× شعاعِ دیسک)")
+
+    if otsu_res["zone_mask"] is not None:
+        vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+        overlay = vis.copy()
+        overlay[otsu_res["zone_mask"] > 0] = (0, 200, 255)
+        vis = cv2.addWeighted(overlay, 0.35, vis, 0.65, 0)
+        for c in dish["final_candidates"]:
+            cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                       int(round(c["r"])), (255, 40, 40), 2)
+        show(vis, f"[Dish #{dish['index']}] شاخه‌ی Otsu — ناحیه‌ی بدونِ رشد (زرد)", cfg=cfg)
+    else:
+        show(dish["agar_canvas"],
+             f"[Dish #{dish['index']}] شاخه‌ی Otsu — {otsu_res['status']} (ناحیه‌ای یافت نشد)", cfg=cfg)
 
 # %% [markdown]
 # ## ۱۶)  تشخیص هاله‌ی مهار
