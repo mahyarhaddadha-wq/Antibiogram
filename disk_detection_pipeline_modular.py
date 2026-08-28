@@ -541,6 +541,11 @@ cfg.halo_region_max_gap_frac = 0.35     # شکافِ مجاز پیشِ اعلا�
 cfg.halo_ws_seed_scale = 1.10           # شعاعِ هسته‌ی نشانگرِ هر دیسک × r_disk
 cfg.halo_region_min_effect = 1.0        # حداقلِ اندازه‌ی اثر در برابرِ توزیعِ لَون (بی‌بعد)
 
+# --- شاخه‌ی موازیِ آماری (ماژولِ ۱۵.۸) ---
+cfg.halo_stat_z_gate = 1.0              # چند انحرافِ‌معیارِ لَون تا «هنوز متمایز از لَون» (بی‌بعد)
+cfg.halo_stat_ring_frac = 0.15          # پهنایِ هر حلقه × r_disk
+cfg.halo_stat_max_gap_frac = 0.10       # شکافِ مجاز (کسری از تعدادِ حلقه‌ها)
+
 # --- ادغامِ شاخه‌هایِ هاله (ماژولِ ۱۶.۷) ---
 cfg.halo_fusion_weak_sigma = 4.0        # زیرِ این کنتراست، شاخه‌ی شعاعی به تاییدِ ناحیه‌ای نیاز دارد
 cfg.halo_fusion_otsu_percentile = 90.0  # آماره‌ی شعاعِ شاخه‌ی Otsu (تجربی: بهتر از میانگین)
@@ -1282,6 +1287,142 @@ def _effect_size_vs_reference(values: np.ndarray, ref: Dict[str, Any]) -> float:
     if values.size < 8 or ref is None:
         return 0.0
     return float((float(np.mean(values)) - ref["mean"]) / ref["std"])
+
+
+def segment_halos_statistical(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.ndarray,
+                              disks: List[Dict[str, Any]], far_ref: Optional[Dict[str, Any]],
+                              cfg) -> Dict[str, Any]:
+    """
+    شاخه‌ی موازیِ چهارم -- مرزِ هاله به‌عنوانِ یک *آزمونِ فرضِ آماری*، نه یک لبه‌ی گرادیانی.
+
+    این دقیقاً پیاده‌سازیِ تعریفی است که کاربر تصریح کرد: مرز نه در نقطه‌ی میانیِ گذار
+    و نه در تیزترین لبه، بلکه در جایی که «رشد به‌طورِ کامل غایب است». پس به‌جایِ
+    جست‌وجویِ بیشترین تغییرِ شدت، برایِ هر حلقه یک پرسشِ آماری پرسیده می‌شود:
+    «آیا شدتِ این حلقه هنوز به‌طورِ معنادار با لَونِ باکتری فرق دارد؟» و مرز، بیرونی‌ترین
+    شعاعی است که تا آن‌جا پاسخ به‌طورِ *پیوسته* آری بوده.
+
+    تفاوتِ ساختاریِ کلیدی با شاخه‌ی شعاعیِ ماژولِ ۱۶ -- و دلیلِ وجودِ این شاخه:
+    ماژولِ ۱۶ «پس‌زمینه» را از دنباله‌ی *خودِ پروفایل* می‌گیرد. اگر پنجره‌ی جست‌وجو
+    هرگز به لَونِ واقعی نرسیده باشد (که کاتالوگِ خطاها نشان داد سازوکارِ اصلیِ
+    کم‌برآوردهاست -- مثلاً هاله‌هایِ ۳۱-۳۲mm با پنجره‌ای که فقط تا ۱۸۰px می‌رسید)،
+    آن «پس‌زمینه» خودش هنوز داخلِ هاله است و مرز به‌طورِ سیستماتیک زودتر اعلام
+    می‌شود. این‌جا مرجع از جایِ دیگری می‌آید: میدانِ دور، که به‌لحاظِ فیزیکی نمی‌تواند
+    داخلِ هیچ هاله‌ای باشد. پس درستیِ مرز دیگر به این‌که پنجره چقدر بزرگ باشد وابسته
+    نیست.
+
+    آماره: فاصله‌ی استانداردشده‌ی میانگینِ هر حلقه از توزیعِ لَون،
+        z_k = (mean_ring_k - mean_lawn) / std_lawn
+    (به همان دلیلِ مستند در _effect_size_vs_reference، اندازه‌ی اثر به‌جایِ آماره‌ی
+    خامِ t استفاده می‌شود -- در این تعدادِ پیکسل، t عملاً همیشه معنادار می‌شود.)
+
+    خروجی: {"status", "per_disk": [{"has_zone","final_radii","r_mean_px","z_profile"}]}
+    """
+    h, w = canvas.shape[:2]
+    out: Dict[str, Any] = {"status": "ok", "per_disk": []}
+    if not disks or far_ref is None:
+        out["status"] = "no_reference"
+        out["per_disk"] = [{"has_zone": False, "final_radii": None, "r_mean_px": 0.0}
+                           for _ in disks]
+        return out
+
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w), 255, dtype=np.uint8)
+    dt_edge = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
+    lawn_mean, lawn_std = far_ref["mean"], far_ref["std"]
+
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    gate = float(cfg.halo_stat_z_gate)
+
+    for i, d in enumerate(disks):
+        r_disk = float(d["x"] * 0 + d["r"])
+        cx, cy = float(d["x"]), float(d["y"])
+        r_in = r_disk * 1.05
+        r_out = max(r_in + 4.0, float(dt_edge[int(round(cy)), int(round(cx))]) - 2.0)
+
+        R = int(np.ceil(r_out)) + 2
+        x0, y0 = max(0, int(cx) - R), max(0, int(cy) - R)
+        x1, y1 = min(w, int(cx) + R + 1), min(h, int(cy) + R + 1)
+        patch = canvas[y0:y1, x0:x1].astype(np.float32)
+        pm = (agar_mask[y0:y1, x0:x1] > 0)
+        yy, xx = np.ogrid[:patch.shape[0], :patch.shape[1]]
+        rad = np.sqrt((xx - (cx - x0)) ** 2 + (yy - (cy - y0)) ** 2)
+
+        # کنارگذاریِ جهت‌آگاهِ قلمروِ همسایه‌ها (همان نیم‌صفحه‌ی ووُرونوی که ماژولِ ۱۶
+        # هم استفاده می‌کند) -- تا حلقه‌ها با هاله‌ی همسایه آلوده نشوند.
+        safe = np.ones(patch.shape, dtype=bool)
+        for j, o in enumerate(disks):
+            if j == i:
+                continue
+            dx, dy = float(o["x"]) - cx, float(o["y"]) - cy
+            d2 = dx * dx + dy * dy
+            if d2 < 1e-6:
+                continue
+            proj = (xx + x0 - cx) * dx + (yy + y0 - cy) * dy
+            safe &= (proj < 0.5 * d2)
+
+        ring_w = max(2.0, float(cfg.halo_stat_ring_frac) * r_disk)
+        n_rings = max(4, int(np.ceil((r_out - r_in) / ring_w)))
+        edges = np.linspace(r_in, r_out, n_rings + 1)
+        centers = 0.5 * (edges[:-1] + edges[1:])
+        idx = np.digitize(rad, edges) - 1
+        valid = (idx >= 0) & (idx < n_rings) & pm & safe
+        if int(np.count_nonzero(valid)) < 32:
+            out["per_disk"].append({"has_zone": False, "final_radii": None,
+                                    "r_mean_px": 0.0, "z_profile": None})
+            continue
+
+        sums = np.bincount(idx[valid], weights=patch[valid], minlength=n_rings)
+        cnts = np.bincount(idx[valid], minlength=n_rings)
+        means = sums / np.maximum(cnts, 1)
+        z = (means - lawn_mean) / lawn_std
+        z[cnts < 8] = 0.0        # حلقه‌ی بدونِ نمونه‌ی کافی: «قابلِ‌تفکیک از لَون نیست»
+
+        # بیرونی‌ترین شعاعی که تا آن‌جا حلقه‌ها به‌طورِ پیوسته از لَون متمایز مانده‌اند.
+        # شکافِ کوتاه (یک حلقه‌ی تکیِ نزدیکِ لَون، مثلاً بر اثرِ یک لکه‌ی موضعی) مرز
+        # حساب نمی‌شود -- همان اصلِ «غیبتِ کامل و پایدارِ رشد»، این‌بار آماری.
+        gap_allow = max(1, int(round(float(cfg.halo_stat_max_gap_frac) * n_rings)))
+        boundary = r_in
+        gap = 0
+        for k in range(n_rings):
+            if abs(z[k]) >= gate:
+                boundary = float(centers[k])
+                gap = 0
+            else:
+                gap += 1
+                if gap > gap_allow:
+                    break
+
+        has_zone = bool(boundary > r_disk * float(cfg.halo_otsu_min_radius_scale))
+        radii = np.full(n_angles, boundary, dtype=np.float32) if has_zone else None
+        if radii is not None:
+            # سقفِ هندسیِ همسایه: نیمسازِ عمودِ فاصله تا هر دیسکِ دیگر، به‌صورتِ بسته.
+            # (فرمول درجا نوشته شده چون _neighbor_voronoi_cap در سلولِ ماژولِ ۱۶ تعریف
+            # می‌شود که *بعد* از این ماژول اجرا می‌شود -- این شاخه عمداً مستقل و
+            # پیش از آن قرار دارد.) سقفِ لبه‌ی پتری از قبل با r_out اعمال شده، چون
+            # r_out خودش از distanceTransform تا مرزِ ظرف گرفته می‌شود.
+            for j, o in enumerate(disks):
+                if j == i:
+                    continue
+                dx, dy = float(o["x"]) - cx, float(o["y"]) - cy
+                dist = float(np.hypot(dx, dy))
+                if dist < 1e-6:
+                    continue
+                phi = float(np.arctan2(dy, dx))
+                cosd = np.cos(angles - phi)
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    cap = np.where(cosd > 1e-6, 0.5 * dist / np.maximum(cosd, 1e-6), np.inf)
+                radii = np.minimum(radii, cap.astype(np.float32))
+            radii = np.maximum(radii, r_disk).astype(np.float32)
+
+        out["per_disk"].append({
+            "has_zone": has_zone,
+            "final_radii": radii,
+            "r_mean_px": float(np.mean(radii)) if radii is not None else 0.0,
+            "z_profile": z,
+        })
+
+    return out
 
 
 def segment_halos_watershed(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.ndarray,
@@ -3143,6 +3284,49 @@ for dish in dishes:
             cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
                        int(round(c["r"])), (255, 40, 40), 2)
         show(vis, f"[Dish #{dish['index']}] شاخه‌ی Watershed — نواحیِ تاییدشده‌ی هاله", cfg=cfg)
+
+# %% [markdown]
+# ## 15.8) شاخه‌ی موازیِ آماری — مرزِ هاله به‌عنوانِ آزمونِ فرض، نه لبه‌ی گرادیانی
+#
+
+# %%
+# ── ماژول ۱۵.۸ (جدید) — شاخه‌ی موازیِ آماریِ «غیبتِ کاملِ رشد» ─────────────────
+# چهارمین شاخه‌ی مستقل. سه شاخه‌ی دیگر همگی به شکلی «کجا تصویر عوض می‌شود» را
+# می‌پرسند؛ این شاخه پرسشِ متفاوتی می‌پرسد: «تا کجا هنوز به‌طورِ آماری *لَون نیست*؟»
+#
+# چرا این پرسش بهتر است: مرجعِ «لَون» از میدانِ دور می‌آید -- ناحیه‌ای که به‌لحاظِ
+# فیزیکی نمی‌تواند داخلِ هیچ هاله‌ای باشد -- نه از دنباله‌ی خودِ پروفایلِ همان دیسک.
+# کاتالوگِ خطاها نشان داد سازوکارِ اصلیِ کم‌برآوردها دقیقاً همین بود: وقتی پنجره‌ی
+# جست‌وجو به لَونِ واقعی نمی‌رسید، ماژولِ ۱۶ نقطه‌ای را که هنوز *داخلِ* هاله بود
+# «پس‌زمینه» فرض می‌کرد و مرز را زودتر اعلام می‌کرد.
+#
+# فعلاً فقط محاسبه/نمایش -- ورودش به ادغام مشروط به سنجشِ کمّی است.
+
+for dish in dishes:
+    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+    stat_res = segment_halos_statistical(dish["agar_canvas"], dish["agar_mask"],
+                                         dish["processing_mask_roi"], disks_in,
+                                         dish.get("far_field_ref"), cfg)
+    dish["halo_statistical"] = stat_res
+
+    n_zone = sum(1 for p in stat_res["per_disk"] if p["has_zone"])
+    print(f"[Dish #{dish['index']}] شاخه‌ی آماری: status={stat_res['status']} "
+          f"| {n_zone} دیسک دارایِ هاله")
+    for i_d, p in enumerate(stat_res["per_disk"], start=1):
+        if p["has_zone"]:
+            r_d = disks_in[i_d - 1]["r"]
+            print(f"    دیسک {i_d}: r_mean={p['r_mean_px']:.1f}px "
+                  f"({p['r_mean_px'] / max(r_d, 1e-6):.2f}× شعاعِ دیسک)")
+
+    vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+    for c, p in zip(dish["final_candidates"], stat_res["per_disk"]):
+        cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))), int(round(c["r"])), (255, 40, 40), 2)
+        if p["has_zone"] and p["final_radii"] is not None:
+            ang = np.linspace(0.0, 2.0 * np.pi, int(cfg.halo_num_angles), endpoint=False)
+            pts = np.stack([c["x"] + p["final_radii"] * np.cos(ang),
+                            c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
+            cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (40, 220, 255), 3)
+    show(vis, f"[Dish #{dish['index']}] شاخه‌ی آماری — مرزِ «هنوز لَون نیست»", cfg=cfg)
 
 # %% [markdown]
 # ## ۱۶)  تشخیص هاله‌ی مهار
