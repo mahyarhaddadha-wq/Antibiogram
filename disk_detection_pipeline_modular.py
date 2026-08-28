@@ -541,6 +541,10 @@ cfg.halo_region_max_gap_frac = 0.35     # شکافِ مجاز پیشِ اعلا�
 cfg.halo_ws_seed_scale = 1.10           # شعاعِ هسته‌ی نشانگرِ هر دیسک × r_disk
 cfg.halo_region_min_effect = 1.0        # حداقلِ اندازه‌ی اثر در برابرِ توزیعِ لَون (بی‌بعد)
 
+# --- ادغامِ شاخه‌هایِ هاله (ماژولِ ۱۶.۷) ---
+cfg.halo_fusion_weak_sigma = 4.0        # زیرِ این کنتراست، شاخه‌ی شعاعی به تاییدِ ناحیه‌ای نیاز دارد
+cfg.halo_fusion_otsu_percentile = 90.0  # آماره‌ی شعاعِ شاخه‌ی Otsu (تجربی: بهتر از میانگین)
+
 
 print("[Module 1.1b] پارامترهای نسبی ماژول‌های ۴/۶/۷/۸/۱۲/۱۳/۱۷ اضافه شدند (بدون هیچ مقدار پیکسلی مطلق جدید).")
 print("[Config Extension] پارامترهای نسبی با موفقیت به cfg اضافه شدند.")
@@ -4137,6 +4141,117 @@ for dish in dishes:
             if px_per_mm_est:
                 line += f" | قطر ناحیه مهار ≈ {2.0 * res['halo_radius_px'] / px_per_mm_est:.1f} mm"
         print(line)
+
+# %% [markdown]
+# ## 16.7) ادغامِ شاخه‌هایِ موازیِ هاله
+#
+
+# %%
+# ── ماژول ۱۶.۷ (جدید) — ادغامِ شاخه‌هایِ موازیِ هاله ──────────────────────────
+# قاعده‌ی ادغام از رویِ *اندازه‌گیری* طراحی شده، نه فرض. مقایسه‌ی سه شاخه رویِ هر ۱۱
+# عکس (۹۱ دیسکِ تطبیق‌یافته، ground_truth/diagnostics/halo_branch_comparison.csv):
+#
+#   شاخه            TP  FN  FP  TN    دقت    MAE   Bias
+#   شعاعی           57   6  14  14  0.780   5.49  -0.53
+#   Otsu (صدکِ ۹۰)  26  37   1  27  0.582   3.66  -1.73
+#   Watershed       11  52   2  26  0.407   1.08  -0.08
+#
+# دو الگویِ روشن که کلِ طراحی رویِ آن‌ها بنا شده:
+#   • شاخه‌ی شعاعی بهترین *پوشش* را دارد (۵۷ از ۶۳ هاله‌ی واقعی) ولی بدترین دقتِ
+#     عددی و بیشترین مثبتِ کاذب.
+#   • شاخه‌هایِ ناحیه‌ای تقریباً هرگز کاذب نمی‌زنند (۱ و ۲ در برابرِ ۲۸ دیسکِ بدونِ
+#     هاله) و وقتی می‌زنند به‌مراتب دقیق‌ترند -- MAE واترشد پنج برابر بهتر از شعاعی.
+#
+# پس قاعده «میانگینِ شاخه‌ها» نیست، بلکه تقسیمِ کار بر اساسِ همان چیزی که هر شاخه در
+# آن قوی است:
+#   ۱) اگر یک شاخه‌ی ناحیه‌ای هاله‌ای اعلام کند -> *مقدارِ آن* ملاک است
+#      (اولویت: Watershed، سپس Otsu -- به ترتیبِ دقتِ اندازه‌گیریِ سنجیده‌شده).
+#   ۲) وگرنه شاخه‌ی شعاعی ملاک است -- ولی اگر کنتراستش ضعیف باشد
+#      (زیرِ cfg.halo_fusion_weak_sigma) به تاییدِ یک شاخه‌ی ناحیه‌ای نیاز دارد.
+#
+# بندِ (۱) سه هاله‌ی واقعی را که شاخه‌ی شعاعی رد کرده بود بازمی‌گرداند -- از جمله یک
+# موردِ ۲۵mm با کنتراستِ ۴۲σ که فقط به این دلیل رد شده بود که پروفایلِ یک‌بعدی‌اش در
+# پنجره‌ی گسترش‌یافته هرگز مسطح نشد. بندِ (۲) مثبت‌هایِ کاذب را تقریباً نصف می‌کند.
+#
+# نکته‌ی صداقتِ علمی: آستانه‌ی ۴σ رویِ همین ۱۱ عکس انتخاب شده (منحنی بینِ ۴ و ۵ تخت
+# است، هردو دقتِ ۰.۸۳۵ می‌دهند؛ ۴ انتخاب شد چون پوششِ خطِ پایه را دقیقاً حفظ می‌کند).
+# پس عددهایِ گزارش‌شده برایِ این پارامتر خوش‌بینانه‌اند و اعتبارسنجیِ مستقل روی
+# تصاویرِ دیده‌نشده لازم است.
+
+def _radii_to_mask(shape, cx, cy, angles, radii, r_disk, dish_mask):
+    """ساختِ ماسکِ حلقه‌ای از شعاع‌هایِ per-angle (همان قراردادِ ماژولِ ۱۶)."""
+    h, w = shape[:2]
+    pts = np.stack([cx + radii * np.cos(angles), cy + radii * np.sin(angles)], axis=1)
+    pts = np.round(pts).astype(np.int32)
+    full = np.zeros((h, w), dtype=np.uint8)
+    cv2.fillPoly(full, [pts], 255)
+    if dish_mask is not None:
+        full = cv2.bitwise_and(full, _ensure_uint8_binary(dish_mask))
+    ring = full.copy()
+    cv2.circle(ring, (int(round(cx)), int(round(cy))), int(round(r_disk)), 0, -1)
+    return ring
+
+
+for dish in dishes:
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    otsu = dish.get("halo_otsu", {}).get("per_disk", [])
+    ws = dish.get("halo_watershed", {}).get("per_disk", [])
+    counts = {"watershed": 0, "otsu": 0, "radial": 0, "none": 0}
+
+    for i, (cand, res) in enumerate(zip(dish["final_candidates"], dish["halo_results"])):
+        r_disk = float(cand["r"])
+        cx, cy = float(cand["x"]), float(cand["y"])
+        o = otsu[i] if i < len(otsu) else {}
+        w_ = ws[i] if i < len(ws) else {}
+
+        source, radii, r_scalar = None, None, 0.0
+        if w_.get("has_zone") and w_.get("final_radii") is not None:
+            radii = np.asarray(w_["final_radii"], dtype=np.float32)
+            r_scalar = float(np.mean(radii))          # تجربی: بهترین آماره برایِ واترشد
+            source = "watershed"
+        elif o.get("has_zone") and o.get("final_radii") is not None:
+            radii = np.asarray(o["final_radii"], dtype=np.float32)
+            r_scalar = float(np.percentile(radii, cfg.halo_fusion_otsu_percentile))
+            source = "otsu"
+        elif res.get("status") == "ok":
+            # شاخه‌ی شعاعی -- ولی اگر ضعیف باشد و هیچ ناحیه‌ای تاییدش نکند، رد می‌شود.
+            if abs(float(res.get("contrast_sigma", 0.0))) >= float(cfg.halo_fusion_weak_sigma):
+                radii = res.get("final_radii")
+                radii = np.asarray(radii, dtype=np.float32) if radii is not None else None
+                r_scalar = float(res.get("halo_radius_px", 0.0))
+                source = "radial"
+
+        if source is None:
+            res["status"] = "no_zone_after_fusion" if res.get("status") == "ok" else res.get("status")
+            res["halo_radius_px"] = 0.0
+            res["halo_mask"] = None
+            res["halo_area_px"] = 0.0
+            res["fusion_source"] = None
+            counts["none"] += 1
+            continue
+
+        if radii is not None:
+            radii = np.maximum(radii, r_disk)
+            mask = _radii_to_mask(dish["agar_canvas"].shape, cx, cy, angles, radii,
+                                  r_disk, dish["processing_mask_roi"])
+            res["halo_mask"] = mask
+            res["halo_area_px"] = float(np.count_nonzero(mask))
+            res["final_radii"] = radii
+        res["status"] = "ok"
+        res["halo_radius_px"] = max(r_scalar, r_disk)
+        res["boundary_source"] = f"fusion:{source}"
+        res["fusion_source"] = source
+        counts[source] += 1
+
+    ppm = dish.get("px_per_mm_est")
+    print(f"[Dish #{dish['index']}] ادغامِ هاله: "
+          f"واترشد={counts['watershed']} Otsu={counts['otsu']} شعاعی={counts['radial']} "
+          f"بدونِ هاله={counts['none']}")
+    for i, (cand, res) in enumerate(zip(dish["final_candidates"], dish["halo_results"]), start=1):
+        if res.get("fusion_source"):
+            mm = (2.0 * res["halo_radius_px"] / ppm) if ppm else float("nan")
+            print(f"    دیسک {i}: {res['fusion_source']:<10} قطر≈{mm:.1f} mm")
 
 # %% [markdown]
 # ## ۱۷) تشخیص حباب‌های روی هاله (رخدادهای درون آزمایش)
