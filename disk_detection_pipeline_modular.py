@@ -522,6 +522,13 @@ cfg.dish_detect_split_attempt_frac = 1.3      # آستانه‌ی تلاش بر�
 cfg.dish_detect_split_marker_frac = 0.35      # پنجره/آستانه‌ی قله‌ی DT برای Watershed × r_lo
 cfg.dish_detect_split_min_dist_frac = 0.9     # حداقل فاصله‌ی نشانگرهای Watershed × r_lo
 
+
+# --- بومِ آگار (ماژولِ ۱۵.۵): زیرساختِ مشترکِ همه‌ی شاخه‌هایِ سگمنت‌کردنِ هاله ---
+# میدانِ روشنایی فقط از رویِ خودِ آگار تخمین زده می‌شود (دیسک‌ها پیش از تخمین کنار
+# گذاشته می‌شوند) -- رجوع به توضیحِ کاملِ build_agar_canvas در سلولِ توابعِ کمکی.
+cfg.agar_illum_kernel_frac = 0.25       # کرنلِ گاوسیِ تخمینِ روشنایی × min(h,w) ROI
+cfg.agar_disk_exclude_scale = 1.35      # شعاعِ کنارگذاریِ هر دیسک از تخمین × r_disk
+
 print("[Module 1.1b] پارامترهای نسبی ماژول‌های ۴/۶/۷/۸/۱۲/۱۳/۱۷ اضافه شدند (بدون هیچ مقدار پیکسلی مطلق جدید).")
 print("[Config Extension] پارامترهای نسبی با موفقیت به cfg اضافه شدند.")
 
@@ -1040,6 +1047,75 @@ def illumination_normalize(gray: np.ndarray, kernel_frac: float) -> np.ndarray:
     corrected = gray_f - illum + float(np.mean(illum))
     corrected = cv2.normalize(corrected, None, 0.0, 255.0, cv2.NORM_MINMAX)
     return corrected.astype(np.uint8)
+
+
+def build_agar_canvas(gray: np.ndarray, dish_mask: np.ndarray,
+                     disks: List[Dict[str, Any]], kernel_frac: float,
+                     disk_exclude_scale: float) -> Dict[str, Any]:
+    """
+    «بومِ آگار»: تصویرِ خاکستریِ داخلِ پتری با نورِ ناهموارِ تصحیح‌شده، که در آن میدانِ
+    روشنایی **فقط از رویِ خودِ آگار** تخمین زده می‌شود -- دیسک‌ها پیش از تخمین کنار
+    گذاشته می‌شوند.
+
+    چرا این تابع لازم شد (باگِ ریشه‌ایِ تلاشِ قبلی، بخشِ ۱۲.۷ تاریخچه): نسخه‌ی عمومیِ
+    `illumination_normalize` کرنلِ گاوسی را رویِ *کلِ* تصویر می‌زند -- شاملِ دیسک‌هایِ
+    سفیدِ روشن. یک دیسکِ روشن، تخمینِ روشناییِ اطرافِ خودش را به‌طورِ مصنوعی بالا
+    می‌برد؛ وقتی این تخمینِ آلوده تفریق شود، دورِ *هر* دیسک یک حلقه‌ی تاریکِ ساختگی
+    ظاهر می‌شود -- دقیقاً همان امضایی که یک هاله‌ی کاذب می‌سازد. این توضیح می‌دهد چرا
+    اعمالِ آن تابع رویِ ورودیِ ماژولِ هاله، به‌جایِ کم‌کردنِ مثبت‌هایِ کاذب، آن‌ها را
+    از ۹ به ۱۷ افزایش داد و مجبور به revert شدیم.
+
+    راه‌حل -- کانولوشنِ نرمال‌شده (normalized convolution): به‌جایِ بلورِ ساده،
+        illum = GaussianBlur(gray × valid) / GaussianBlur(valid)
+    محاسبه می‌شود که در آن `valid` فقط رویِ پیکسل‌هایِ آگار (داخلِ پتری، بیرونِ
+    دیسک‌ها) یک است. نتیجه یک میدانِ روشناییِ صاف است که مقدارش در محلِ دیسک‌ها از
+    آگارِ اطراف *درون‌یابی* می‌شود، نه از خودِ دیسکِ روشن -- پس هیچ حلقه‌ی تاریکِ
+    ساختگی تولید نمی‌شود.
+
+    فرمِ تفریقی (نه تقسیمی) عمداً حفظ شده -- به همان دلیلِ پایداریِ عددی که در
+    `illumination_normalize` مستند است.
+
+    همه‌ی پارامترها نسبی‌اند: کرنل کسری از اندازه‌ی خودِ ROI، و شعاعِ کنارگذاریِ هر
+    دیسک ضریبی از شعاعِ خودِ همان دیسک.
+
+    خروجی: {"canvas", "illum_field", "agar_mask", "agar_mean"}
+      canvas     : تصویرِ تصحیح‌شده‌ی uint8 (ورودیِ مشترکِ همه‌ی شاخه‌هایِ هاله)
+      illum_field: میدانِ روشناییِ تخمین‌زده‌شده (برایِ بازرسی/دیباگ)
+      agar_mask  : ماسکِ پیکسل‌هایی که واقعاً آگار بودند (نه دیسک، نه بیرونِ پتری)
+    """
+    h, w = gray.shape[:2]
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w), 255, dtype=np.uint8)
+
+    # ماسکِ آگار = داخلِ پتری، منهایِ دیسک‌ها (با کمی حاشیه‌ی امن حولِ هر دیسک، چون
+    # لبه‌ی خودِ دیسک هم روشن است و نباید وارد تخمین شود).
+    agar_mask = (mask_u8 > 0).astype(np.uint8)
+    for d in disks or []:
+        r_ex = max(1, int(round(float(d["r"]) * float(disk_exclude_scale))))
+        cv2.circle(agar_mask, (int(round(d["x"])), int(round(d["y"]))), r_ex, 0, -1)
+
+    if int(np.count_nonzero(agar_mask)) < 16:
+        # آگارِ قابلِ‌اتکایی باقی نمانده -- بدونِ تصحیح برگرد (به‌جایِ تحمیلِ عددِ نامطمئن).
+        return {"canvas": gray.copy(), "illum_field": None,
+                "agar_mask": agar_mask, "agar_mean": float(np.mean(gray))}
+
+    k = _safe_odd_ksize(int(round(kernel_frac * min(h, w))), minimum=3)
+    gray_f = gray.astype(np.float32)
+    valid = agar_mask.astype(np.float32)
+
+    num = cv2.GaussianBlur(gray_f * valid, (k, k), 0)
+    den = cv2.GaussianBlur(valid, (k, k), 0)
+    # جاهایی که هیچ آگارِ نزدیکی وجود ندارد، تخمین بی‌معناست -- با میانگینِ کلیِ آگار پر می‌شود.
+    agar_mean = float(np.sum(gray_f * valid) / max(float(np.sum(valid)), 1.0))
+    illum = np.where(den > 1e-3, num / np.maximum(den, 1e-3), agar_mean).astype(np.float32)
+
+    corrected = gray_f - illum + agar_mean
+    corrected = np.clip(corrected, 0.0, 255.0)
+    canvas = corrected.astype(np.uint8)
+    canvas = cv2.bitwise_and(canvas, canvas, mask=mask_u8)
+
+    return {"canvas": canvas, "illum_field": illum,
+            "agar_mask": agar_mask, "agar_mean": agar_mean}
 
 
 def _multi_otsu_threshold(gray_small: np.ndarray) -> Tuple[int, int]:
@@ -2557,6 +2633,50 @@ for dish in dishes:
     if dish["likely_false_positive"]:
         print(f"[هشدار] پتری {dish['index']}: هیچ دیسکی تایید نشد — احتمال FP در تشخیص پتری "
               f"(method={dish['method']}, confidence={dish['confidence']:.2f}).")
+
+# %% [markdown]
+# ## 15.5) بومِ آگار — تصحیحِ نورِ ناهموار فقط از رویِ محیطِ کشت
+#
+
+# %%
+# ── ماژول ۱۵.۵ (جدید) — بومِ آگار: زیرساختِ مشترکِ سگمنت‌کردنِ هاله ────────────
+# چرا این ماژول اضافه شد: اصلِ «همه‌ی پارامترها نسبی‌اند» پایپلاین را از مقیاسِ فیزیکی
+# مستقل کرد، ولی از *کیفیتِ نوری* مستقل نکرد. شیبِ نرمِ روشنایی در سرتاسرِ قاب
+# (vignetting) یک منبعِ خطایِ باقی‌مانده و تاییدشده است: در بررسیِ gt_10، پروفایلِ
+# شعاعیِ دیسک #۱ بدونِ هیچ افتی و کاملاً یکنواخت از ۱۵۸ به ۱۷۴ بالا می‌رفت -- نه نشتِ
+# همسایه، نه هاله‌ی واقعی، فقط گرادیانِ نور -- و یک هاله‌ی کاذبِ ۳۵mm تولید کرد.
+#
+# تلاشِ قبلی برایِ رفعِ همین پدیده (اعمالِ illumination_normalize رویِ ورودیِ ماژولِ
+# هاله) نتیجه‌ی معکوس داد و revert شد (بخشِ ۱۲.۷). علتِ ریشه‌ای حالا روشن است و در
+# docstringِ build_agar_canvas مستند شده: آن تابع میدانِ روشنایی را از رویِ *کلِ*
+# تصویر -- شاملِ دیسک‌هایِ سفید -- تخمین می‌زد، و تفریقِ آن تخمینِ آلوده دورِ هر دیسک
+# یک حلقه‌ی تاریکِ ساختگی می‌ساخت؛ یعنی همان چیزی را تولید می‌کرد که قرار بود حذف کند.
+#
+# این ماژول همان تصحیح را انجام می‌دهد ولی میدانِ روشنایی را با کانولوشنِ نرمال‌شده
+# **فقط از پیکسل‌هایِ آگار** می‌سازد. خروجی (`dish["agar_canvas"]`) قرار است ورودیِ
+# مشترکِ همه‌ی شاخه‌هایِ موازیِ سگمنت‌کردنِ هاله باشد.
+#
+# فعلاً فقط محاسبه و نمایش داده می‌شود -- هیچ ماژولِ موجودی هنوز از آن استفاده نمی‌کند،
+# تا اثرش پیش از تغییرِ رفتارِ پایپلاین به‌صورتِ بصری و کمّی بررسی شود.
+
+for dish in dishes:
+    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+    agar = build_agar_canvas(dish["roi_gray_masked"], dish["processing_mask_roi"],
+                             disks_in, cfg.agar_illum_kernel_frac,
+                             cfg.agar_disk_exclude_scale)
+    dish["agar_canvas"] = agar["canvas"]
+    dish["agar_mask"] = agar["agar_mask"]
+    dish["agar_illum_field"] = agar["illum_field"]
+    dish["agar_mean"] = agar["agar_mean"]
+
+    agar_px = int(np.count_nonzero(agar["agar_mask"]))
+    dish_px = int(np.count_nonzero(dish["processing_mask_roi"]))
+    print(f"[Dish #{dish['index']}] بومِ آگار: {agar_px}/{dish_px} پیکسل آگار "
+          f"({100.0 * agar_px / max(dish_px, 1):.1f}%) | میانگینِ آگار={agar['agar_mean']:.1f}")
+
+    show(dish["agar_canvas"],
+         f"[Dish #{dish['index']}] بومِ آگار (نورِ ناهموار تصحیح‌شده، تخمین فقط از آگار)",
+         cfg=cfg)
 
 # %% [markdown]
 # ## ۱۶)  تشخیص هاله‌ی مهار
