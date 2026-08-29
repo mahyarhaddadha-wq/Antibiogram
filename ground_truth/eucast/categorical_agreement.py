@@ -15,7 +15,7 @@
 نقطه‌ی شکست فقط یک عدد رویِ همان محورِ میلی‌متری است. پس به‌جای این‌که بپرسیم «این
 دیسک چه دسته‌ای می‌گیرد»، می‌پرسیم:
 
-    اگر نقطه‌ی شکستِ مربوطه هرکدام از ۳۹۷ نقطه‌ی شکستِ واقعیِ EUCAST v16 باشد،
+    اگر نقطه‌ی شکستِ مربوطه هرکدام از ۳۴۹ نقطه‌ی شکستِ واقعیِ EUCAST v16 باشد،
     خوانشِ سیستم چند درصد مواقع با خوانشِ کارشناس **هم‌دسته** می‌شود؟
 
 این یک پرسشِ خوش‌تعریف است و جوابش یک توزیع می‌دهد، نه یک عدد — که صادقانه‌تر هم
@@ -33,7 +33,7 @@
 ## دیسکِ بدونِ هاله
 
 کارشناس «بدونِ هاله» یعنی رشد تا لبه‌ی دیسک آمده، یعنی قطرِ ناحیه = قطرِ خودِ دیسک
-(۶mm). این زیرِ هر نقطه‌ی شکستی است، پس دسته‌اش R است. با همین قرارداد، ۱۴ مثبتِ
+(۶mm). این زیرِ هر نقطه‌ی شکستی است، پس دسته‌اش R است. با همین قرارداد، ۱۳ مثبتِ
 کاذب و ۳ منفیِ کاذبِ حضورِ هاله هم به‌طورِ طبیعی واردِ حساب می‌شوند — یعنی عددِ
 نهایی واقعاً end-to-end است، نه فقط رویِ دیسک‌هایی که هر دو طرف هاله دیده‌اند.
 """
@@ -44,7 +44,12 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 BP = REPO / "ground_truth" / "eucast" / "eucast_v16_zone_breakpoints.csv"
-PAIRS = REPO / "ground_truth" / "diagnostics" / "halo_branch_comparison.csv"
+# خروجیِ رسمیِ ارزیابی (evaluate_pipeline.py) -- همیشه وضعِ *فعلیِ* پایپلاین.
+PAIRS = REPO / "ground_truth" / "evaluation_results.csv"
+# فایلِ مقایسه‌ی شاخه‌ها برایِ تفکیکِ per-branch لازم است. این فایل از اجرایِ
+# پیش از ماژولِ ۱۱.۵ است، ولی چون فقط *رفتارِ نسبیِ شاخه‌ها* را نشان می‌دهد نه
+# تعدادِ نهایی، هنوز معتبر است.
+BRANCHES = REPO / "ground_truth" / "diagnostics" / "halo_branch_comparison.csv"
 OUT = REPO / "ground_truth" / "eucast" / "categorical_agreement.csv"
 
 NO_ZONE_MM = 6.0        # رشد تا لبه‌ی دیسک؛ قطرِ استانداردِ دیسک
@@ -91,15 +96,39 @@ def load_breakpoints():
 
 
 def load_pairs():
+    """جفت‌هایِ (مرجع، سیستم) از خروجیِ رسمیِ ارزیابی.
+
+    فقط دیسک‌هایِ تطبیق‌یافته (`match_dist_px` پر) شمرده می‌شوند -- همان n=۹۱ که
+    گزارشِ ارزیابی هم رویش حساب می‌کند.
+    """
     out = []
     for r in csv.DictReader(open(PAIRS, encoding="utf-8")):
+        if not r["match_dist_px"].strip():
+            continue
+        gt = r["gt_halo_mm"].strip()
+        sysv = r["sys_halo_mm"].strip()
+        out.append({
+            "image": r["image"],
+            "source": "",
+            "ref_mm": float(gt) if gt else NO_ZONE_MM,
+            "sys_mm": float(sysv) if sysv else NO_ZONE_MM,
+            "ref_has_zone": bool(gt),
+        })
+    return out
+
+
+def load_branch_pairs():
+    """همان جفت‌ها ولی با برچسبِ شاخه، برایِ جدولِ تفکیکِ per-branch."""
+    out = []
+    if not BRANCHES.exists():
+        return out
+    for r in csv.DictReader(open(BRANCHES, encoding="utf-8")):
         if not r["gt_num"]:
             continue
         gt = r["gt_halo"].strip()
         sysv = float(r["radial_mm"])
         out.append({
-            "image": r["image"],
-            "source": r["fusion_source"],
+            "image": r["image"], "source": r["fusion_source"],
             "ref_mm": float(gt) if gt else NO_ZONE_MM,
             "sys_mm": sysv if sysv > 0.01 else NO_ZONE_MM,
             "ref_has_zone": bool(gt),
@@ -199,9 +228,11 @@ def main():
     print("=" * 74)
     print("توافقِ دسته‌ای به تفکیکِ شاخه‌ی تولیدکننده‌ی مرز")
     print("=" * 74)
+    print("  (از اجرایِ پیشِ ماژولِ ۱۱.۵ -- رفتارِ نسبیِ شاخه‌ها، نه تعدادِ نهایی)")
     print(f"  {'شاخه':<14}{'دیسک':>6}{'CA':>9}{'VME':>8}{'ME':>8}")
+    bpairs = load_branch_pairs()
     for src in ("watershed", "otsu", "radial", "-"):
-        sub = [p for p in pairs if p["source"] == src]
+        sub = [p for p in bpairs if p["source"] == src]
         if not sub:
             continue
         _, t = evaluate(sub, bps)

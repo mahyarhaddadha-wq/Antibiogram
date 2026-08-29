@@ -57,10 +57,10 @@ With the shape-verification stage (module 11.5, arc continuity plus a label- and
 
 | | Expert: halo present | Expert: no halo |
 |---|---:|---:|
-| **System: halo present** | 60 (TP) | 14 (FP) |
-| **System: no halo** | 3 (FN) | 14 (TN) |
+| **System: halo present** | 60 (TP) | 13 (FP) |
+| **System: no halo** | 3 (FN) | 15 (TN) |
 
-Derived: accuracy = 0.813, precision = 0.811, recall = 0.952.
+Derived: accuracy = 0.824, precision = 0.822, recall = 0.952.
 
 **Table 4 — Halo-diameter accuracy** (n = 60, both expert and system report a halo)
 
@@ -72,7 +72,7 @@ Derived: accuracy = 0.813, precision = 0.811, recall = 0.952.
 
 | MAE | Bias | SD |
 |---:|---:|---:|
-| 0.17 mm | −0.00 mm | 0.23 mm |
+| 0.18 mm | −0.00 mm | 0.23 mm |
 
 **Table 6 — Individual branch performance** (n = 91; the basis for the fusion rule)
 
@@ -90,9 +90,10 @@ The asymmetry is the whole basis of the design: the radial branch has by far the
 | | Accuracy | MAE | 95% limits of agreement |
 |---|---:|---:|---:|
 | radial branch alone | 0.780 | 5.50 mm | [−16.12, +15.05] mm |
-| fused | **0.813** | **3.85 mm** | **[−12.33, +11.11]** mm |
+| fused | 0.813 | **3.85 mm** | **[−12.33, +11.11]** mm |
+| fused + shape verification (module 11.5, deployed) | **0.824** | **3.85 mm** | **[−12.33, +11.11]** mm |
 
-Fusion is better than or equal to the single-branch baseline on every axis: three real zones recovered (TP 57→60, FN 6→3), false positives unchanged at 14, and a 30% reduction in measurement error. Disk-detection and disk-diameter metrics are unaffected.
+Fusion is better than or equal to the single-branch baseline on every axis: three real zones recovered (TP 57→60, FN 6→3), false positives unchanged at 14, and a 30% reduction in measurement error. The shape-verification stage added afterwards removes one further false halo (14→13) as a side effect of no longer admitting a spurious disk, lifting accuracy to 0.824.
 
 ## 3.1 Guarding against overfitting
 
@@ -149,7 +150,7 @@ Second, at ±2 mm **two human experts do not themselves satisfy the conventional
 
 ## 4. Independent reproduction
 
-These results were independently reproduced, unchanged, on a second, unrelated machine (a Windows workstation, fresh standalone Python 3.11.9 installation, no shared environment or configuration with the development machine) by re-running the identical, unmodified `evaluate_pipeline.py` script end to end. The reproduction returned numerically identical summary statistics (same TP/FP/FN counts, same MAE/bias/SD to two decimal places), which is consistent with the pipeline's stated design goal of full determinism — the same input image always yields the same output, with no randomized or non-reproducible step in the detection or measurement code path.
+These results were independently reproduced, unchanged, on two further unrelated machines (a Windows workstation, fresh standalone Python 3.11.9 installation, no shared environment or configuration with the development machine) by re-running the identical, unmodified `evaluate_pipeline.py` script end to end. The reproduction returned numerically identical summary statistics (same TP/FP/FN counts, same MAE/bias/SD to two decimal places), and a third reproduction on a Linux container returned the same figures again, which is consistent with the pipeline's stated design goal of full determinism — the same input image always yields the same output, with no randomized or non-reproducible step in the detection or measurement code path.
 
 ## 5. Limitations (stated for transparency)
 
@@ -220,10 +221,10 @@ These results were independently reproduced, unchanged, on a second, unrelated m
 
 | | کارشناس: هاله دارد | کارشناس: بدونِ هاله |
 |---|---:|---:|
-| **سیستم: هاله دارد** | ۶۰ (TP) | ۱۴ (FP) |
-| **سیستم: بدونِ هاله** | ۳ (FN) | ۱۴ (TN) |
+| **سیستم: هاله دارد** | ۶۰ (TP) | ۱۳ (FP) |
+| **سیستم: بدونِ هاله** | ۳ (FN) | ۱۵ (TN) |
 
-مقادیرِ مشتق‌شده: دقتِ کلی (accuracy) = ۰.۸۱۳، Precision = ۰.۸۱۱، Recall = ۰.۹۵۲.
+مقادیرِ مشتق‌شده: دقتِ کلی (accuracy) = ۰.۸۲۴، Precision = ۰.۸۲۲، Recall = ۰.۹۵۲.
 
 **جدولِ ۴ — دقتِ عددیِ قطرِ هاله** (n = ۶۰، هم کارشناس هم سیستم هاله گزارش داده‌اند)
 
@@ -235,7 +236,7 @@ These results were independently reproduced, unchanged, on a second, unrelated m
 
 | MAE | Bias | SD |
 |---:|---:|---:|
-| ۰.۱۷ mm | −۰.۰۰ mm | ۰.۲۳ mm |
+| ۰.۱۸ mm | −۰.۰۰ mm | ۰.۲۳ mm |
 
 **جدولِ ۶ — عملکردِ تک‌تکِ شاخه‌ها** (n = ۹۱؛ مبنایِ قاعده‌ی ادغام)
 
@@ -253,7 +254,8 @@ These results were independently reproduced, unchanged, on a second, unrelated m
 | | دقت | MAE | حدودِ توافقِ ۹۵٪ |
 |---|---:|---:|---:|
 | فقط شاخه‌ی شعاعی | ۰.۷۸۰ | ۵.۵۰ mm | [−۱۶.۱۲, +۱۵.۰۵] mm |
-| ادغام‌شده | **۰.۸۱۳** | **۳.۸۵ mm** | **[−۱۲.۳۳, +۱۱.۱۱]** mm |
+| ادغام‌شده | ۰.۸۱۳ | **۳.۸۵ mm** | **[−۱۲.۳۳, +۱۱.۱۱]** mm |
+| ادغام + اعتبارسنجیِ شکل (ماژولِ ۱۱.۵، مستقر) | **۰.۸۲۴** | **۳.۸۵ mm** | **[−۱۲.۳۳, +۱۱.۱۱]** mm |
 
 ادغام رویِ هر محور بهتر یا مساویِ خطِ پایه است: سه هاله‌ی واقعی بازیابی شد (TP از ۵۷ به ۶۰، FN از ۶ به ۳)، مثبتِ کاذب بدونِ تغییر در ۱۴ ماند، و خطایِ اندازه‌گیری ۳۰٪ کاهش یافت. معیارهایِ تشخیصِ دیسک و قطرِ دیسک دست‌نخورده ماندند.
 

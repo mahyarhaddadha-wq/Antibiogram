@@ -7,7 +7,7 @@
   ۱) داده‌ی مرجعِ ما خودش نویز دارد، پس بخشی از MAE=۳.۸۵ ما مالِ ما نیست.
   ۲) هدفِ «MAE ≈ ۱.۰mm» که از سقف‌هایِ EUCAST درآمد، باید با تکرارپذیریِ انسانی
      مقایسه شود -- شاید اصلاً زیرِ سطحی باشد که با این مرجع قابلِ *اثبات* نیست.
-  ۳) توافقِ دسته‌ایِ ۸۲.۵٪ ما در برابرِ چه چیزی باید سنجیده شود؟ سقفِ واقعی، توافقِ
+  ۳) توافقِ دسته‌ایِ ۸۳.۲٪ ما در برابرِ چه چیزی باید سنجیده شود؟ سقفِ واقعی، توافقِ
      دو کارشناس با **یکدیگر** است، نه ۱۰۰٪.
 
 ## ابهامِ «±۲ میلی‌متر» -- و چرا سه تفسیر حساب می‌شود
@@ -32,7 +32,9 @@ import numpy as np
 
 REPO = Path(__file__).resolve().parents[2]
 BP = REPO / "ground_truth" / "eucast" / "eucast_v16_zone_breakpoints.csv"
-PAIRS = REPO / "ground_truth" / "diagnostics" / "halo_branch_comparison.csv"
+# خروجیِ رسمیِ ارزیابی -- همان منبعی که categorical_agreement.py هم می‌خواند،
+# تا این دو اسکریپت هرگز اعدادِ ناسازگار ندهند.
+PAIRS = REPO / "ground_truth" / "evaluation_results.csv"
 OUT = REPO / "ground_truth" / "eucast" / "expert_repeatability.csv"
 
 NO_ZONE_MM = 6.0
@@ -78,13 +80,13 @@ def load_breakpoints():
 def load_pairs():
     out = []
     for r in csv.DictReader(open(PAIRS, encoding="utf-8")):
-        if not r["gt_num"]:
+        if not r["match_dist_px"].strip():
             continue
-        gt = r["gt_halo"].strip()
-        sysv = float(r["radial_mm"])
+        gt = r["gt_halo_mm"].strip()
+        sysv = r["sys_halo_mm"].strip()
         out.append({"ref": float(gt) if gt else NO_ZONE_MM,
-                    "sys": sysv if sysv > 0.01 else NO_ZONE_MM,
-                    "has_zone": bool(gt), "source": r["fusion_source"]})
+                    "sys": float(sysv) if sysv else NO_ZONE_MM,
+                    "has_zone": bool(gt), "source": ""})
     return out
 
 
