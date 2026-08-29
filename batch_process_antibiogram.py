@@ -17,7 +17,8 @@ cfg.image_path برای هر عکس override می‌شود و کل نوت‌بو
   02_halo_dish<N>.png     -- نتیجه‌ی نهایی و اصلاح‌شده‌ی هاله (ماژول ۱۶.۶، بعد از رشد
                              نامتقارن ۱۶.۵ و رفع رخدادهای زاویه‌ای)، یک فایل به‌ازای هر پتری
   03_bubbles_dish<N>.png  -- رخدادهای حباب/توده‌ی داخل هاله (ماژول ۱۷)، یک فایل به‌ازای هر پتری
-  04_final_report.txt     -- گزارش نهایی متنی: قطر دیسک/هاله/رخداد حباب (ماژول ۱۸)
+  04_final_report.txt     -- گزارش نهایی متنی: قطر دیسک/هاله/حباب/دسته‌ی EUCAST (ماژول ۱۹)
+  05_eucast.txt           -- جزئیات طبقه‌بندی بالینی S/I/R طبق EUCAST v16.0 (ماژول ۱۸)
 و یک summary.txt در ریشه‌ی پوشه‌ی خروجی با وضعیت کلی همه‌ی عکس‌ها.
 
 پیش‌نیاز: nbformat و nbclient (`pip install nbformat nbclient`) و یک کرنل Jupyter نصب‌شده
@@ -42,6 +43,7 @@ DEFAULT_OUTPUT_DIR = Path(r"D:\antibiogram_engine-version 2\output")
 FUSION_MARKER = "Fusion Result —"
 HALO_MARKER = "# ── ماژول ۱۶.۶ (جدید)"  # آخرین ماژولِ اصلاح‌کننده‌ی مرز هاله (بعد از ۱۶.۵) -- تصویرِ خروجی‌اش دایره‌های نهایی/تصحیح‌شده را نشان می‌دهد
 BUBBLE_MARKER = "Halo Bubble Events —"
+EUCAST_MARKER = "# ── ماژول ۱۸ (جدید)"   # طبقه‌بندیِ بالینیِ S/I/R
 REPORT_MARKER = "گزارش نهایی آنتی‌بایوگرام"
 CFG_INIT_MARKER = "cfg = Phase2Config()"
 
@@ -69,12 +71,19 @@ def _find_cell_index(nb, marker: str) -> int:
     raise RuntimeError(f"سلولی حاوی این نشانه در نوت‌بوک پیدا نشد: {marker!r}")
 
 
-def _build_notebook_for_image(base_nb, image_path: Path):
+def _build_notebook_for_image(base_nb, image_path: Path, organism: str = None):
     """کپی مستقل از نوت‌بوک پایه با یک سلول override برای cfg.image_path، بلافاصله بعد
     از سلولی که cfg ساخته می‌شود -- بدون هیچ تغییر دیگری در نوت‌بوک اصلی."""
     nb = copy.deepcopy(base_nb)
-    idx_cfg = _find_cell_index(nb, CFG_INIT_MARKER)
-    override_cell = nbformat.v4.new_code_cell(f'cfg.image_path = r"{image_path}"')
+    lines = [f'cfg.image_path = r"{image_path}"']
+    if organism:
+        # تنظیماتِ EUCAST در سلولِ Config Extension تعریف می‌شوند، پس override باید
+        # بعد از آن بیاید وگرنه بازنویسی می‌شود.
+        lines.append(f'cfg.eucast_organism = {organism!r}')
+        idx_cfg = _find_cell_index(nb, "cfg.halo_fusion_otsu_percentile")
+    else:
+        idx_cfg = _find_cell_index(nb, CFG_INIT_MARKER)
+    override_cell = nbformat.v4.new_code_cell("\n".join(lines))
     cells = list(nb["cells"])
     cells.insert(idx_cfg + 1, override_cell)
     nb["cells"] = cells
@@ -98,10 +107,11 @@ def _extract_stream_text(cell) -> str:
     return "".join(parts)
 
 
-def process_one_image(base_nb, image_path: Path, output_dir: Path, kernel_name: str) -> bool:
+def process_one_image(base_nb, image_path: Path, output_dir: Path, kernel_name: str,
+                      organism: str = None) -> bool:
     print(f"[{image_path.name}] در حال پردازش ...")
     try:
-        nb = _build_notebook_for_image(base_nb, image_path)
+        nb = _build_notebook_for_image(base_nb, image_path, organism)
         client = NotebookClient(nb, kernel_name=kernel_name, timeout=1800)
         client.execute()
 
@@ -123,6 +133,11 @@ def process_one_image(base_nb, image_path: Path, output_dir: Path, kernel_name: 
         report_text = _extract_stream_text(nb["cells"][_find_cell_index(nb, REPORT_MARKER)])
         (img_out_dir / "04_final_report.txt").write_text(report_text, encoding="utf-8")
 
+        # ماژولِ ۱۸ -- طبقه‌بندیِ بالینی. بدونِ اعلامِ ارگانیسم/آنتی‌بیوتیک، به‌جایِ
+        # دسته، بازه‌ی دسته‌هایِ ممکن را چاپ می‌کند؛ در هر دو حالت ذخیره می‌شود.
+        eucast_text = _extract_stream_text(nb["cells"][_find_cell_index(nb, EUCAST_MARKER)])
+        (img_out_dir / "05_eucast.txt").write_text(eucast_text, encoding="utf-8")
+
         print(f"[{image_path.name}] تمام شد -> {img_out_dir}")
         return True
     except Exception as e:
@@ -140,6 +155,10 @@ def main():
     parser.add_argument("--kernel", type=str, default="python3",
                        help="نام کرنل Jupyter برای اجرای نوت‌بوک (پیش‌فرض: python3؛ با "
                             "`jupyter kernelspec list` نام واقعی خودتان را چک کنید)")
+    parser.add_argument("--organism", type=str, default=None,
+                       help='گونه/گروهِ ارگانیسم برایِ طبقه‌بندیِ EUCAST -- برایِ کلِ پوشه '
+                            'یکسان فرض می‌شود، مثلاً "Enterobacterales". اگر ندهید، '
+                            'ماژولِ ۱۸ فقط بازه‌ی دسته‌هایِ ممکن را گزارش می‌کند.')
     args = parser.parse_args()
 
     input_dir = args.input_dir or _default_input_dir()
