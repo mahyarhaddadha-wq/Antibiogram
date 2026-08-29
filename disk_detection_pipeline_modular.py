@@ -577,6 +577,19 @@ cfg.eucast_breakpoint_csv = os.path.join("ground_truth", "eucast",
 cfg.eucast_organism = None              # مثلاً "Enterobacterales"
 cfg.eucast_disk_agents = {}             # مثلاً {1: "Ciprofloxacin", 2: "Gentamicin"}
 
+
+# --- ماژول ۱۱.۵ — اعتبارسنجیِ شکلِ کاندیدهایِ دیسک (پ۱+پ۳) ---
+cfg.disk_verify_enabled = True
+cfg.disk_verify_num_angles = 72          # هر ۵ درجه؛ همان تفکیکِ زاویه‌ایِ ماژول‌هایِ هاله
+cfg.disk_verify_inner_scale = 0.85       # نمونه‌برداریِ داخلِ لبه (× شعاعِ خودِ کاندید)
+cfg.disk_verify_outer_scale = 1.15       # نمونه‌برداریِ بیرونِ لبه (× شعاعِ خودِ کاندید)
+cfg.disk_verify_min_arc_coverage = 0.75  # کفِ پوششِ کمانیِ لبه -- از هندسه: یک دیسکِ
+                                         # واقعی ممکن است تا ~یک‌چهارمِ محیطش با دیسکِ
+                                         # همسایه یا لبه‌ی ظرف هم‌پوشانی داشته باشد،
+                                         # پس ۰.۷۵ کفِ منطقی است (نه انتخاب‌شده از داده)
+cfg.disk_verify_step_sigma = 3.0         # پرت بودنِ پله‌ی لبه نسبت به اجماعِ همان تصویر؛
+                                         # همان سطحِ ۳σ که ماژولِ ۱۶.۵ هم به‌کار می‌برد
+
 # %% [markdown]
 # ## ۲) توابع کمکی (Helper Functions)
 # تابع ساخت کرنل بیضوی و تابع نمایش تصویر — این‌ها «فیلتر» نیستند، فقط ابزار مشترک بقیه‌ی سلول‌ها.
@@ -2907,6 +2920,138 @@ for dish in dishes:
         cv2.putText(vis_hough, f"{c['confidence']:.2f}", (c["x"] - c["r"], c["y"] - c["r"] - 6),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2, cv2.LINE_AA)
     show(vis_hough, f"[Dish #{dish['index']}] Hough Candidates — validated (Count: {len(hough_candidates)})", cfg=cfg)
+
+# %% [markdown]
+# ## ۱۱.۵) اعتبارسنجیِ کاندیدهایِ دیسک — کمانِ پیوسته + الگویِ مستقل‌از-برچسب
+#
+# این ماژول پ۱ (سگمنت‌کردنِ کمانِ مقیدبه‌مرکز) و پ۳ (تطبیقِ الگویِ دیسک) را در **یک**
+# ماژول ادغام می‌کند — چون هر دو یک کار می‌کنند: پرسیدنِ این‌که «آیا این دایره واقعاً
+# یک دیسکِ کاغذی است؟»
+#
+# **چرا الگو نمی‌تواند رویِ خودِ حروف باشد:** دیسک‌ها برچسبِ چاپیِ متفاوت دارند
+# (CRO30، CIP5، FM300...) و جهتشان هم تصادفی است. پس همبستگیِ خامِ بینِ دو دیسک ضعیف
+# است. الگو باید رویِ ویژگی‌هایی باشد که **بینِ همه‌ی دیسک‌ها مشترک** است و به برچسب و
+# چرخش وابسته نیست:
+#
+# 1. **پیوستگیِ کمانیِ لبه** — یک دیسکِ فیزیکی در *همه‌ی* جهت‌ها لبه دارد. دایره‌ی کاذبی
+#    که از متنِ چاپی یا لبه‌ی هاله ساخته شده، فقط رویِ یک کمان لبه دارد.
+# 2. **پله‌ی شعاعیِ لبه** — کاغذِ دیسک روشن‌تر از آگار/لَونِ اطراف است؛ اختلافِ داخل و
+#    بیرون باید معنادار باشد.
+# 3. **تقارنِ دورانی** — پله‌ی لبه باید در همه‌ی زاویه‌ها تقریباً یکسان باشد.
+#
+# **تصمیم بدونِ آستانه‌ی تنظیم‌شده:** به‌جایِ عددِ مطلق، هر کاندید با **اجماعِ
+# کاندیدهایِ همان تصویر** سنجیده می‌شود — همان اصلِ خود-ارجاعی که مرجعِ میدانِ دور را
+# جواب داد. تنها عددِ ثابت، حداقلِ پوششِ کمانی است که از پیش و بر مبنایِ هندسه توجیه
+# می‌شود، نه از رویِ داده انتخاب.
+
+# %%
+# ── ماژول ۱۱.۵ (جدید) — اعتبارسنجیِ کاندیدهایِ دیسک (پ۱ + پ۳ یکپارچه) ────────
+# انگیزه‌ی این ماژول از یک تشخیصِ اندازه‌گیری‌شده می‌آید، نه از حدس:
+# رویِ gt_10 دیسکِ ۸، Hough در مکانِ درست دایره تولید می‌کند ولی با شعاعِ ۹۰ در حالی
+# که دیسک‌هایِ واقعیِ همان عکس شعاعِ ۳۷–۴۳ دارند -- یعنی رویِ خودِ *هاله* قفل شده،
+# نه رویِ دیسک. قاعده‌ی سازگاریِ شعاعِ ماژولِ ۱۴ به‌درستی ردش می‌کند، پس پایین آوردنِ
+# آستانه‌ی Hough آن مورد را حل نمی‌کرد. اعتبارسنجیِ شکل، ابزارِ درستِ این کار است.
+
+def _disk_shape_features(gray: np.ndarray, cx: float, cy: float, r: float,
+                         cfg) -> Dict[str, float]:
+    """سه ویژگیِ مستقل از برچسب و مستقل از چرخش برایِ یک کاندیدِ دایره‌ای.
+
+    همه‌ی شعاع‌ها نسبت به شعاعِ خودِ کاندید بیان می‌شوند، پس ویژگی‌ها نسبت به مقیاسِ
+    تصویر ناوردا می‌مانند -- همان اصلِ نسبت‌محورِ کلِ پروژه.
+    """
+    h, w = gray.shape[:2]
+    n = int(cfg.disk_verify_num_angles)
+    ang = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
+    ca, sa = np.cos(ang), np.sin(ang)
+
+    def sample(scale):
+        xs = np.clip(np.round(cx + scale * r * ca).astype(np.int32), 0, w - 1)
+        ys = np.clip(np.round(cy + scale * r * sa).astype(np.int32), 0, h - 1)
+        return gray[ys, xs].astype(np.float64)
+
+    inner = sample(float(cfg.disk_verify_inner_scale))
+    outer = sample(float(cfg.disk_verify_outer_scale))
+    step = inner - outer                     # پله‌ی لبه در هر زاویه
+
+    med = float(np.median(step))
+    # پوششِ کمانی: کسری از زاویه‌ها که پله‌ی لبه در آن‌ها هم‌جهت و هم‌مرتبه با اجماعِ
+    # خودِ همان دایره است. برایِ یک دیسکِ واقعی نزدیکِ ۱، برایِ دایره‌ای که از متنِ
+    # چاپی یا یک کمانِ هاله ساخته شده به‌مراتب کمتر.
+    if med > 0:
+        cover = float(np.mean(step > 0.5 * med))
+    else:
+        cover = 0.0
+
+    spread = float(np.median(np.abs(step - med))) * 1.4826   # انحرافِ معیارِ مقاوم
+    return {
+        "arc_coverage": cover,
+        "rim_step": med,
+        "rim_symmetry": float(spread / abs(med)) if abs(med) > 1e-6 else float("inf"),
+    }
+
+
+def verify_disk_candidates(gray: np.ndarray, candidates: List[Dict[str, Any]],
+                           cfg) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """کاندیدها را به پذیرفته/ردشده تقسیم می‌کند.
+
+    دو قاعده، هر دو بدونِ آستانه‌ی برازش‌شده رویِ داده‌ی ارزیابی:
+
+    (۱) پوششِ کمانی باید از `disk_verify_min_arc_coverage` بیشتر باشد. این عدد از
+        هندسه می‌آید نه از داده: یک دیسکِ واقعی ممکن است تا حدودِ یک‌چهارمِ محیطش با
+        دیسکِ همسایه یا لبه‌ی ظرف هم‌پوشانی داشته باشد، پس ۰.۷۵ کفِ منطقی است.
+
+    (۲) پله‌ی لبه باید نسبت به **اجماعِ کاندیدهایِ همان تصویر** پرت نباشد. مرجع از
+        خودِ تصویر می‌آید، پس هیچ عددِ سراسری تنظیم نمی‌شود. ضریبِ ۳σ همان سطحِ
+        استانداردی است که ماژولِ ۱۶.۵ هم استفاده می‌کند.
+    """
+    kept: List[Dict[str, Any]] = []
+    dropped: List[Dict[str, Any]] = []
+    if not candidates:
+        return kept, dropped
+
+    for c in candidates:
+        c.update(_disk_shape_features(gray, float(c["x"]), float(c["y"]),
+                                      float(c["r"]), cfg))
+
+    steps = np.array([c["rim_step"] for c in candidates], dtype=np.float64)
+    ref = float(np.median(steps))
+    mad = float(np.median(np.abs(steps - ref))) * 1.4826
+    lo = ref - float(cfg.disk_verify_step_sigma) * mad if mad > 1e-6 else -np.inf
+
+    for c in candidates:
+        reasons = []
+        if c["arc_coverage"] < float(cfg.disk_verify_min_arc_coverage):
+            reasons.append("arc_coverage_low")
+        if c["rim_step"] < lo:
+            reasons.append("rim_step_outlier")
+        if reasons:
+            c["verify_rejection"] = reasons
+            dropped.append(c)
+        else:
+            kept.append(c)
+    return kept, dropped
+
+
+for dish in dishes:
+    if not cfg.disk_verify_enabled:
+        dish["hough_candidates_unverified"] = list(dish.get("hough_candidates", []))
+        print(f"[Dish #{dish['index']}] اعتبارسنجیِ شکلِ دیسک غیرفعال است.")
+        continue
+
+    _cands = dish.get("hough_candidates", [])
+    _kept, _drop = verify_disk_candidates(dish["roi_gray_masked"], _cands, cfg)
+    dish["hough_candidates_unverified"] = _cands
+    dish["hough_candidates"] = _kept
+    dish["disk_verify_rejected"] = _drop
+
+    print(f"[Dish #{dish['index']}] اعتبارسنجیِ شکلِ دیسک: "
+          f"{len(_kept)} پذیرفته، {len(_drop)} رد از {len(_cands)} کاندید.")
+    if _drop:
+        _rc: Dict[str, int] = {}
+        for c in _drop:
+            for rr in c["verify_rejection"]:
+                _rc[rr] = _rc.get(rr, 0) + 1
+        print("  دلایل رد:", ", ".join(f"{k}={v}" for k, v in sorted(_rc.items())))
 
 # %% [markdown]
 # ## 11.5) بررسی خودکار محتمل‌بودن پتری — تیر دوم (بر مبنای کاندیدهای معتبر Hough)

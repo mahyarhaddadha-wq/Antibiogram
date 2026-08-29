@@ -1,0 +1,14 @@
+gt_01.jpg: TP=9 FP=0 FN=0 | verify rejected 0 (0 on real disks)
+gt_02.jpg: TP=3 FP=0 FN=0 | verify rejected 4 (3 on real disks)
+gt_03.jpg: TP=9 FP=0 FN=0 | verify rejected 9 (0 on real disks)
+gt_04.jpg: TP=9 FP=0 FN=0 | verify rejected 2 (0 on real disks)
+gt_05.jpg: TP=9 FP=0 FN=0 | verify rejected 3 (1 on real disks)
+gt_06.jpg: TP=9 FP=0 FN=0 | verify rejected 4 (0 on real disks)
+gt_07.jpg: TP=9 FP=0 FN=0 | verify rejected 10 (1 on real disks)
+gt_08.jpg: TP=8 FP=0 FN=1 | verify rejected 2 (0 on real disks)
+gt_09.jpg: TP=9 FP=0 FN=0 | verify rejected 3 (0 on real disks)
+gt_10.jpg: TP=8 FP=0 FN=1 | verify rejected 3 (2 on real disks)
+gt_11.jpg: TP=8 FP=0 FN=1 | verify rejected 4 (0 on real disks)
+
+TOTAL TP=90 FP=0 FN=3  P=1.000 R=0.968 F1=0.984
+verify stage rejected 7 real disks and 37 non-disks
