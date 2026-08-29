@@ -590,6 +590,14 @@ cfg.disk_verify_min_arc_coverage = 0.75  # کفِ پوششِ کمانیِ لبه
 cfg.disk_verify_step_sigma = 3.0         # پرت بودنِ پله‌ی لبه نسبت به اجماعِ همان تصویر؛
                                          # همان سطحِ ۳σ که ماژولِ ۱۶.۵ هم به‌کار می‌برد
 
+
+# --- برچسب‌گذاریِ تصویریِ خروجی (ماژول‌هایِ ۱۶.۷، ۱۸، ۱۹) ---
+# همه نسبت به شعاعِ خودِ دیسک، نه پیکسلِ مطلق -- تا در هر رزولوشنی یکسان دیده شود.
+cfg.label_font_scale_frac = 0.055   # اندازه‌ی قلم (× شعاعِ دیسک)
+cfg.label_thickness_frac = 0.075    # ضخامتِ قلم (× شعاعِ دیسک)
+cfg.label_offset_frac = 0.55        # فاصله‌ی برچسب از بیرونی‌ترین دایره (× شعاعِ دیسک)
+cfg.label_circle_thickness_frac = 0.045  # ضخامتِ دایره‌هایِ رسم‌شده (× شعاعِ دیسک)
+
 # %% [markdown]
 # ## ۲) توابع کمکی (Helper Functions)
 # تابع ساخت کرنل بیضوی و تابع نمایش تصویر — این‌ها «فیلتر» نیستند، فقط ابزار مشترک بقیه‌ی سلول‌ها.
@@ -4871,6 +4879,103 @@ for dish in dishes:
             mm = (2.0 * res["halo_radius_px"] / ppm) if ppm else float("nan")
             print(f"    دیسک {i}: {res['fusion_source']:<10} قطر≈{mm:.1f} mm")
 
+
+# ── خروجیِ تصویریِ ادغام: قطرِ نهایی به‌صورتِ *دایره* رویِ مختصاتِ خودِ هر دیسک ────
+# چرا دایره و نه کانتورِ per-angle: عددی که در گزارش و در ارزیابی استفاده می‌شود یک
+# **قطرِ اسکالر** است (`halo_radius_px`)، نه شکلِ نامنظم. رسمِ همان دایره یعنی آن‌چه
+# می‌بینید دقیقاً همان چیزی است که اندازه‌گیری می‌شود -- و اگر دایره با مرزِ واقعیِ
+# هاله نخواند، همان‌جا چشمی معلوم می‌شود که خطا از کجاست.
+# رنگ، شاخه‌ی تصمیم‌گیرنده را کد می‌کند تا در یک نگاه معلوم باشد کدام دیسک را کدام
+# شاخه اندازه گرفته -- همان تفکیکی که کلِ تحلیلِ خطا رویش بنا شده.
+
+FUSION_SOURCE_COLORS = {          # BGR
+    "watershed": (0, 200, 0),     # سبز  -- دقیق‌ترین شاخه (MAE ~۱.۱mm)
+    "otsu": (0, 165, 255),        # نارنجی
+    "radial": (255, 0, 255),      # بنفش -- کم‌دقت‌ترین، بیشترِ خطا این‌جاست
+}
+
+
+def _label_geometry(r_disk, cfg):
+    """اندازه‌ی قلم/ضخامت را نسبت به شعاعِ دیسک می‌دهد (نه پیکسلِ مطلق)."""
+    scale = max(0.35, float(r_disk) * float(cfg.label_font_scale_frac))
+    thick = max(1, int(round(float(r_disk) * float(cfg.label_thickness_frac))))
+    ring = max(1, int(round(float(r_disk) * float(cfg.label_circle_thickness_frac))))
+    return scale, thick, ring
+
+
+def draw_disk_label(img, cx, cy, r_disk, text, dish_center=None, cfg=None,
+                    color=(255, 255, 255), r_ref=None):
+    """شماره/برچسبِ دیسک را **کنارِ** خودِ دیسک و خوانا می‌نویسد.
+
+    برچسب در جهتِ دور شدن از مرکزِ ظرف قرار می‌گیرد تا رویِ دیسکِ همسایه نیفتد؛ اگر
+    مرکزِ ظرف داده نشود، بالایِ دیسک نوشته می‌شود. متن با حاشیه‌ی تیره کشیده می‌شود
+    تا هم رویِ کاغذِ روشنِ دیسک و هم رویِ آگارِ تیره خوانا بماند.
+
+    `r_ref` شعاعِ **بیرونی‌ترین دایره‌ی رسم‌شده** است (هاله، اگر باشد). فاصله از آن
+    گرفته می‌شود نه از خودِ دیسک، وگرنه برچسب دقیقاً رویِ دایره‌ی هاله می‌افتد و
+    هیچ‌کدام خوانا نمی‌مانند. اندازه‌ی قلم اما به شعاعِ *دیسک* بسته می‌ماند تا در
+    یک پلیت همه‌ی برچسب‌ها هم‌اندازه باشند.
+    """
+    scale, thick, _ = _label_geometry(r_disk, cfg)
+    if dish_center is not None:
+        vx, vy = float(cx) - float(dish_center[0]), float(cy) - float(dish_center[1])
+        n = (vx * vx + vy * vy) ** 0.5
+        ux, uy = (vx / n, vy / n) if n > 1e-6 else (0.0, -1.0)
+    else:
+        ux, uy = 0.0, -1.0
+    r_out = float(r_ref) if r_ref else float(r_disk)
+    d = r_out + float(r_disk) * float(cfg.label_offset_frac)
+    (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, thick)
+    px = int(round(cx + ux * d - tw / 2.0))
+    py = int(round(cy + uy * d + th / 2.0))
+    px = max(2, min(px, img.shape[1] - tw - 2))
+    py = max(th + 2, min(py, img.shape[0] - 2))
+    cv2.putText(img, text, (px, py), cv2.FONT_HERSHEY_SIMPLEX, scale,
+                (0, 0, 0), thick + 3, cv2.LINE_AA)      # حاشیه‌ی تیره
+    cv2.putText(img, text, (px, py), cv2.FONT_HERSHEY_SIMPLEX, scale,
+                color, thick, cv2.LINE_AA)
+    return img
+
+
+for dish in dishes:
+    ox, oy = dish["roi_offset_xy"]
+    dcx, dcy = dish["center_roi_xy"]
+    dish_center_global = (dcx + ox, dcy + oy)
+    ppm = dish.get("px_per_mm_est")
+    vis = original_bgr.copy()
+
+    for i, (cand, res) in enumerate(zip(dish["final_candidates"],
+                                        dish["halo_results"]), start=1):
+        gx, gy = int(round(cand["x"] + ox)), int(round(cand["y"] + oy))
+        r_disk = float(cand["r"])
+        _, _, ring = _label_geometry(r_disk, cfg)
+
+        cv2.circle(vis, (gx, gy), int(round(r_disk)), (0, 0, 255), ring)  # خودِ دیسک
+
+        src = res.get("fusion_source")
+        if src and res.get("halo_radius_px", 0.0) > r_disk:
+            col = FUSION_SOURCE_COLORS.get(src, (255, 255, 255))
+            # همان قطرِ اسکالری که گزارش و ارزیابی از آن استفاده می‌کنند
+            cv2.circle(vis, (gx, gy), int(round(res["halo_radius_px"])), col, ring)
+            mm = (2.0 * res["halo_radius_px"] / ppm) if ppm else float("nan")
+            txt = f"{i}: {mm:.1f}mm"
+            lab_col = col
+            r_out = float(res["halo_radius_px"])
+        else:
+            txt = f"{i}: -"
+            lab_col = (200, 200, 200)
+            r_out = r_disk
+        draw_disk_label(vis, gx, gy, r_disk, txt, dish_center_global, cfg,
+                        lab_col, r_out)
+
+    n_ws = sum(1 for r in dish["halo_results"] if r.get("fusion_source") == "watershed")
+    n_ot = sum(1 for r in dish["halo_results"] if r.get("fusion_source") == "otsu")
+    n_rd = sum(1 for r in dish["halo_results"] if r.get("fusion_source") == "radial")
+    show(cv2.cvtColor(vis, cv2.COLOR_BGR2RGB),
+         f"[Dish #{dish['index']}] قطرِ نهاییِ ادغام‌شده — "
+         f"سبز=واترشد({n_ws})  نارنجی=Otsu({n_ot})  بنفش=شعاعی({n_rd})",
+         figsize=cfg.final_figsize, cfg=cfg)
+
 # %% [markdown]
 # ## ۱۷) تشخیص حباب‌های روی هاله (رخدادهای درون آزمایش)
 # روی هاله‌های تاییدشده‌ی ماژول ۱۶ ممکن است حباب‌های کوچک شکل بگیرند. این ماژول با استفاده از پروفایل شعاعی هاله (که ماژول ۱۶ همین الان محاسبه کرده) به‌عنوان پس‌زمینه‌ی نرم، سیگنال گرادیان ماژول ۱۰ (`halo_map`، که تا این‌جا بلااستفاده مانده بود) به‌عنوان سیگنال کمکی، و Distance Transform برای تخمین شعاع هر حباب (سومین کاربرد DT به‌عنوان ابزار، نه شاخه‌ی مستقل)، حباب‌ها را استخراج می‌کند و تعداد + مساحت مجموع + برآورد حجم توده را گزارش می‌دهد.
@@ -5196,6 +5301,41 @@ else:
                 print(f"    دیسک {rec['disk_index']}: {rec['zone_mm']:5.1f} mm → "
                       f"دسته اعلام نشد (آنتی‌بیوتیک نامعلوم)؛ ممکن‌ها: {share or '—'}")
 
+
+    # ── خروجیِ تصویری: شماره‌ی دیسک + دسته‌ی بالینی، کنارِ خودِ دیسک ──────────
+    # رنگ، دسته را کد می‌کند تا پلیت در یک نگاه خوانده شود؛ همان قراردادِ رنگیِ
+    # مرسومِ آزمایشگاه: سبز=حساس، نارنجی=میانی، قرمز=مقاوم.
+    EUCAST_COLORS = {"S": (0, 200, 0), "I": (0, 165, 255), "R": (0, 0, 255)}
+
+    _ox, _oy = dish["roi_offset_xy"]
+    _dcx, _dcy = dish["center_roi_xy"]
+    _center = (_dcx + _ox, _dcy + _oy)
+    _vis = original_bgr.copy()
+    for _rec, _cand, _res in zip(results, dish["final_candidates"],
+                                 dish["halo_results"]):
+        _gx = int(round(_cand["x"] + _ox))
+        _gy = int(round(_cand["y"] + _oy))
+        _rd = float(_cand["r"])
+        _, _, _ring = _label_geometry(_rd, cfg)
+        _cat = _rec.get("category")
+        _col = EUCAST_COLORS.get(_cat, (180, 180, 180))
+        cv2.circle(_vis, (_gx, _gy), int(round(_rd)), _col, _ring)
+        _rout = _rd
+        if _res.get("fusion_source") and _res.get("halo_radius_px", 0.0) > _rd:
+            _rout = float(_res["halo_radius_px"])
+            cv2.circle(_vis, (_gx, _gy), int(round(_rout)), _col, max(1, _ring - 1))
+        if _cat:
+            _txt = f"{_rec['disk_index']}: {_cat}" + ("*" if _rec.get("atu") else "")
+        else:
+            _txt = f"{_rec['disk_index']}: ?"
+        draw_disk_label(_vis, _gx, _gy, _rd, _txt, _center, cfg, _col, _rout)
+
+    _known = sum(1 for r in results if r.get("category"))
+    show(cv2.cvtColor(_vis, cv2.COLOR_BGR2RGB),
+         f"[Dish #{dish['index']}] طبقه‌بندیِ EUCAST — سبز=S  نارنجی=I  قرمز=R  "
+         f"خاکستری=نامعلوم  (* = داخلِ ATU)   [{_known}/{len(results)} طبقه‌بندی‌شده]",
+         figsize=cfg.final_figsize, cfg=cfg)
+
 # %% [markdown]
 # ## ۱۹) گزارش نهایی یکپارچه
 # برای هر پتری و هر دیسک: قطر دیسک (mm) → قطر هاله (mm یا «تشکیل نشد») → رخدادهای حباب (تعداد + مساحت + حجم تقریبی).
@@ -5245,4 +5385,43 @@ for dish in dishes:
                 line += " (داخلِ ATU — گزارش نشود)"
 
         print(line)
+
+
+# ── تصویرِ خلاصه‌ی نهایی: شماره‌ی هر دیسک + قطرِ دیسک و قطرِ هاله ──────────────
+# این نمایِ *اندازه‌گیری* است (در برابرِ نمایِ *بالینیِ* ماژولِ ۱۸): همان دو عددی که
+# در گزارشِ متنیِ بالا چاپ شد، کنارِ خودِ دیسک نوشته می‌شود تا مقایسه‌ی چشمی با
+# عکسِ اصلی یا با اندازه‌گیریِ کارشناس مستقیم و بدونِ شمردن ممکن باشد.
+
+for dish in dishes:
+    ox, oy = dish["roi_offset_xy"]
+    dcx, dcy = dish["center_roi_xy"]
+    center = (dcx + ox, dcy + oy)
+    ppm = dish.get("px_per_mm_est")
+    vis = original_bgr.copy()
+
+    for i, (cand, res) in enumerate(zip(dish["final_candidates"],
+                                        dish["halo_results"]), start=1):
+        gx, gy = int(round(cand["x"] + ox)), int(round(cand["y"] + oy))
+        r_disk = float(cand["r"])
+        _, _, ring = _label_geometry(r_disk, cfg)
+        cv2.circle(vis, (gx, gy), int(round(r_disk)), (0, 0, 255), ring)
+
+        d_mm = (2.0 * r_disk / ppm) if ppm else float("nan")
+        if res.get("status") == "ok" and res.get("halo_radius_px", 0.0) > r_disk:
+            cv2.circle(vis, (gx, gy), int(round(res["halo_radius_px"])),
+                       (0, 255, 0), ring)
+            h_mm = (2.0 * res["halo_radius_px"] / ppm) if ppm else float("nan")
+            txt = f"{i}: D{d_mm:.1f} H{h_mm:.1f}"
+            col = (0, 255, 0)
+            r_out = float(res["halo_radius_px"])
+        else:
+            txt = f"{i}: D{d_mm:.1f} H-"
+            col = (200, 200, 200)
+            r_out = r_disk
+        draw_disk_label(vis, gx, gy, r_disk, txt, center, cfg, col, r_out)
+
+    show(cv2.cvtColor(vis, cv2.COLOR_BGR2RGB),
+         f"[Dish #{dish['index']}] خلاصه‌ی نهایی — D=قطرِ دیسک، H=قطرِ هاله (mm)؛ "
+         f"سبز=هاله تشکیل شد، خاکستری=تشکیل نشد",
+         figsize=cfg.final_figsize, cfg=cfg)
 
