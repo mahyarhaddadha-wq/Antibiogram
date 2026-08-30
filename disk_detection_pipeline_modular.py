@@ -1410,6 +1410,24 @@ def _fit_growth_logistic(r: np.ndarray, y: np.ndarray, B: float,
     return {"A": float(A), "B": float(B), "r0": float(r0), "w": float(w), "r2": float(r2)}
 
 
+def _dt_inside_mask(mask_u8: np.ndarray) -> np.ndarray:
+    """فاصله‌ی هر پیکسل تا نزدیک‌ترین *بیرونِ* ماسک -- با حاشیه‌ی صفرِ اجباری.
+
+    چرا حاشیه لازم است (باگِ واقعیِ گزارش‌شده): `cv2.distanceTransform` فاصله تا
+    نزدیک‌ترین پیکسلِ **صفر** را می‌دهد. اگر ماسک هیچ پیکسلِ صفری نداشته باشد --
+    که وقتی ظرفِ پتری از لبه‌ی خودِ عکس بیرون زده باشد دقیقاً همین می‌شود، چون
+    داخلِ ROI همه‌جا ظرف است -- خروجی `FLT_MAX` یعنی ۳٫۴e38 می‌شود. آن عدد بعداً
+    به‌عنوانِ شعاعِ جست‌وجو استفاده می‌شد و `np.linspace` را با ۴e37 حلقه صدا می‌زد:
+    «ValueError: Maximum allowed size exceeded».
+
+    با افزودنِ یک حاشیه‌ی صفر پیش از تبدیل، معنایِ کمیت دقیقاً همان می‌شود که
+    می‌خواهیم: «فاصله تا لبه‌ی ظرف **یا** لبه‌ی کادر، هر کدام نزدیک‌تر» -- چون
+    جست‌وجویِ هاله از کادرِ عکس هم نباید بیرون بزند.
+    """
+    padded = cv2.copyMakeBorder(mask_u8, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=0)
+    return cv2.distanceTransform(padded, cv2.DIST_L2, 3)[1:-1, 1:-1]
+
+
 def segment_halos_growth_model(canvas: np.ndarray, agar_mask: np.ndarray,
                                dish_mask: np.ndarray, disks: List[Dict[str, Any]],
                                far_ref: Optional[Dict[str, Any]], cfg) -> Dict[str, Any]:
@@ -1449,7 +1467,7 @@ def segment_halos_growth_model(canvas: np.ndarray, agar_mask: np.ndarray,
 
     mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
         else np.full((h, w_img), 255, dtype=np.uint8)
-    dt_edge = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
+    dt_edge = _dt_inside_mask(mask_u8)
     n_angles = int(cfg.halo_num_angles)
     angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
     lawn_mean, lawn_std = far_ref["mean"], far_ref["std"]
@@ -1582,7 +1600,7 @@ def segment_halos_statistical(canvas: np.ndarray, agar_mask: np.ndarray, dish_ma
 
     mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
         else np.full((h, w), 255, dtype=np.uint8)
-    dt_edge = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
+    dt_edge = _dt_inside_mask(mask_u8)
     lawn_mean, lawn_std = far_ref["mean"], far_ref["std"]
 
     n_angles = int(cfg.halo_num_angles)
@@ -1741,7 +1759,7 @@ def segment_halos_watershed(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask
 
     n_angles = int(cfg.halo_num_angles)
     angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
-    dt_edge = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
+    dt_edge = _dt_inside_mask(mask_u8)
 
     r_ref = float(np.median([d["r"] for d in disks]))
     k = _safe_odd_ksize(int(round(cfg.halo_otsu_morph_frac * r_ref)), minimum=3)
@@ -1846,7 +1864,7 @@ def segment_halos_otsu(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.
     angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
     mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
         else np.full((h, w), 255, dtype=np.uint8)
-    dt_edge = cv2.distanceTransform(mask_u8, cv2.DIST_L2, 3)
+    dt_edge = _dt_inside_mask(mask_u8)
 
     for d in disks:
         r_disk = float(d["r"])
