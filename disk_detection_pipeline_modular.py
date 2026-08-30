@@ -581,8 +581,11 @@ cfg.eucast_disk_agents = {}             # مثلاً {1: "Ciprofloxacin", 2: "Ge
 # --- ماژول ۱۱.۵ — اعتبارسنجیِ شکلِ کاندیدهایِ دیسک (پ۱+پ۳) ---
 cfg.disk_verify_enabled = True
 cfg.disk_verify_num_angles = 72          # هر ۵ درجه؛ همان تفکیکِ زاویه‌ایِ ماژول‌هایِ هاله
-cfg.disk_verify_inner_scale = 0.85       # نمونه‌برداریِ داخلِ لبه (× شعاعِ خودِ کاندید)
-cfg.disk_verify_outer_scale = 1.15       # نمونه‌برداریِ بیرونِ لبه (× شعاعِ خودِ کاندید)
+cfg.disk_verify_inner_scales = (0.70, 0.82)   # نمونه‌برداری داخلِ لبه (× شعاعِ کاندید)
+cfg.disk_verify_outer_scales = (1.12, 1.24)   # نمونه‌برداری بیرونِ لبه (× شعاعِ کاندید)
+cfg.disk_verify_edge_sigma = 3.0         # پله‌ی لبه باید از این چند برابرِ نویزِ محلی
+                                         # بیشتر باشد تا «لبه» شمرده شود؛ همان سطحِ ۳σ
+                                         # که ماژول‌هایِ ۱۶.۵ و ۱۱.۵ هم به‌کار می‌برند
 cfg.disk_verify_min_arc_coverage = 0.75  # کفِ پوششِ کمانیِ لبه -- از هندسه: یک دیسکِ
                                          # واقعی ممکن است تا ~یک‌چهارمِ محیطش با دیسکِ
                                          # همسایه یا لبه‌ی ظرف هم‌پوشانی داشته باشد،
@@ -2977,23 +2980,35 @@ def _disk_shape_features(gray: np.ndarray, cx: float, cy: float, r: float,
         ys = np.clip(np.round(cy + scale * r * sa).astype(np.int32), 0, h - 1)
         return gray[ys, xs].astype(np.float64)
 
-    inner = sample(float(cfg.disk_verify_inner_scale))
-    outer = sample(float(cfg.disk_verify_outer_scale))
-    step = inner - outer                     # پله‌ی لبه در هر زاویه
+    # چند شعاع در هر سویِ لبه نمونه‌برداری می‌شود، نه یکی: پراکندگیِ *درونِ* هر گروه
+    # برآوردِ نویز/بافت را می‌دهد، مستقل از خودِ پله‌ی لبه.
+    ins = np.stack([sample(s) for s in cfg.disk_verify_inner_scales])
+    outs = np.stack([sample(s) for s in cfg.disk_verify_outer_scales])
+    step = ins.mean(axis=0) - outs.mean(axis=0)      # پله‌ی لبه در هر زاویه
+
+    # مقیاسِ نویز: اختلافِ نمونه‌هایِ هم‌گروه با میانگینِ گروهِ خودشان. این کمیت
+    # لبه را نمی‌بیند (چون درون‌گروهی است) و فقط بافت و نویز را می‌سنجد.
+    dev = np.concatenate([(ins - ins.mean(axis=0)).ravel(),
+                          (outs - outs.mean(axis=0)).ravel()])
+    noise = float(np.median(np.abs(dev))) * 1.4826
+    thr = max(float(cfg.disk_verify_edge_sigma) * noise, 1.0)
+
+    # پوششِ کمانی = کسری از زاویه‌ها که در آن‌ها واقعاً لبه‌ای وجود دارد، یعنی داخل
+    # به‌اندازه‌ی معناداری از بیرون روشن‌تر است.
+    #
+    # نسخه‌ی اولِ این معیار پله‌ی هر زاویه را با «نصفِ میانه‌ی پله‌هایِ همان دایره»
+    # مقایسه می‌کرد. آن کار در عمل *یکنواختیِ پس‌زمینه* را می‌سنجید، نه وجودِ لبه را:
+    # دیسکی که یک طرفش سایه و طرفِ دیگرش آگارِ روشن باشد، در همه‌ی جهت‌ها لبه‌ی قویِ
+    # واقعی دارد ولی پله‌اش حولِ دایره تغییر می‌کند، و به‌غلط رد می‌شد. آستانه حالا از
+    # **نویزِ خودِ تصویر** می‌آید نه از میانه‌ی پله‌هایِ همان دایره.
+    cover = float(np.mean(step > thr))
 
     med = float(np.median(step))
-    # پوششِ کمانی: کسری از زاویه‌ها که پله‌ی لبه در آن‌ها هم‌جهت و هم‌مرتبه با اجماعِ
-    # خودِ همان دایره است. برایِ یک دیسکِ واقعی نزدیکِ ۱، برایِ دایره‌ای که از متنِ
-    # چاپی یا یک کمانِ هاله ساخته شده به‌مراتب کمتر.
-    if med > 0:
-        cover = float(np.mean(step > 0.5 * med))
-    else:
-        cover = 0.0
-
     spread = float(np.median(np.abs(step - med))) * 1.4826   # انحرافِ معیارِ مقاوم
     return {
         "arc_coverage": cover,
         "rim_step": med,
+        "rim_noise": noise,
         "rim_symmetry": float(spread / abs(med)) if abs(med) > 1e-6 else float("inf"),
     }
 
@@ -3686,31 +3701,55 @@ for dish in dishes:
 #
 # فعلاً فقط محاسبه/نمایش -- ورودش به ادغام مشروط به سنجشِ کمّی است.
 
-for dish in dishes:
-    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
-    stat_res = segment_halos_statistical(dish["agar_canvas"], dish["agar_mask"],
-                                         dish["processing_mask_roi"], disks_in,
-                                         dish.get("far_field_ref"), cfg)
-    dish["halo_statistical"] = stat_res
 
-    n_zone = sum(1 for p in stat_res["per_disk"] if p["has_zone"])
-    print(f"[Dish #{dish['index']}] شاخه‌ی آماری: status={stat_res['status']} "
-          f"| {n_zone} دیسک دارایِ هاله")
-    for i_d, p in enumerate(stat_res["per_disk"], start=1):
-        if p["has_zone"]:
-            r_d = disks_in[i_d - 1]["r"]
-            print(f"    دیسک {i_d}: r_mean={p['r_mean_px']:.1f}px "
-                  f"({p['r_mean_px'] / max(r_d, 1e-6):.2f}× شعاعِ دیسک)")
+_MODNAME = 'ماژول ۱۵.۸ — شاخه\u200cی آماری'
+_MODKEY = 'halo_statistical'
+# ⚠️ این ماژول **تشخیصی** است: خروجی‌اش واردِ زنجیره‌ی تصمیم (ادغامِ ۱۶.۷) نمی‌شود.
+# پس خطایِ آن نباید کلِ اجرا را متوقف کند -- کاربر باید گزارشِ نهایی‌اش را بگیرد و
+# در کنارش دقیقاً ببیند این شاخه چرا شکست خورد. خطا کامل چاپ می‌شود، نه پنهان.
+import traceback as _tb
 
-    vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
-    for c, p in zip(dish["final_candidates"], stat_res["per_disk"]):
-        cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))), int(round(c["r"])), (255, 40, 40), 2)
-        if p["has_zone"] and p["final_radii"] is not None:
-            ang = np.linspace(0.0, 2.0 * np.pi, int(cfg.halo_num_angles), endpoint=False)
-            pts = np.stack([c["x"] + p["final_radii"] * np.cos(ang),
-                            c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
-            cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (40, 220, 255), 3)
-    show(vis, f"[Dish #{dish['index']}] شاخه‌ی آماری — مرزِ «هنوز لَون نیست»", cfg=cfg)
+try:
+    for dish in dishes:
+        disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+        stat_res = segment_halos_statistical(dish["agar_canvas"], dish["agar_mask"],
+                                             dish["processing_mask_roi"], disks_in,
+                                             dish.get("far_field_ref"), cfg)
+        dish["halo_statistical"] = stat_res
+
+        n_zone = sum(1 for p in stat_res["per_disk"] if p["has_zone"])
+        print(f"[Dish #{dish['index']}] شاخه‌ی آماری: status={stat_res['status']} "
+              f"| {n_zone} دیسک دارایِ هاله")
+        for i_d, p in enumerate(stat_res["per_disk"], start=1):
+            if p["has_zone"]:
+                r_d = disks_in[i_d - 1]["r"]
+                print(f"    دیسک {i_d}: r_mean={p['r_mean_px']:.1f}px "
+                      f"({p['r_mean_px'] / max(r_d, 1e-6):.2f}× شعاعِ دیسک)")
+
+        vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+        for c, p in zip(dish["final_candidates"], stat_res["per_disk"]):
+            cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))), int(round(c["r"])), (255, 40, 40), 2)
+            if p["has_zone"] and p["final_radii"] is not None:
+                ang = np.linspace(0.0, 2.0 * np.pi, int(cfg.halo_num_angles), endpoint=False)
+                pts = np.stack([c["x"] + p["final_radii"] * np.cos(ang),
+                                c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
+                cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (40, 220, 255), 3)
+        show(vis, f"[Dish #{dish['index']}] شاخه‌ی آماری — مرزِ «هنوز لَون نیست»", cfg=cfg)
+
+
+except Exception as _e:
+    print("=" * 70)
+    print(f"[{_MODNAME}] با خطا متوقف شد -- بقیه‌ی پایپ‌لاین ادامه می‌یابد.")
+    print(f"  نوعِ خطا: {type(_e).__name__}: {_e}")
+    print("  ردِ کامل:")
+    for _ln in _tb.format_exc().splitlines()[-12:]:
+        print("   ", _ln)
+    print("  این شاخه تشخیصی است و در قطرِ نهاییِ گزارش‌شده اثری ندارد.")
+    print("=" * 70)
+    for _d in dishes:
+        _d.setdefault(_MODKEY, {"status": "error", "per_disk": [
+            {"has_zone": False, "final_radii": None, "r_mean_px": 0.0}
+            for _ in _d.get("final_candidates", [])]})
 
 # %% [markdown]
 # ## 15.9) شاخه‌ی موازیِ مدلِ رشد — برازشِ لجستیک به گذارِ شعاعی
@@ -3733,37 +3772,61 @@ for dish in dishes:
 #
 # فعلاً فقط محاسبه/نمایش -- ورودش به ادغام مشروط به سنجشِ کمّی رویِ هر ۱۱ عکس است.
 
-for dish in dishes:
-    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
-    gm = segment_halos_growth_model(dish["agar_canvas"], dish["agar_mask"],
-                                    dish["processing_mask_roi"], disks_in,
-                                    dish.get("far_field_ref"), cfg)
-    dish["halo_growth_model"] = gm
 
-    n_zone = sum(1 for p in gm["per_disk"] if p["has_zone"])
-    print(f"[Dish #{dish['index']}] شاخه‌ی مدلِ رشد: status={gm['status']} "
-          f"| {n_zone} دیسک دارایِ هاله")
-    for i_d, p in enumerate(gm["per_disk"], start=1):
-        if p["has_zone"]:
-            r_d = disks_in[i_d - 1]["r"]
-            print(f"    دیسک {i_d}: مرز={p['r_boundary_px']:.1f}px "
-                  f"({p['r_boundary_px'] / max(r_d, 1e-6):.2f}×)  "
-                  f"زیستی={p['r_bio_px']:.1f}px  w={p['w']:.1f}px  R²={p['r2']:.2f}")
+_MODNAME = 'ماژول ۱۵.۹ — مدلِ رشد'
+_MODKEY = 'halo_growth_model'
+# ⚠️ این ماژول **تشخیصی** است: خروجی‌اش واردِ زنجیره‌ی تصمیم (ادغامِ ۱۶.۷) نمی‌شود.
+# پس خطایِ آن نباید کلِ اجرا را متوقف کند -- کاربر باید گزارشِ نهایی‌اش را بگیرد و
+# در کنارش دقیقاً ببیند این شاخه چرا شکست خورد. خطا کامل چاپ می‌شود، نه پنهان.
+import traceback as _tb
 
-    vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
-    for c, p in zip(dish["final_candidates"], gm["per_disk"]):
-        cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
-                   int(round(c["r"])), (255, 40, 40), 2)
-        if p["has_zone"] and p["final_radii"] is not None:
-            ang = np.linspace(0.0, 2.0 * np.pi, int(cfg.halo_num_angles), endpoint=False)
-            pts = np.stack([c["x"] + p["final_radii"] * np.cos(ang),
-                            c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
-            cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (255, 200, 40), 3)
-            if p["r_bio_px"] > c["r"]:
-                cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
-                           int(round(p["r_bio_px"])), (120, 255, 120), 1)
-    show(vis, f"[Dish #{dish['index']}] مدلِ رشد — زرد: مرزِ گزارشی (نقطه‌ی عطف)، "
-              f"سبز: مرزِ زیستی", cfg=cfg)
+try:
+    for dish in dishes:
+        disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+        gm = segment_halos_growth_model(dish["agar_canvas"], dish["agar_mask"],
+                                        dish["processing_mask_roi"], disks_in,
+                                        dish.get("far_field_ref"), cfg)
+        dish["halo_growth_model"] = gm
+
+        n_zone = sum(1 for p in gm["per_disk"] if p["has_zone"])
+        print(f"[Dish #{dish['index']}] شاخه‌ی مدلِ رشد: status={gm['status']} "
+              f"| {n_zone} دیسک دارایِ هاله")
+        for i_d, p in enumerate(gm["per_disk"], start=1):
+            if p["has_zone"]:
+                r_d = disks_in[i_d - 1]["r"]
+                print(f"    دیسک {i_d}: مرز={p['r_boundary_px']:.1f}px "
+                      f"({p['r_boundary_px'] / max(r_d, 1e-6):.2f}×)  "
+                      f"زیستی={p['r_bio_px']:.1f}px  w={p['w']:.1f}px  R²={p['r2']:.2f}")
+
+        vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+        for c, p in zip(dish["final_candidates"], gm["per_disk"]):
+            cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                       int(round(c["r"])), (255, 40, 40), 2)
+            if p["has_zone"] and p["final_radii"] is not None:
+                ang = np.linspace(0.0, 2.0 * np.pi, int(cfg.halo_num_angles), endpoint=False)
+                pts = np.stack([c["x"] + p["final_radii"] * np.cos(ang),
+                                c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
+                cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (255, 200, 40), 3)
+                if p["r_bio_px"] > c["r"]:
+                    cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                               int(round(p["r_bio_px"])), (120, 255, 120), 1)
+        show(vis, f"[Dish #{dish['index']}] مدلِ رشد — زرد: مرزِ گزارشی (نقطه‌ی عطف)، "
+                  f"سبز: مرزِ زیستی", cfg=cfg)
+
+
+except Exception as _e:
+    print("=" * 70)
+    print(f"[{_MODNAME}] با خطا متوقف شد -- بقیه‌ی پایپ‌لاین ادامه می‌یابد.")
+    print(f"  نوعِ خطا: {type(_e).__name__}: {_e}")
+    print("  ردِ کامل:")
+    for _ln in _tb.format_exc().splitlines()[-12:]:
+        print("   ", _ln)
+    print("  این شاخه تشخیصی است و در قطرِ نهاییِ گزارش‌شده اثری ندارد.")
+    print("=" * 70)
+    for _d in dishes:
+        _d.setdefault(_MODKEY, {"status": "error", "per_disk": [
+            {"has_zone": False, "final_radii": None, "r_mean_px": 0.0}
+            for _ in _d.get("final_candidates", [])]})
 
 # %% [markdown]
 # ## ۱۶)  تشخیص هاله‌ی مهار
