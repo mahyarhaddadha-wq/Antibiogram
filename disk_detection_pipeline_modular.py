@@ -522,8 +522,84 @@ cfg.dish_detect_split_attempt_frac = 1.3      # آستانه‌ی تلاش بر�
 cfg.dish_detect_split_marker_frac = 0.35      # پنجره/آستانه‌ی قله‌ی DT برای Watershed × r_lo
 cfg.dish_detect_split_min_dist_frac = 0.9     # حداقل فاصله‌ی نشانگرهای Watershed × r_lo
 
+
+# --- بومِ آگار (ماژولِ ۱۵.۵): زیرساختِ مشترکِ همه‌ی شاخه‌هایِ سگمنت‌کردنِ هاله ---
+# میدانِ روشنایی فقط از رویِ خودِ آگار تخمین زده می‌شود (دیسک‌ها پیش از تخمین کنار
+# گذاشته می‌شوند) -- رجوع به توضیحِ کاملِ build_agar_canvas در سلولِ توابعِ کمکی.
+cfg.agar_illum_kernel_frac = 0.25       # کرنلِ گاوسیِ تخمینِ روشنایی × min(h,w) ROI
+cfg.agar_disk_exclude_scale = 1.35      # شعاعِ کنارگذاریِ هر دیسک از تخمین × r_disk
+cfg.agar_rim_exclude_frac = 0.06        # کنارگذاریِ نوارِ لبه/دیواره‌ی ظرف × شعاعِ پتری
+
+# --- شاخه‌ی موازیِ Otsu رویِ بومِ آگار (ماژولِ ۱۵.۶) ---
+cfg.halo_otsu_min_separability = 0.15   # فقط نگهبانِ هیستوگرامِ کاملاً تباه؛ *نه* آزمونِ حضورِ هاله
+cfg.halo_far_field_frac = 0.20          # کسری از آگار که «میدانِ دور» شمرده می‌شود (تعیینِ پلاریته)
+cfg.halo_otsu_morph_frac = 0.25         # کرنلِ پاک‌سازیِ مورفولوژی × r_disk (ظریف‌تر از تشخیصِ دیسک)
+cfg.halo_otsu_min_radius_scale = 1.20   # هاله باید دستِ‌کم این ضریب از شعاعِ دیسک بزرگ‌تر باشد
+cfg.halo_region_max_gap_frac = 0.35     # شکافِ مجاز پیشِ اعلامِ پایانِ ناحیه × r_disk
+
+# --- شاخه‌ی موازیِ Watershed رویِ بومِ آگار (ماژولِ ۱۵.۷) ---
+cfg.halo_ws_seed_scale = 1.10           # شعاعِ هسته‌ی نشانگرِ هر دیسک × r_disk
+cfg.halo_region_min_effect = 1.0        # حداقلِ اندازه‌ی اثر در برابرِ توزیعِ لَون (بی‌بعد)
+
+# --- شاخه‌ی موازیِ آماری (ماژولِ ۱۵.۸) ---
+cfg.halo_stat_z_gate = 1.0              # چند انحرافِ‌معیارِ لَون تا «هنوز متمایز از لَون» (بی‌بعد)
+cfg.halo_stat_ring_frac = 0.15          # پهنایِ هر حلقه × r_disk
+cfg.halo_stat_max_gap_frac = 0.10       # شکافِ مجاز (کسری از تعدادِ حلقه‌ها)
+
+# --- شاخه‌ی موازیِ مدلِ رشد / برازشِ لجستیک (ماژولِ ۱۵.۹) ---
+cfg.halo_fit_ring_frac = 0.10           # پهنایِ هر حلقه × r_disk
+cfg.halo_fit_min_ring_count = 20        # حداقلِ پیکسل در یک حلقه تا معتبر شمرده شود
+cfg.halo_fit_grid_r0 = 60               # وضوحِ شبکه‌ی جست‌وجو رویِ r0
+cfg.halo_fit_grid_w = 40                # وضوحِ شبکه‌ی جست‌وجو رویِ w (لگاریتمی)
+cfg.halo_fit_w_min_frac = 0.05          # کمینه‌ی پهنایِ گذار × r_disk
+cfg.halo_fit_w_max_frac = 3.0           # بیشینه‌ی پهنایِ گذار × r_disk
+cfg.halo_fit_refine_iters = 40          # تکرارهایِ پالایشِ محلی
+cfg.halo_fit_min_r2 = 0.20              # کفِ R² -- نگهبانِ برازشِ تباه
+cfg.halo_fit_min_amp_sd = 1.0           # حداقلِ دامنه‌ی گذار × انحرافِ‌معیارِ لَون
+cfg.halo_fit_bio_frac = 0.05            # «جدا شدن از مجانب» برایِ مقدارِ زیستی
+
+# --- ادغامِ شاخه‌هایِ هاله (ماژولِ ۱۶.۷) ---
+cfg.halo_fusion_otsu_percentile = 90.0  # آماره‌ی شعاعِ شاخه‌ی Otsu (تجربی: بهتر از میانگین)
+
+
 print("[Module 1.1b] پارامترهای نسبی ماژول‌های ۴/۶/۷/۸/۱۲/۱۳/۱۷ اضافه شدند (بدون هیچ مقدار پیکسلی مطلق جدید).")
 print("[Config Extension] پارامترهای نسبی با موفقیت به cfg اضافه شدند.")
+
+
+# --- ماژول ۱۸ — طبقه‌بندیِ بالینیِ EUCAST ---
+# مسیرِ جدولِ نقاطِ شکست، استخراج‌شده از PDF رسمیِ EUCAST v16.0 توسطِ
+# ground_truth/eucast/parse_breakpoints.py
+cfg.eucast_breakpoint_csv = os.path.join("ground_truth", "eucast",
+                                         "eucast_v16_zone_breakpoints.csv")
+# این دو از تصویر به‌دست نمی‌آیند و باید از آزمایشگاه گرفته شوند. تا وقتی None/خالی
+# باشند، ماژولِ ۱۸ دسته اعلام نمی‌کند و فقط بازه‌ی دسته‌هایِ ممکن را نشان می‌دهد --
+# که صادقانه‌تر از حدس زدنِ آنتی‌بیوتیک است.
+cfg.eucast_organism = None              # مثلاً "Enterobacterales"
+cfg.eucast_disk_agents = {}             # مثلاً {1: "Ciprofloxacin", 2: "Gentamicin"}
+
+
+# --- ماژول ۱۱.۵ — اعتبارسنجیِ شکلِ کاندیدهایِ دیسک (پ۱+پ۳) ---
+cfg.disk_verify_enabled = True
+cfg.disk_verify_num_angles = 72          # هر ۵ درجه؛ همان تفکیکِ زاویه‌ایِ ماژول‌هایِ هاله
+cfg.disk_verify_inner_scales = (0.70, 0.82)   # نمونه‌برداری داخلِ لبه (× شعاعِ کاندید)
+cfg.disk_verify_outer_scales = (1.12, 1.24)   # نمونه‌برداری بیرونِ لبه (× شعاعِ کاندید)
+cfg.disk_verify_edge_sigma = 3.0         # پله‌ی لبه باید از این چند برابرِ نویزِ محلی
+                                         # بیشتر باشد تا «لبه» شمرده شود؛ همان سطحِ ۳σ
+                                         # که ماژول‌هایِ ۱۶.۵ و ۱۱.۵ هم به‌کار می‌برند
+cfg.disk_verify_min_arc_coverage = 0.75  # کفِ پوششِ کمانیِ لبه -- از هندسه: یک دیسکِ
+                                         # واقعی ممکن است تا ~یک‌چهارمِ محیطش با دیسکِ
+                                         # همسایه یا لبه‌ی ظرف هم‌پوشانی داشته باشد،
+                                         # پس ۰.۷۵ کفِ منطقی است (نه انتخاب‌شده از داده)
+cfg.disk_verify_step_sigma = 3.0         # پرت بودنِ پله‌ی لبه نسبت به اجماعِ همان تصویر؛
+                                         # همان سطحِ ۳σ که ماژولِ ۱۶.۵ هم به‌کار می‌برد
+
+
+# --- برچسب‌گذاریِ تصویریِ خروجی (ماژول‌هایِ ۱۶.۷، ۱۸، ۱۹) ---
+# همه نسبت به شعاعِ خودِ دیسک، نه پیکسلِ مطلق -- تا در هر رزولوشنی یکسان دیده شود.
+cfg.label_font_scale_frac = 0.055   # اندازه‌ی قلم (× شعاعِ دیسک)
+cfg.label_thickness_frac = 0.075    # ضخامتِ قلم (× شعاعِ دیسک)
+cfg.label_offset_frac = 0.55        # فاصله‌ی برچسب از بیرونی‌ترین دایره (× شعاعِ دیسک)
+cfg.label_circle_thickness_frac = 0.045  # ضخامتِ دایره‌هایِ رسم‌شده (× شعاعِ دیسک)
 
 # %% [markdown]
 # ## ۲) توابع کمکی (Helper Functions)
@@ -1040,6 +1116,772 @@ def illumination_normalize(gray: np.ndarray, kernel_frac: float) -> np.ndarray:
     corrected = gray_f - illum + float(np.mean(illum))
     corrected = cv2.normalize(corrected, None, 0.0, 255.0, cv2.NORM_MINMAX)
     return corrected.astype(np.uint8)
+
+
+def build_agar_canvas(gray: np.ndarray, dish_mask: np.ndarray,
+                     disks: List[Dict[str, Any]], kernel_frac: float,
+                     disk_exclude_scale: float, petri_radius_px: float = 0.0,
+                     rim_exclude_frac: float = 0.0) -> Dict[str, Any]:
+    """
+    «بومِ آگار»: تصویرِ خاکستریِ داخلِ پتری با نورِ ناهموارِ تصحیح‌شده، که در آن میدانِ
+    روشنایی **فقط از رویِ خودِ آگار** تخمین زده می‌شود -- دیسک‌ها پیش از تخمین کنار
+    گذاشته می‌شوند.
+
+    چرا این تابع لازم شد (باگِ ریشه‌ایِ تلاشِ قبلی، بخشِ ۱۲.۷ تاریخچه): نسخه‌ی عمومیِ
+    `illumination_normalize` کرنلِ گاوسی را رویِ *کلِ* تصویر می‌زند -- شاملِ دیسک‌هایِ
+    سفیدِ روشن. یک دیسکِ روشن، تخمینِ روشناییِ اطرافِ خودش را به‌طورِ مصنوعی بالا
+    می‌برد؛ وقتی این تخمینِ آلوده تفریق شود، دورِ *هر* دیسک یک حلقه‌ی تاریکِ ساختگی
+    ظاهر می‌شود -- دقیقاً همان امضایی که یک هاله‌ی کاذب می‌سازد. این توضیح می‌دهد چرا
+    اعمالِ آن تابع رویِ ورودیِ ماژولِ هاله، به‌جایِ کم‌کردنِ مثبت‌هایِ کاذب، آن‌ها را
+    از ۹ به ۱۷ افزایش داد و مجبور به revert شدیم.
+
+    راه‌حل -- کانولوشنِ نرمال‌شده (normalized convolution): به‌جایِ بلورِ ساده،
+        illum = GaussianBlur(gray × valid) / GaussianBlur(valid)
+    محاسبه می‌شود که در آن `valid` فقط رویِ پیکسل‌هایِ آگار (داخلِ پتری، بیرونِ
+    دیسک‌ها) یک است. نتیجه یک میدانِ روشناییِ صاف است که مقدارش در محلِ دیسک‌ها از
+    آگارِ اطراف *درون‌یابی* می‌شود، نه از خودِ دیسکِ روشن -- پس هیچ حلقه‌ی تاریکِ
+    ساختگی تولید نمی‌شود.
+
+    فرمِ تفریقی (نه تقسیمی) عمداً حفظ شده -- به همان دلیلِ پایداریِ عددی که در
+    `illumination_normalize` مستند است.
+
+    همه‌ی پارامترها نسبی‌اند: کرنل کسری از اندازه‌ی خودِ ROI، و شعاعِ کنارگذاریِ هر
+    دیسک ضریبی از شعاعِ خودِ همان دیسک.
+
+    خروجی: {"canvas", "illum_field", "agar_mask", "agar_mean"}
+      canvas     : تصویرِ تصحیح‌شده‌ی uint8 (ورودیِ مشترکِ همه‌ی شاخه‌هایِ هاله)
+      illum_field: میدانِ روشناییِ تخمین‌زده‌شده (برایِ بازرسی/دیباگ)
+      agar_mask  : ماسکِ پیکسل‌هایی که واقعاً آگار بودند (نه دیسک، نه بیرونِ پتری)
+    """
+    h, w = gray.shape[:2]
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w), 255, dtype=np.uint8)
+
+    # ماسکِ آگار = داخلِ پتری، منهایِ دیسک‌ها (با کمی حاشیه‌ی امن حولِ هر دیسک، چون
+    # لبه‌ی خودِ دیسک هم روشن است و نباید وارد تخمین شود).
+    agar_mask = (mask_u8 > 0).astype(np.uint8)
+
+    # کنارگذاریِ لبه/دیواره‌ی خودِ ظرف: باگِ کشف‌شده هنگامِ ساختِ شاخه‌ی Otsu -- ماسکِ
+    # پتری تا خودِ دیواره‌ی پلاستیکی ادامه دارد، و آن نوار نه آگار است نه لَون بلکه
+    # یک کلاسِ نوریِ سوم (بازتابِ شیشه/پلاستیک). حضورش دو خرابیِ هم‌زمان می‌سازد:
+    # (۱) آستانه‌ی سراسری را به‌سمتِ جداکردنِ «دیواره از بقیه» می‌کشاند نه «هاله از
+    # لَون»، و (۲) چون دیواره دورترین نقطه از همه‌ی دیسک‌هاست، دقیقاً همان جایی است
+    # که «میدانِ دور» برایِ تعیینِ پلاریته نمونه‌برداری می‌کند -- یعنی پلاریته را هم
+    # از رویِ ماده‌ی اشتباه تعیین می‌کرد.
+    if petri_radius_px > 0 and rim_exclude_frac > 0:
+        er = max(1, int(round(rim_exclude_frac * float(petri_radius_px))))
+        kk = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * er + 1, 2 * er + 1))
+        agar_mask = cv2.erode(agar_mask, kk)
+
+    for d in disks or []:
+        r_ex = max(1, int(round(float(d["r"]) * float(disk_exclude_scale))))
+        cv2.circle(agar_mask, (int(round(d["x"])), int(round(d["y"]))), r_ex, 0, -1)
+
+    if int(np.count_nonzero(agar_mask)) < 16:
+        # آگارِ قابلِ‌اتکایی باقی نمانده -- بدونِ تصحیح برگرد (به‌جایِ تحمیلِ عددِ نامطمئن).
+        return {"canvas": gray.copy(), "illum_field": None,
+                "agar_mask": agar_mask, "agar_mean": float(np.mean(gray))}
+
+    k = _safe_odd_ksize(int(round(kernel_frac * min(h, w))), minimum=3)
+    gray_f = gray.astype(np.float32)
+    valid = agar_mask.astype(np.float32)
+
+    num = cv2.GaussianBlur(gray_f * valid, (k, k), 0)
+    den = cv2.GaussianBlur(valid, (k, k), 0)
+    # جاهایی که هیچ آگارِ نزدیکی وجود ندارد، تخمین بی‌معناست -- با میانگینِ کلیِ آگار پر می‌شود.
+    agar_mean = float(np.sum(gray_f * valid) / max(float(np.sum(valid)), 1.0))
+    illum = np.where(den > 1e-3, num / np.maximum(den, 1e-3), agar_mean).astype(np.float32)
+
+    corrected = gray_f - illum + agar_mean
+    corrected = np.clip(corrected, 0.0, 255.0)
+    canvas = corrected.astype(np.uint8)
+    canvas = cv2.bitwise_and(canvas, canvas, mask=mask_u8)
+
+    return {"canvas": canvas, "illum_field": illum,
+            "agar_mask": agar_mask, "agar_mean": agar_mean}
+
+
+def _otsu_with_separability(values: np.ndarray) -> Tuple[int, float]:
+    """
+    آستانه‌ی Otsu به‌همراهِ معیارِ جداپذیریِ خودِ Otsu:
+        eta = واریانسِ بین‌کلاسی / واریانسِ کل   (بینِ ۰ و ۱)
+
+    چرا eta لازم است: Otsu *همیشه* یک آستانه برمی‌گرداند -- حتی وقتی هیستوگرام
+    تک‌قله‌ای است و هیچ دو کلاسِ واقعی‌ای وجود ندارد. رویِ پتری‌ای که هیچ دیسکش هاله
+    ندارد، Otsu لَونِ یکنواخت را الکی به دو نیمه می‌شکند و یک «هاله»ی کاملاً ساختگی
+    تولید می‌کند. eta دقیقاً همان آماره‌ی استانداردی است که این دو حالت را جدا
+    می‌کند (دوقله‌ایِ واقعی -> eta بالا، تک‌قله‌ای -> eta پایین) و چون یک نسبتِ
+    بی‌بعد است، به روشنایی/کنتراستِ مطلقِ تصویر وابسته نیست.
+    """
+    v = values.astype(np.uint8).ravel()
+    if v.size < 16:
+        return 0, 0.0
+    hist = np.bincount(v, minlength=256).astype(np.float64)
+    total = hist.sum()
+    if total <= 0:
+        return 0, 0.0
+    p = hist / total
+    levels = np.arange(256, dtype=np.float64)
+    omega = np.cumsum(p)
+    mu = np.cumsum(p * levels)
+    mu_t = mu[-1]
+    denom = omega * (1.0 - omega)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        sigma_b = np.where(denom > 1e-12, (mu_t * omega - mu) ** 2 / np.maximum(denom, 1e-12), 0.0)
+    t = int(np.argmax(sigma_b))
+    sigma_total = float(np.sum(p * (levels - mu_t) ** 2))
+    eta = float(sigma_b[t] / sigma_total) if sigma_total > 1e-9 else 0.0
+    return t, eta
+
+
+def _radii_from_region_mask(region: np.ndarray, cx: float, cy: float,
+                            angles: np.ndarray, r_start: float, r_max: float,
+                            max_gap_px: float) -> np.ndarray:
+    """
+    شعاعِ per-angle از رویِ یک ماسکِ ناحیه‌ای: در هر جهت از r_start به بیرون گام
+    برداشته می‌شود و مرز جایی است که ناحیه **به‌طورِ پایدار** تمام شود.
+
+    «پایدار» یعنی یک شکافِ کوتاه‌ترِ از max_gap_px مرزِ واقعی حساب نمی‌شود. این دقیقاً
+    همان اصلی است که کاربر برایِ تعریفِ مرز تصریح کرد (غیبتِ *کاملِ* رشد، نه اولین
+    نوسان)، و در عمل دو مشکلِ واقعیِ مشاهده‌شده را هم‌زمان حل می‌کند:
+
+    ۱) باگِ کشف‌شده در اولین اجرایِ این شاخه: بینِ لبه‌ی روشنِ خودِ دیسک و شروعِ آگارِ
+       شفاف یک حلقه‌ی نازکِ گذار وجود دارد که در هیچ‌کدام از دو کلاسِ آستانه نمی‌افتد.
+       نسخه‌ی «اولین صفر = مرز» در همان قدمِ اول متوقف می‌شد و شعاعِ *همه‌ی* دیسک‌ها را
+       برابرِ شعاعِ شروع برمی‌گرداند -- یعنی شاخه عملاً هیچ هاله‌ای پیدا نمی‌کرد،
+       حتی وقتی ماسکِ ناحیه‌ای کاملاً درست بود.
+    ۲) لکه‌ها/حباب‌هایِ ریزِ داخلِ خودِ هاله (رشدِ جزئی، نویزِ بافت) که نباید مرزِ هاله
+       را به‌طورِ کاذب کوچک کنند.
+
+    max_gap_px نسبی است (کسری از شعاعِ خودِ دیسک) -- بدونِ هیچ مقدارِ پیکسلیِ مطلق.
+    """
+    h, w = region.shape[:2]
+    n = len(angles)
+    out = np.full(n, float(r_start), dtype=np.float32)
+    step = 1.0
+    gap_allow = max(1.0, float(max_gap_px))
+    cos_a, sin_a = np.cos(angles), np.sin(angles)
+    for j in range(n):
+        r = float(r_start)
+        last_in = float(r_start)
+        gap = 0.0
+        seen_any = False
+        while r <= r_max:
+            xi = int(round(cx + r * cos_a[j]))
+            yi = int(round(cy + r * sin_a[j]))
+            if xi < 0 or yi < 0 or xi >= w or yi >= h:
+                break
+            if region[yi, xi] != 0:
+                last_in = r
+                gap = 0.0
+                seen_any = True
+            else:
+                gap += step
+                if gap > gap_allow:
+                    break
+            r += step
+        out[j] = last_in if seen_any else float(r_start)
+    return out
+
+
+def build_far_field_reference(canvas: np.ndarray, agar_mask: np.ndarray,
+                             disks: List[Dict[str, Any]], far_field_frac: float) -> Dict[str, Any]:
+    """
+    مدلِ مرجعِ «قطعاً بیرونِ هر هاله» -- ایده‌ی مستقیمِ کاربر.
+
+    دورترین پیکسل‌هایِ آگار از *همه‌ی* دیسک‌ها انتخاب می‌شوند. چون هاله همیشه حولِ یک
+    دیسک شکل می‌گیرد، پیکسلی که از هر دیسکی دور است به‌لحاظِ فیزیکی نمی‌تواند داخلِ
+    هیچ هاله‌ای باشد -- پس توزیعِ شدتِ آن‌جا تعریفِ عملیاتیِ «لَونِ باکتری» است.
+
+    این جایگزینِ یک عددِ اسکالرِ نویز (`_compute_dish_background_noise`) با یک *توزیعِ
+    مرجع* است: هم میانگین، هم پراکندگی. داشتنِ توزیع (نه فقط نویز) چیزی است که آزمونِ
+    آماریِ «آیا این ناحیه با لَون تفاوتِ معنادار دارد» را ممکن می‌کند.
+
+    خروجی: {"mask", "mean", "std", "median", "n"} یا None اگر نمونه کافی نباشد.
+    """
+    agar = (agar_mask > 0)
+    if int(np.count_nonzero(agar)) < 64 or not disks:
+        return None
+    h, w = canvas.shape[:2]
+    seeds = np.full((h, w), 255, dtype=np.uint8)
+    for d in disks:
+        cv2.circle(seeds, (int(round(d["x"])), int(round(d["y"]))),
+                   max(1, int(round(d["r"]))), 0, -1)
+    dist = cv2.distanceTransform(seeds, cv2.DIST_L2, 5)
+    cut = float(np.percentile(dist[agar], 100.0 * (1.0 - float(far_field_frac))))
+    far = agar & (dist >= cut)
+    n = int(np.count_nonzero(far))
+    if n < 64:
+        return None
+    vals = canvas[far].astype(np.float32)
+    return {"mask": far, "mean": float(np.mean(vals)), "std": float(max(np.std(vals), 1e-3)),
+            "median": float(np.median(vals)), "n": n, "dist_from_disks": dist}
+
+
+def _effect_size_vs_reference(values: np.ndarray, ref: Dict[str, Any]) -> float:
+    """
+    فاصله‌ی استانداردشده‌ی یک ناحیه از توزیعِ مرجعِ لَون:  (mean_region - mean_lawn) / std_lawn
+
+    چرا اندازه‌ی اثر و نه خودِ آماره‌ی t: کاربر «آزمونِ فرض رویِ تفاوتِ شدت» را خواست،
+    که از نظرِ آماری درست است -- ولی در این مقیاسِ نمونه (هزاران پیکسل در هر ناحیه)
+    آماره‌ی t تقریباً همیشه معنادار می‌شود، حتی برایِ اختلافِ نیم‌واحدِ شدت که هیچ
+    معنایِ زیستی ندارد؛ یعنی آزمون بیش‌ازحد پرتوان است و عملاً همه‌چیز را «هاله»
+    اعلام می‌کند. آماره‌ی درست برایِ همین فرض در این مقیاس، *اندازه‌ی اثر* است: تفاوتِ
+    میانگین بر حسبِ انحرافِ‌معیارِ خودِ لَون -- که مستقل از تعدادِ پیکسل است و دقیقاً
+    همان چیزی را می‌سنجد که مهم است: «آیا این ناحیه از پراکندگیِ طبیعیِ خودِ لَون
+    بیرون زده است؟»
+    """
+    if values.size < 8 or ref is None:
+        return 0.0
+    return float((float(np.mean(values)) - ref["mean"]) / ref["std"])
+
+
+def _fit_growth_logistic(r: np.ndarray, y: np.ndarray, B: float,
+                         r_disk: float, cfg) -> Optional[Dict[str, Any]]:
+    """
+    برازشِ منحنیِ لجستیکِ چگالیِ رشد به پروفایلِ شعاعی:
+
+        y(r) = A + (B - A) / (1 + exp(-(r - r0)/w))
+
+    مبنایِ فیزیکی: آنتی‌بیوتیک طبقِ قانونِ فیک نفوذ می‌کند و رشد جایی متوقف می‌شود که
+    غلظت از MIC بگذرد. آن‌چه دوربین می‌بیند غلظت نیست، *چگالیِ رشدِ آستانه‌خورده* است --
+    یعنی یک گذارِ سیگموئیدی، نه نمایی یا لگاریتمیِ خالص.
+
+    ساختارِ گذرا/دائمی: صورتِ معادلِ  y = B - (B-A)·σ(-(r-r0)/w)  نشان می‌دهد B همان
+    جوابِ حالتِ دائمی (سطحِ لَون) است و جمله‌ی سیگموئید پاسخِ گذرا که با دور شدن از دیسک
+    میرا می‌شود. B این‌جا پارامترِ آزاد *نیست* -- مستقلاً از میدانِ دور اندازه گرفته شده.
+    پس فقط دو پارامترِ آزاد می‌ماند (r0, w)، و A به‌صورتِ بسته و خطی حل می‌شود؛ کمترین
+    پارامترِ آزاد یعنی پایدارترین برازش و کمترین ریسکِ overfitting.
+
+    بدونِ scipy -- جست‌وجویِ شبکه‌ای + پالایشِ محلی، فقط با numpy. هم قطعی است (مستقل از
+    نقطه‌ی شروع و الگوریتمِ بهینه‌سازی) هم مستقیماً به C++ ترجمه می‌شود، که الزامِ مستندِ
+    پروژه است.
+
+    خروجی: {"A","B","r0","w","r2"} یا None.
+    """
+    r = np.asarray(r, dtype=np.float64)
+    y = np.asarray(y, dtype=np.float64)
+    if len(r) < 8:
+        return None
+
+    r0_grid = np.linspace(r[0], r[-1], int(cfg.halo_fit_grid_r0))
+    w_lo = max(float(cfg.halo_fit_w_min_frac) * r_disk, 1e-3)
+    w_hi = max(float(cfg.halo_fit_w_max_frac) * r_disk, w_lo * 2.0)
+    w_grid = np.exp(np.linspace(np.log(w_lo), np.log(w_hi), int(cfg.halo_fit_grid_w)))
+
+    best = None
+    for w in w_grid:
+        for r0 in r0_grid:
+            s = 1.0 / (1.0 + np.exp(-np.clip((r - r0) / w, -60.0, 60.0)))
+            den = float(np.sum((1.0 - s) ** 2))
+            if den < 1e-9:
+                continue
+            A = float(np.sum((y - B * s) * (1.0 - s)) / den)
+            sse = float(np.sum((y - (A + (B - A) * s)) ** 2))
+            if best is None or sse < best[0]:
+                best = (sse, A, float(r0), float(w))
+    if best is None:
+        return None
+
+    sse, A, r0, w = best
+    step_r = (r[-1] - r[0]) / float(cfg.halo_fit_grid_r0)
+    step_w = w * 0.5
+    for _ in range(int(cfg.halo_fit_refine_iters)):
+        improved = False
+        for dr, dw in ((step_r, 0.0), (-step_r, 0.0), (0.0, step_w), (0.0, -step_w)):
+            r0n, wn = r0 + dr, max(w + dw, 1e-4)
+            s = 1.0 / (1.0 + np.exp(-np.clip((r - r0n) / wn, -60.0, 60.0)))
+            den = float(np.sum((1.0 - s) ** 2))
+            if den < 1e-9:
+                continue
+            An = float(np.sum((y - B * s) * (1.0 - s)) / den)
+            e = float(np.sum((y - (An + (B - An) * s)) ** 2))
+            if e < sse:
+                sse, A, r0, w = e, An, r0n, wn
+                improved = True
+        if not improved:
+            step_r *= 0.5
+            step_w *= 0.5
+            if step_r < 1e-4 and step_w < 1e-4:
+                break
+
+    sst = float(np.sum((y - np.mean(y)) ** 2))
+    r2 = 1.0 - sse / sst if sst > 1e-9 else 0.0
+    return {"A": float(A), "B": float(B), "r0": float(r0), "w": float(w), "r2": float(r2)}
+
+
+def _dt_inside_mask(mask_u8: np.ndarray) -> np.ndarray:
+    """فاصله‌ی هر پیکسل تا نزدیک‌ترین *بیرونِ* ماسک -- با حاشیه‌ی صفرِ اجباری.
+
+    چرا حاشیه لازم است (باگِ واقعیِ گزارش‌شده): `cv2.distanceTransform` فاصله تا
+    نزدیک‌ترین پیکسلِ **صفر** را می‌دهد. اگر ماسک هیچ پیکسلِ صفری نداشته باشد --
+    که وقتی ظرفِ پتری از لبه‌ی خودِ عکس بیرون زده باشد دقیقاً همین می‌شود، چون
+    داخلِ ROI همه‌جا ظرف است -- خروجی `FLT_MAX` یعنی ۳٫۴e38 می‌شود. آن عدد بعداً
+    به‌عنوانِ شعاعِ جست‌وجو استفاده می‌شد و `np.linspace` را با ۴e37 حلقه صدا می‌زد:
+    «ValueError: Maximum allowed size exceeded».
+
+    با افزودنِ یک حاشیه‌ی صفر پیش از تبدیل، معنایِ کمیت دقیقاً همان می‌شود که
+    می‌خواهیم: «فاصله تا لبه‌ی ظرف **یا** لبه‌ی کادر، هر کدام نزدیک‌تر» -- چون
+    جست‌وجویِ هاله از کادرِ عکس هم نباید بیرون بزند.
+    """
+    padded = cv2.copyMakeBorder(mask_u8, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=0)
+    return cv2.distanceTransform(padded, cv2.DIST_L2, 3)[1:-1, 1:-1]
+
+
+def segment_halos_growth_model(canvas: np.ndarray, agar_mask: np.ndarray,
+                               dish_mask: np.ndarray, disks: List[Dict[str, Any]],
+                               far_ref: Optional[Dict[str, Any]], cfg) -> Dict[str, Any]:
+    """
+    شاخه‌ی موازیِ پنجم -- مرزِ هاله از برازشِ مدلِ رشد، نه از آستانه یا ناحیه.
+
+    مرزِ گزارشی **نقطه‌ی عطف (r0)** است. این تصمیم از داده آمد نه از فرض: در مطالعه‌ی
+    امکان‌سنجی (۵۷ دیسک، مقایسه‌ی جفتی) نقطه‌ی عطف میانه‌ی قدرِمطلقِ خطا را از ۲.۱۰ به
+    ۱.۰۳ میلی‌متر نصف کرد (آزمونِ علامت z=+۲.۵۲)، درحالی‌که «نقطه‌ی جدا شدن از مجانبِ
+    هاله» -- که از نظرِ زیستی به «غیبتِ کاملِ رشد» نزدیک‌تر است -- MAE=۲۰.۴۴ با بایاسِ
+    ۱۸.۲۶− داد.
+
+    توضیحِ این تفاوت مهم است: مرجعِ ما حقیقتِ زیستی نیست، خوانشِ کارشناس با کولیس رویِ
+    عکس است، و ادراکِ انسانی از لبه نزدیکِ تیزترین نقطه‌ی گذار می‌نشیند نه در آغازِ آن.
+    پس این شاخه *اندازه‌گیریِ کارشناس* را مدل می‌کند. مقدارِ زیستی (r0 - k·w) هم در
+    کنارش برگردانده می‌شود تا هر دو در دسترس باشند.
+
+    نگهبان‌هایِ اعتبار -- هر سه از خرابیِ *مشاهده‌شده* در مطالعه آمده‌اند، نه از حدس:
+      • قطرِ غیرفیزیکی (کوچک‌تر از خودِ دیسک یا بیرونِ پنجره) -- یک برازش قطرِ منفی داد.
+      • برازشِ تباه (R² زیرِ کف) -- برازشِ دیگری ۸۰mm با R²≈۰ داد.
+      • دامنه‌ی ناچیز نسبت به پراکندگیِ لَون -- یعنی اصلاً گذاری در کار نیست.
+
+    پهنایِ گذار w به‌عنوانِ **معیارِ اعتماد** برگردانده می‌شود، نه جمله‌ی تصحیح:
+    اندازه‌گیری نشان داد خطایِ مرز رویِ لبه‌هایِ تیز ۲.۳۸ و رویِ لبه‌هایِ پهن ۴.۳۸
+    میلی‌متر است -- تقریباً دو برابر، که سیگنالِ وزن‌دهیِ قابلِ‌اتکایی است.
+
+    خروجی: {"status", "per_disk": [...]}
+    """
+    h, w_img = canvas.shape[:2]
+    out: Dict[str, Any] = {"status": "ok", "per_disk": []}
+    blank = {"has_zone": False, "final_radii": None, "r_boundary_px": 0.0,
+             "r_bio_px": 0.0, "w": 0.0, "r2": 0.0}
+    if not disks or far_ref is None:
+        out["status"] = "no_reference"
+        out["per_disk"] = [dict(blank) for _ in disks]
+        return out
+
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w_img), 255, dtype=np.uint8)
+    dt_edge = _dt_inside_mask(mask_u8)
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    lawn_mean, lawn_std = far_ref["mean"], far_ref["std"]
+    f_bio = float(cfg.halo_fit_bio_frac)
+    k_bio = float(abs(np.log(f_bio / (1.0 - f_bio))))
+
+    for i, d in enumerate(disks):
+        r_disk = float(d["r"])
+        cx, cy = float(d["x"]), float(d["y"])
+        rec = dict(blank)
+
+        # از مرزِ ماسکِ آگار شروع کن، نه از لبه‌ی دیسک: حلقه‌هایِ بینِ این دو هیچ
+        # پیکسلی ندارند (دیسک از ماسک حذف شده) و مقدارِ صفرشان یک لبه‌ی مصنوعی
+        # می‌سازد که برازش رویِ همان می‌نشیند -- خرابیِ مشاهده‌شده در مطالعه.
+        r_in = r_disk * float(cfg.agar_disk_exclude_scale)
+        r_out = max(r_in + 8.0, float(dt_edge[int(round(cy)), int(round(cx))]) - 2.0)
+        if r_out <= r_in + 8.0:
+            out["per_disk"].append(rec)
+            continue
+
+        R = int(np.ceil(r_out)) + 2
+        x0, y0 = max(0, int(cx) - R), max(0, int(cy) - R)
+        x1, y1 = min(w_img, int(cx) + R + 1), min(h, int(cy) + R + 1)
+        patch = canvas[y0:y1, x0:x1].astype(np.float32)
+        pm = agar_mask[y0:y1, x0:x1] > 0
+        yy, xx = np.ogrid[:patch.shape[0], :patch.shape[1]]
+        rad = np.sqrt((xx - (cx - x0)) ** 2 + (yy - (cy - y0)) ** 2)
+
+        safe = np.ones(patch.shape, dtype=bool)
+        for j, o in enumerate(disks):
+            if j == i:
+                continue
+            dx, dy = float(o["x"]) - cx, float(o["y"]) - cy
+            d2 = dx * dx + dy * dy
+            if d2 < 1e-6:
+                continue
+            proj = (xx + x0 - cx) * dx + (yy + y0 - cy) * dy
+            safe &= (proj < 0.5 * d2)
+
+        ring_w = max(2.0, float(cfg.halo_fit_ring_frac) * r_disk)
+        n_rings = max(8, int(np.ceil((r_out - r_in) / ring_w)))
+        edges = np.linspace(r_in, r_out, n_rings + 1)
+        centers = 0.5 * (edges[:-1] + edges[1:])
+        idx = np.digitize(rad, edges) - 1
+        valid = (idx >= 0) & (idx < n_rings) & pm & safe
+        if int(np.count_nonzero(valid)) < 64:
+            out["per_disk"].append(rec)
+            continue
+        sums = np.bincount(idx[valid], weights=patch[valid], minlength=n_rings)
+        cnts = np.bincount(idx[valid], minlength=n_rings)
+
+        ok = cnts >= int(cfg.halo_fit_min_ring_count)
+        if int(np.count_nonzero(ok)) < 8:
+            out["per_disk"].append(rec)
+            continue
+        rr = centers[ok]
+        yp = sums[ok] / np.maximum(cnts[ok], 1)
+
+        fit = _fit_growth_logistic(rr, yp, lawn_mean, r_disk, cfg)
+        if fit is None:
+            out["per_disk"].append(rec)
+            continue
+
+        rec["r2"] = fit["r2"]
+        rec["w"] = fit["w"]
+        r0 = fit["r0"]
+
+        physical = (r0 > r_disk) and (r0 <= r_out)
+        well_fit = fit["r2"] >= float(cfg.halo_fit_min_r2)
+        amplitude = abs(fit["B"] - fit["A"]) >= float(cfg.halo_fit_min_amp_sd) * lawn_std
+        big_enough = r0 > r_disk * float(cfg.halo_otsu_min_radius_scale)
+
+        if physical and well_fit and amplitude and big_enough:
+            radii = np.full(n_angles, r0, dtype=np.float32)
+            for j, o in enumerate(disks):
+                if j == i:
+                    continue
+                dx, dy = float(o["x"]) - cx, float(o["y"]) - cy
+                dist = float(np.hypot(dx, dy))
+                if dist < 1e-6:
+                    continue
+                phi = float(np.arctan2(dy, dx))
+                cosd = np.cos(angles - phi)
+                cap = np.where(cosd > 1e-6, 0.5 * dist / np.maximum(cosd, 1e-6), np.inf)
+                radii = np.minimum(radii, cap.astype(np.float32))
+            radii = np.maximum(radii, r_disk).astype(np.float32)
+            rec.update({"has_zone": True, "final_radii": radii,
+                        "r_boundary_px": float(np.mean(radii)),
+                        "r_bio_px": float(max(r0 - k_bio * fit["w"], r_disk))})
+        out["per_disk"].append(rec)
+
+    return out
+
+
+def segment_halos_statistical(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.ndarray,
+                              disks: List[Dict[str, Any]], far_ref: Optional[Dict[str, Any]],
+                              cfg) -> Dict[str, Any]:
+    """
+    شاخه‌ی موازیِ چهارم -- مرزِ هاله به‌عنوانِ یک *آزمونِ فرضِ آماری*، نه یک لبه‌ی گرادیانی.
+
+    این دقیقاً پیاده‌سازیِ تعریفی است که کاربر تصریح کرد: مرز نه در نقطه‌ی میانیِ گذار
+    و نه در تیزترین لبه، بلکه در جایی که «رشد به‌طورِ کامل غایب است». پس به‌جایِ
+    جست‌وجویِ بیشترین تغییرِ شدت، برایِ هر حلقه یک پرسشِ آماری پرسیده می‌شود:
+    «آیا شدتِ این حلقه هنوز به‌طورِ معنادار با لَونِ باکتری فرق دارد؟» و مرز، بیرونی‌ترین
+    شعاعی است که تا آن‌جا پاسخ به‌طورِ *پیوسته* آری بوده.
+
+    تفاوتِ ساختاریِ کلیدی با شاخه‌ی شعاعیِ ماژولِ ۱۶ -- و دلیلِ وجودِ این شاخه:
+    ماژولِ ۱۶ «پس‌زمینه» را از دنباله‌ی *خودِ پروفایل* می‌گیرد. اگر پنجره‌ی جست‌وجو
+    هرگز به لَونِ واقعی نرسیده باشد (که کاتالوگِ خطاها نشان داد سازوکارِ اصلیِ
+    کم‌برآوردهاست -- مثلاً هاله‌هایِ ۳۱-۳۲mm با پنجره‌ای که فقط تا ۱۸۰px می‌رسید)،
+    آن «پس‌زمینه» خودش هنوز داخلِ هاله است و مرز به‌طورِ سیستماتیک زودتر اعلام
+    می‌شود. این‌جا مرجع از جایِ دیگری می‌آید: میدانِ دور، که به‌لحاظِ فیزیکی نمی‌تواند
+    داخلِ هیچ هاله‌ای باشد. پس درستیِ مرز دیگر به این‌که پنجره چقدر بزرگ باشد وابسته
+    نیست.
+
+    آماره: فاصله‌ی استانداردشده‌ی میانگینِ هر حلقه از توزیعِ لَون،
+        z_k = (mean_ring_k - mean_lawn) / std_lawn
+    (به همان دلیلِ مستند در _effect_size_vs_reference، اندازه‌ی اثر به‌جایِ آماره‌ی
+    خامِ t استفاده می‌شود -- در این تعدادِ پیکسل، t عملاً همیشه معنادار می‌شود.)
+
+    خروجی: {"status", "per_disk": [{"has_zone","final_radii","r_mean_px","z_profile"}]}
+    """
+    h, w = canvas.shape[:2]
+    out: Dict[str, Any] = {"status": "ok", "per_disk": []}
+    if not disks or far_ref is None:
+        out["status"] = "no_reference"
+        out["per_disk"] = [{"has_zone": False, "final_radii": None, "r_mean_px": 0.0}
+                           for _ in disks]
+        return out
+
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w), 255, dtype=np.uint8)
+    dt_edge = _dt_inside_mask(mask_u8)
+    lawn_mean, lawn_std = far_ref["mean"], far_ref["std"]
+
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    gate = float(cfg.halo_stat_z_gate)
+
+    for i, d in enumerate(disks):
+        r_disk = float(d["x"] * 0 + d["r"])
+        cx, cy = float(d["x"]), float(d["y"])
+        r_in = r_disk * 1.05
+        r_out = max(r_in + 4.0, float(dt_edge[int(round(cy)), int(round(cx))]) - 2.0)
+
+        R = int(np.ceil(r_out)) + 2
+        x0, y0 = max(0, int(cx) - R), max(0, int(cy) - R)
+        x1, y1 = min(w, int(cx) + R + 1), min(h, int(cy) + R + 1)
+        patch = canvas[y0:y1, x0:x1].astype(np.float32)
+        pm = (agar_mask[y0:y1, x0:x1] > 0)
+        yy, xx = np.ogrid[:patch.shape[0], :patch.shape[1]]
+        rad = np.sqrt((xx - (cx - x0)) ** 2 + (yy - (cy - y0)) ** 2)
+
+        # کنارگذاریِ جهت‌آگاهِ قلمروِ همسایه‌ها (همان نیم‌صفحه‌ی ووُرونوی که ماژولِ ۱۶
+        # هم استفاده می‌کند) -- تا حلقه‌ها با هاله‌ی همسایه آلوده نشوند.
+        safe = np.ones(patch.shape, dtype=bool)
+        for j, o in enumerate(disks):
+            if j == i:
+                continue
+            dx, dy = float(o["x"]) - cx, float(o["y"]) - cy
+            d2 = dx * dx + dy * dy
+            if d2 < 1e-6:
+                continue
+            proj = (xx + x0 - cx) * dx + (yy + y0 - cy) * dy
+            safe &= (proj < 0.5 * d2)
+
+        ring_w = max(2.0, float(cfg.halo_stat_ring_frac) * r_disk)
+        n_rings = max(4, int(np.ceil((r_out - r_in) / ring_w)))
+        edges = np.linspace(r_in, r_out, n_rings + 1)
+        centers = 0.5 * (edges[:-1] + edges[1:])
+        idx = np.digitize(rad, edges) - 1
+        valid = (idx >= 0) & (idx < n_rings) & pm & safe
+        if int(np.count_nonzero(valid)) < 32:
+            out["per_disk"].append({"has_zone": False, "final_radii": None,
+                                    "r_mean_px": 0.0, "z_profile": None})
+            continue
+
+        sums = np.bincount(idx[valid], weights=patch[valid], minlength=n_rings)
+        cnts = np.bincount(idx[valid], minlength=n_rings)
+        means = sums / np.maximum(cnts, 1)
+        z = (means - lawn_mean) / lawn_std
+        z[cnts < 8] = 0.0        # حلقه‌ی بدونِ نمونه‌ی کافی: «قابلِ‌تفکیک از لَون نیست»
+
+        # بیرونی‌ترین شعاعی که تا آن‌جا حلقه‌ها به‌طورِ پیوسته از لَون متمایز مانده‌اند.
+        # شکافِ کوتاه (یک حلقه‌ی تکیِ نزدیکِ لَون، مثلاً بر اثرِ یک لکه‌ی موضعی) مرز
+        # حساب نمی‌شود -- همان اصلِ «غیبتِ کامل و پایدارِ رشد»، این‌بار آماری.
+        gap_allow = max(1, int(round(float(cfg.halo_stat_max_gap_frac) * n_rings)))
+        boundary = r_in
+        gap = 0
+        for k in range(n_rings):
+            if abs(z[k]) >= gate:
+                boundary = float(centers[k])
+                gap = 0
+            else:
+                gap += 1
+                if gap > gap_allow:
+                    break
+
+        has_zone = bool(boundary > r_disk * float(cfg.halo_otsu_min_radius_scale))
+        radii = np.full(n_angles, boundary, dtype=np.float32) if has_zone else None
+        if radii is not None:
+            # سقفِ هندسیِ همسایه: نیمسازِ عمودِ فاصله تا هر دیسکِ دیگر، به‌صورتِ بسته.
+            # (فرمول درجا نوشته شده چون _neighbor_voronoi_cap در سلولِ ماژولِ ۱۶ تعریف
+            # می‌شود که *بعد* از این ماژول اجرا می‌شود -- این شاخه عمداً مستقل و
+            # پیش از آن قرار دارد.) سقفِ لبه‌ی پتری از قبل با r_out اعمال شده، چون
+            # r_out خودش از distanceTransform تا مرزِ ظرف گرفته می‌شود.
+            for j, o in enumerate(disks):
+                if j == i:
+                    continue
+                dx, dy = float(o["x"]) - cx, float(o["y"]) - cy
+                dist = float(np.hypot(dx, dy))
+                if dist < 1e-6:
+                    continue
+                phi = float(np.arctan2(dy, dx))
+                cosd = np.cos(angles - phi)
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    cap = np.where(cosd > 1e-6, 0.5 * dist / np.maximum(cosd, 1e-6), np.inf)
+                radii = np.minimum(radii, cap.astype(np.float32))
+            radii = np.maximum(radii, r_disk).astype(np.float32)
+
+        out["per_disk"].append({
+            "has_zone": has_zone,
+            "final_radii": radii,
+            "r_mean_px": float(np.mean(radii)) if radii is not None else 0.0,
+            "z_profile": z,
+        })
+
+    return out
+
+
+def segment_halos_watershed(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.ndarray,
+                            disks: List[Dict[str, Any]], far_ref: Optional[Dict[str, Any]],
+                            cfg) -> Dict[str, Any]:
+    """
+    شاخه‌ی موازیِ سومِ سگمنت‌کردنِ هاله -- Watershed با نشانگرِ کنترل‌شده رویِ بومِ آگار.
+
+    این همان DT/Watershedی است که تا امروز رویِ *ماسکِ باینریِ تشخیصِ دیسک* اجرا
+    می‌شد. ممیزیِ کمّی (۹۲ دیسک، ۱۱ عکس) نشان داد آن‌جا هیچ سهمی نداشت: شاخه‌ی Blob
+    حتی یک دیسک هم پیدا نکرد که Hough از دستش داده باشد، و رویِ ۵ عکس از ۱۱ اصلاً
+    کاندیدی تولید نکرد. اما خودِ ابزار بد نیست -- به هدفِ اشتباه نشانه رفته بود.
+    این‌جا به مسئله‌ای هدایت می‌شود که واقعاً در آن ضعف داریم: جداکردنِ هاله‌هایِ
+    مجاور/به‌هم‌چسبیده، که در کاتالوگِ خطاها هم به‌عنوانِ FP_neighbour_leak و هم
+    به‌عنوانِ بخشِ بزرگی از بیش‌برآوردها ظاهر شد.
+
+    چرا مستقل از شاخه‌ی Otsu است (و نه صرفاً پالایشِ آن): هیچ آستانه‌ی سراسری‌ای
+    به‌کار نمی‌رود. Watershed مستقیماً از رویِ *لبه‌هایِ واقعیِ* بومِ آگار سیلاب
+    می‌کند، با نشانگرهایِ:
+        • هر دیسک -> یک برچسبِ مجزا (هسته‌ی هاله‌ی همان دیسک)
+        • میدانِ دور -> برچسبِ «لَون» (پس‌زمینه‌ی قطعی)
+    پس دو ناحیه‌ی مجاور به‌طورِ طبیعی رویِ لبه‌ی واقعیِ بینشان تقسیم می‌شوند، نه با
+    یک نیمسازِ هندسیِ کور.
+
+    چون Watershed برایِ دیسکِ *بدونِ* هاله هم ناحیه‌ای می‌سازد (رشد تا رسیدن به
+    قلمروِ لَون)، هر ناحیه با یک آزمونِ آماری در برابرِ توزیعِ مرجعِ میدانِ دور
+    اعتبارسنجی می‌شود: ناحیه‌ای که از پراکندگیِ طبیعیِ خودِ لَون بیرون نزده، هاله
+    نیست.
+
+    خروجی: {"status", "labels", "per_disk": [{"has_zone","final_radii","r_mean_px","effect"}]}
+    """
+    h, w = canvas.shape[:2]
+    out: Dict[str, Any] = {"status": "ok", "labels": None, "per_disk": []}
+    if not disks or far_ref is None:
+        out["status"] = "no_reference"
+        out["per_disk"] = [{"has_zone": False, "final_radii": None,
+                            "r_mean_px": 0.0, "effect": 0.0} for _ in disks]
+        return out
+
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w), 255, dtype=np.uint8)
+
+    # ترتیبِ نشانگرها مهم است (باگِ کشف‌شده در اولین اجرا): ابتدا پس‌زمینه، سپس
+    # هسته‌ی دیسک‌ها. در نسخه‌ی اول، خطِ «بیرون = پس‌زمینه» بعد از رسمِ هسته‌ها اجرا
+    # می‌شد و چون خودِ دیسک‌ها از *ماسکِ آگار* حذف شده‌اند، همان خط هسته‌ی هر دیسک را
+    # هم پاک می‌کرد -- نتیجه: هیچ ناحیه‌ای برایِ هیچ دیسکی ساخته نمی‌شد.
+    #
+    # همچنین ناحیه‌ی قابلِ‌سیلاب با ماسکِ *ظرف* تعریف می‌شود نه ماسکِ آگار: حلقه‌ی
+    # بینِ لبه‌ی دیسک و مرزِ کنارگذاریِ آگار، بخشِ آغازینِ هر هاله‌ی احتمالی است و
+    # نباید از پیش «لَون» علامت بخورد.
+    markers = np.zeros((h, w), dtype=np.int32)
+    markers[~(mask_u8 > 0)] = 1              # بیرونِ ظرف: پس‌زمینه‌ی قطعی
+    markers[far_ref["mask"]] = 1             # میدانِ دور: لَونِ قطعی
+    for i, d in enumerate(disks):            # هسته‌ی هر دیسک، آخر از همه
+        cv2.circle(markers, (int(round(d["x"])), int(round(d["y"]))),
+                   max(1, int(round(d["r"] * float(cfg.halo_ws_seed_scale)))), i + 2, -1)
+
+    bgr = cv2.cvtColor(canvas, cv2.COLOR_GRAY2BGR)
+    cv2.watershed(bgr, markers)
+    out["labels"] = markers
+
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    dt_edge = _dt_inside_mask(mask_u8)
+
+    r_ref = float(np.median([d["r"] for d in disks]))
+    k = _safe_odd_ksize(int(round(cfg.halo_otsu_morph_frac * r_ref)), minimum=3)
+    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
+
+    for i, d in enumerate(disks):
+        r_disk = float(d["r"])
+        cx, cy = float(d["x"]), float(d["y"])
+        region = (markers == i + 2).astype(np.uint8)
+        # فقط پیکسل‌هایِ آگار (نه خودِ دیسک) وارد آزمونِ آماری می‌شوند.
+        test_zone = region.copy()
+        cv2.circle(test_zone, (int(round(cx)), int(round(cy))),
+                   max(1, int(round(r_disk * float(cfg.agar_disk_exclude_scale)))), 0, -1)
+        vals = canvas[test_zone > 0].astype(np.float32)
+        effect = _effect_size_vs_reference(vals, far_ref)
+
+        region = cv2.morphologyEx(region, cv2.MORPH_OPEN, kern)
+        cv2.circle(region, (int(round(cx)), int(round(cy))),
+                   max(1, int(round(r_disk * 1.05))), 1, -1)
+        r_cap = max(r_disk + 2.0, float(dt_edge[int(round(cy)), int(round(cx))]) - 2.0)
+        radii = _radii_from_region_mask(region, cx, cy, angles, r_disk * 1.05, r_cap,
+                                        max_gap_px=cfg.halo_region_max_gap_frac * r_disk)
+        r_mean = float(np.mean(radii))
+
+        big_enough = r_mean > r_disk * float(cfg.halo_otsu_min_radius_scale)
+        distinct = abs(effect) >= float(cfg.halo_region_min_effect)
+        has_zone = bool(big_enough and distinct)
+        out["per_disk"].append({
+            "has_zone": has_zone,
+            "final_radii": radii if has_zone else None,
+            "r_mean_px": r_mean if has_zone else 0.0,
+            "effect": effect,
+        })
+
+    return out
+
+
+def segment_halos_otsu(canvas: np.ndarray, agar_mask: np.ndarray, dish_mask: np.ndarray,
+                       disks: List[Dict[str, Any]], cfg) -> Dict[str, Any]:
+    """
+    شاخه‌ی موازیِ دومِ سگمنت‌کردنِ هاله -- آستانه‌گذاریِ سراسری رویِ «بومِ آگار».
+
+    چرا این شاخه حالا ممکن شده و قبلاً نبود: یک آستانه‌ی *سراسری* فقط وقتی معنا دارد
+    که روشنایی در سرتاسرِ قاب یکنواخت باشد. رویِ تصویرِ خام، شیبِ نورِ ناهموار باعث
+    می‌شد آگارِ روشنِ یک گوشه با لَونِ تاریکِ گوشه‌ی دیگر هم‌مقدار شود و هر آستانه‌ی
+    سراسری بی‌معنا گردد. بومِ آگار (ماژولِ ۱۵.۵) دقیقاً همین مانع را برداشته است.
+
+    پلاریته (این‌که کلاسِ تاریک «هاله» است یا «لَون») حدس زده نمی‌شود: از رویِ
+    میدانِ دور -- پیکسل‌هایی که از هر دیسکی دورترند و به‌طورِ فیزیکی نمی‌توانند داخلِ
+    هیچ هاله‌ای باشند -- تعیین می‌شود. هر کلاسی که میدانِ دور را در اختیار دارد،
+    لَون است؛ کلاسِ دیگر هاله است.
+
+    خروجی: {"status", "threshold", "eta", "zone_mask", "per_disk": [{...}]}
+      per_disk[i]: {"has_zone", "final_radii", "r_mean_px"}
+    """
+    h, w = canvas.shape[:2]
+    out: Dict[str, Any] = {"status": "ok", "threshold": 0, "eta": 0.0,
+                           "zone_mask": None, "per_disk": []}
+    agar = (agar_mask > 0)
+    if int(np.count_nonzero(agar)) < 64 or not disks:
+        out["status"] = "insufficient_agar"
+        return out
+
+    thr, eta = _otsu_with_separability(canvas[agar])
+    out["threshold"], out["eta"] = thr, float(eta)
+
+    if eta < float(cfg.halo_otsu_min_separability):
+        # هیستوگرامِ تک‌قله‌ای -- هیچ دو کلاسِ واقعی‌ای وجود ندارد، یعنی این پتری
+        # هیچ هاله‌ای ندارد. برگرداندنِ «هیچ» به‌مراتب درست‌تر از شکستنِ الکیِ لَون است.
+        out["status"] = "unimodal_no_zone"
+        out["per_disk"] = [{"has_zone": False, "final_radii": None, "r_mean_px": 0.0}
+                           for _ in disks]
+        return out
+
+    dark = ((canvas <= thr) & agar).astype(np.uint8)
+    bright = ((canvas > thr) & agar).astype(np.uint8)
+
+    # میدانِ دور: دورترین پیکسل‌هایِ آگار از همه‌ی دیسک‌ها -- قطعاً بیرونِ هر هاله‌ای.
+    disk_seeds = np.full((h, w), 255, dtype=np.uint8)
+    for d in disks:
+        cv2.circle(disk_seeds, (int(round(d["x"])), int(round(d["y"]))),
+                   max(1, int(round(d["r"]))), 0, -1)
+    dist_from_disks = cv2.distanceTransform(disk_seeds, cv2.DIST_L2, 5)
+    far_cut = float(np.percentile(dist_from_disks[agar], 100.0 * (1.0 - cfg.halo_far_field_frac)))
+    far_field = agar & (dist_from_disks >= far_cut)
+
+    dark_share_far = float(np.count_nonzero(dark[far_field])) / max(int(np.count_nonzero(far_field)), 1)
+    zone_is_dark = dark_share_far < 0.5
+    zone_raw = dark if zone_is_dark else bright
+    out["zone_is_dark"] = bool(zone_is_dark)
+
+    # پاک‌سازیِ مورفولوژیِ نسبی -- ظریف‌تر از دودویی‌سازیِ تشخیصِ دیسک (کسری از شعاعِ
+    # خودِ دیسک، نه از قطرِ پتری) تا جزئیاتِ مرزِ هاله از بین نرود.
+    r_ref = float(np.median([d["r"] for d in disks]))
+    k = _safe_odd_ksize(int(round(cfg.halo_otsu_morph_frac * r_ref)), minimum=3)
+    kern = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))
+    zone = cv2.morphologyEx(zone_raw, cv2.MORPH_OPEN, kern)
+    zone = cv2.morphologyEx(zone, cv2.MORPH_CLOSE, kern)
+    out["zone_mask"] = (zone * 255).astype(np.uint8)
+
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    mask_u8 = _ensure_uint8_binary(dish_mask) if dish_mask is not None \
+        else np.full((h, w), 255, dtype=np.uint8)
+    dt_edge = _dt_inside_mask(mask_u8)
+
+    for d in disks:
+        r_disk = float(d["r"])
+        cx, cy = float(d["x"]), float(d["y"])
+        r_cap = max(r_disk + 2.0, float(dt_edge[int(round(cy)), int(round(cx))]) - 2.0)
+        radii = _radii_from_region_mask(zone, cx, cy, angles, r_disk * 1.05, r_cap,
+                                        max_gap_px=cfg.halo_region_max_gap_frac * r_disk)
+        r_mean = float(np.mean(radii))
+        # هاله فقط وقتی «واقعی» است که به‌طورِ محسوس از خودِ دیسک بزرگ‌تر باشد.
+        has_zone = bool(r_mean > r_disk * float(cfg.halo_otsu_min_radius_scale))
+        out["per_disk"].append({
+            "has_zone": has_zone,
+            "final_radii": radii if has_zone else None,
+            "r_mean_px": r_mean if has_zone else 0.0,
+        })
+
+    return out
 
 
 def _multi_otsu_threshold(gray_small: np.ndarray) -> Tuple[int, int]:
@@ -2109,6 +2951,150 @@ for dish in dishes:
     show(vis_hough, f"[Dish #{dish['index']}] Hough Candidates — validated (Count: {len(hough_candidates)})", cfg=cfg)
 
 # %% [markdown]
+# ## ۱۱.۵) اعتبارسنجیِ کاندیدهایِ دیسک — کمانِ پیوسته + الگویِ مستقل‌از-برچسب
+#
+# این ماژول پ۱ (سگمنت‌کردنِ کمانِ مقیدبه‌مرکز) و پ۳ (تطبیقِ الگویِ دیسک) را در **یک**
+# ماژول ادغام می‌کند — چون هر دو یک کار می‌کنند: پرسیدنِ این‌که «آیا این دایره واقعاً
+# یک دیسکِ کاغذی است؟»
+#
+# **چرا الگو نمی‌تواند رویِ خودِ حروف باشد:** دیسک‌ها برچسبِ چاپیِ متفاوت دارند
+# (CRO30، CIP5، FM300...) و جهتشان هم تصادفی است. پس همبستگیِ خامِ بینِ دو دیسک ضعیف
+# است. الگو باید رویِ ویژگی‌هایی باشد که **بینِ همه‌ی دیسک‌ها مشترک** است و به برچسب و
+# چرخش وابسته نیست:
+#
+# 1. **پیوستگیِ کمانیِ لبه** — یک دیسکِ فیزیکی در *همه‌ی* جهت‌ها لبه دارد. دایره‌ی کاذبی
+#    که از متنِ چاپی یا لبه‌ی هاله ساخته شده، فقط رویِ یک کمان لبه دارد.
+# 2. **پله‌ی شعاعیِ لبه** — کاغذِ دیسک روشن‌تر از آگار/لَونِ اطراف است؛ اختلافِ داخل و
+#    بیرون باید معنادار باشد.
+# 3. **تقارنِ دورانی** — پله‌ی لبه باید در همه‌ی زاویه‌ها تقریباً یکسان باشد.
+#
+# **تصمیم بدونِ آستانه‌ی تنظیم‌شده:** به‌جایِ عددِ مطلق، هر کاندید با **اجماعِ
+# کاندیدهایِ همان تصویر** سنجیده می‌شود — همان اصلِ خود-ارجاعی که مرجعِ میدانِ دور را
+# جواب داد. تنها عددِ ثابت، حداقلِ پوششِ کمانی است که از پیش و بر مبنایِ هندسه توجیه
+# می‌شود، نه از رویِ داده انتخاب.
+
+# %%
+# ── ماژول ۱۱.۵ (جدید) — اعتبارسنجیِ کاندیدهایِ دیسک (پ۱ + پ۳ یکپارچه) ────────
+# انگیزه‌ی این ماژول از یک تشخیصِ اندازه‌گیری‌شده می‌آید، نه از حدس:
+# رویِ gt_10 دیسکِ ۸، Hough در مکانِ درست دایره تولید می‌کند ولی با شعاعِ ۹۰ در حالی
+# که دیسک‌هایِ واقعیِ همان عکس شعاعِ ۳۷–۴۳ دارند -- یعنی رویِ خودِ *هاله* قفل شده،
+# نه رویِ دیسک. قاعده‌ی سازگاریِ شعاعِ ماژولِ ۱۴ به‌درستی ردش می‌کند، پس پایین آوردنِ
+# آستانه‌ی Hough آن مورد را حل نمی‌کرد. اعتبارسنجیِ شکل، ابزارِ درستِ این کار است.
+
+def _disk_shape_features(gray: np.ndarray, cx: float, cy: float, r: float,
+                         cfg) -> Dict[str, float]:
+    """سه ویژگیِ مستقل از برچسب و مستقل از چرخش برایِ یک کاندیدِ دایره‌ای.
+
+    همه‌ی شعاع‌ها نسبت به شعاعِ خودِ کاندید بیان می‌شوند، پس ویژگی‌ها نسبت به مقیاسِ
+    تصویر ناوردا می‌مانند -- همان اصلِ نسبت‌محورِ کلِ پروژه.
+    """
+    h, w = gray.shape[:2]
+    n = int(cfg.disk_verify_num_angles)
+    ang = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
+    ca, sa = np.cos(ang), np.sin(ang)
+
+    def sample(scale):
+        xs = np.clip(np.round(cx + scale * r * ca).astype(np.int32), 0, w - 1)
+        ys = np.clip(np.round(cy + scale * r * sa).astype(np.int32), 0, h - 1)
+        return gray[ys, xs].astype(np.float64)
+
+    # چند شعاع در هر سویِ لبه نمونه‌برداری می‌شود، نه یکی: پراکندگیِ *درونِ* هر گروه
+    # برآوردِ نویز/بافت را می‌دهد، مستقل از خودِ پله‌ی لبه.
+    ins = np.stack([sample(s) for s in cfg.disk_verify_inner_scales])
+    outs = np.stack([sample(s) for s in cfg.disk_verify_outer_scales])
+    step = ins.mean(axis=0) - outs.mean(axis=0)      # پله‌ی لبه در هر زاویه
+
+    # مقیاسِ نویز: اختلافِ نمونه‌هایِ هم‌گروه با میانگینِ گروهِ خودشان. این کمیت
+    # لبه را نمی‌بیند (چون درون‌گروهی است) و فقط بافت و نویز را می‌سنجد.
+    dev = np.concatenate([(ins - ins.mean(axis=0)).ravel(),
+                          (outs - outs.mean(axis=0)).ravel()])
+    noise = float(np.median(np.abs(dev))) * 1.4826
+    thr = max(float(cfg.disk_verify_edge_sigma) * noise, 1.0)
+
+    # پوششِ کمانی = کسری از زاویه‌ها که در آن‌ها واقعاً لبه‌ای وجود دارد، یعنی داخل
+    # به‌اندازه‌ی معناداری از بیرون روشن‌تر است.
+    #
+    # نسخه‌ی اولِ این معیار پله‌ی هر زاویه را با «نصفِ میانه‌ی پله‌هایِ همان دایره»
+    # مقایسه می‌کرد. آن کار در عمل *یکنواختیِ پس‌زمینه* را می‌سنجید، نه وجودِ لبه را:
+    # دیسکی که یک طرفش سایه و طرفِ دیگرش آگارِ روشن باشد، در همه‌ی جهت‌ها لبه‌ی قویِ
+    # واقعی دارد ولی پله‌اش حولِ دایره تغییر می‌کند، و به‌غلط رد می‌شد. آستانه حالا از
+    # **نویزِ خودِ تصویر** می‌آید نه از میانه‌ی پله‌هایِ همان دایره.
+    cover = float(np.mean(step > thr))
+
+    med = float(np.median(step))
+    spread = float(np.median(np.abs(step - med))) * 1.4826   # انحرافِ معیارِ مقاوم
+    return {
+        "arc_coverage": cover,
+        "rim_step": med,
+        "rim_noise": noise,
+        "rim_symmetry": float(spread / abs(med)) if abs(med) > 1e-6 else float("inf"),
+    }
+
+
+def verify_disk_candidates(gray: np.ndarray, candidates: List[Dict[str, Any]],
+                           cfg) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """کاندیدها را به پذیرفته/ردشده تقسیم می‌کند.
+
+    دو قاعده، هر دو بدونِ آستانه‌ی برازش‌شده رویِ داده‌ی ارزیابی:
+
+    (۱) پوششِ کمانی باید از `disk_verify_min_arc_coverage` بیشتر باشد. این عدد از
+        هندسه می‌آید نه از داده: یک دیسکِ واقعی ممکن است تا حدودِ یک‌چهارمِ محیطش با
+        دیسکِ همسایه یا لبه‌ی ظرف هم‌پوشانی داشته باشد، پس ۰.۷۵ کفِ منطقی است.
+
+    (۲) پله‌ی لبه باید نسبت به **اجماعِ کاندیدهایِ همان تصویر** پرت نباشد. مرجع از
+        خودِ تصویر می‌آید، پس هیچ عددِ سراسری تنظیم نمی‌شود. ضریبِ ۳σ همان سطحِ
+        استانداردی است که ماژولِ ۱۶.۵ هم استفاده می‌کند.
+    """
+    kept: List[Dict[str, Any]] = []
+    dropped: List[Dict[str, Any]] = []
+    if not candidates:
+        return kept, dropped
+
+    for c in candidates:
+        c.update(_disk_shape_features(gray, float(c["x"]), float(c["y"]),
+                                      float(c["r"]), cfg))
+
+    steps = np.array([c["rim_step"] for c in candidates], dtype=np.float64)
+    ref = float(np.median(steps))
+    mad = float(np.median(np.abs(steps - ref))) * 1.4826
+    lo = ref - float(cfg.disk_verify_step_sigma) * mad if mad > 1e-6 else -np.inf
+
+    for c in candidates:
+        reasons = []
+        if c["arc_coverage"] < float(cfg.disk_verify_min_arc_coverage):
+            reasons.append("arc_coverage_low")
+        if c["rim_step"] < lo:
+            reasons.append("rim_step_outlier")
+        if reasons:
+            c["verify_rejection"] = reasons
+            dropped.append(c)
+        else:
+            kept.append(c)
+    return kept, dropped
+
+
+for dish in dishes:
+    if not cfg.disk_verify_enabled:
+        dish["hough_candidates_unverified"] = list(dish.get("hough_candidates", []))
+        print(f"[Dish #{dish['index']}] اعتبارسنجیِ شکلِ دیسک غیرفعال است.")
+        continue
+
+    _cands = dish.get("hough_candidates", [])
+    _kept, _drop = verify_disk_candidates(dish["roi_gray_masked"], _cands, cfg)
+    dish["hough_candidates_unverified"] = _cands
+    dish["hough_candidates"] = _kept
+    dish["disk_verify_rejected"] = _drop
+
+    print(f"[Dish #{dish['index']}] اعتبارسنجیِ شکلِ دیسک: "
+          f"{len(_kept)} پذیرفته، {len(_drop)} رد از {len(_cands)} کاندید.")
+    if _drop:
+        _rc: Dict[str, int] = {}
+        for c in _drop:
+            for rr in c["verify_rejection"]:
+                _rc[rr] = _rc.get(rr, 0) + 1
+        print("  دلایل رد:", ", ".join(f"{k}={v}" for k, v in sorted(_rc.items())))
+
+# %% [markdown]
 # ## 11.5) بررسی خودکار محتمل‌بودن پتری — تیر دوم (بر مبنای کاندیدهای معتبر Hough)
 
 # %%
@@ -2557,6 +3543,308 @@ for dish in dishes:
     if dish["likely_false_positive"]:
         print(f"[هشدار] پتری {dish['index']}: هیچ دیسکی تایید نشد — احتمال FP در تشخیص پتری "
               f"(method={dish['method']}, confidence={dish['confidence']:.2f}).")
+
+# %% [markdown]
+# ## 15.5) بومِ آگار — تصحیحِ نورِ ناهموار فقط از رویِ محیطِ کشت
+#
+
+# %%
+# ── ماژول ۱۵.۵ (جدید) — بومِ آگار: زیرساختِ مشترکِ سگمنت‌کردنِ هاله ────────────
+# چرا این ماژول اضافه شد: اصلِ «همه‌ی پارامترها نسبی‌اند» پایپلاین را از مقیاسِ فیزیکی
+# مستقل کرد، ولی از *کیفیتِ نوری* مستقل نکرد. شیبِ نرمِ روشنایی در سرتاسرِ قاب
+# (vignetting) یک منبعِ خطایِ باقی‌مانده و تاییدشده است: در بررسیِ gt_10، پروفایلِ
+# شعاعیِ دیسک #۱ بدونِ هیچ افتی و کاملاً یکنواخت از ۱۵۸ به ۱۷۴ بالا می‌رفت -- نه نشتِ
+# همسایه، نه هاله‌ی واقعی، فقط گرادیانِ نور -- و یک هاله‌ی کاذبِ ۳۵mm تولید کرد.
+#
+# تلاشِ قبلی برایِ رفعِ همین پدیده (اعمالِ illumination_normalize رویِ ورودیِ ماژولِ
+# هاله) نتیجه‌ی معکوس داد و revert شد (بخشِ ۱۲.۷). علتِ ریشه‌ای حالا روشن است و در
+# docstringِ build_agar_canvas مستند شده: آن تابع میدانِ روشنایی را از رویِ *کلِ*
+# تصویر -- شاملِ دیسک‌هایِ سفید -- تخمین می‌زد، و تفریقِ آن تخمینِ آلوده دورِ هر دیسک
+# یک حلقه‌ی تاریکِ ساختگی می‌ساخت؛ یعنی همان چیزی را تولید می‌کرد که قرار بود حذف کند.
+#
+# این ماژول همان تصحیح را انجام می‌دهد ولی میدانِ روشنایی را با کانولوشنِ نرمال‌شده
+# **فقط از پیکسل‌هایِ آگار** می‌سازد. خروجی (`dish["agar_canvas"]`) قرار است ورودیِ
+# مشترکِ همه‌ی شاخه‌هایِ موازیِ سگمنت‌کردنِ هاله باشد.
+#
+# فعلاً فقط محاسبه و نمایش داده می‌شود -- هیچ ماژولِ موجودی هنوز از آن استفاده نمی‌کند،
+# تا اثرش پیش از تغییرِ رفتارِ پایپلاین به‌صورتِ بصری و کمّی بررسی شود.
+
+for dish in dishes:
+    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+    agar = build_agar_canvas(dish["roi_gray_masked"], dish["processing_mask_roi"],
+                             disks_in, cfg.agar_illum_kernel_frac,
+                             cfg.agar_disk_exclude_scale,
+                             petri_radius_px=0.5 * dish["diameter_px"],
+                             rim_exclude_frac=cfg.agar_rim_exclude_frac)
+    dish["agar_canvas"] = agar["canvas"]
+    dish["agar_mask"] = agar["agar_mask"]
+    dish["agar_illum_field"] = agar["illum_field"]
+    dish["agar_mean"] = agar["agar_mean"]
+
+    agar_px = int(np.count_nonzero(agar["agar_mask"]))
+    dish_px = int(np.count_nonzero(dish["processing_mask_roi"]))
+    print(f"[Dish #{dish['index']}] بومِ آگار: {agar_px}/{dish_px} پیکسل آگار "
+          f"({100.0 * agar_px / max(dish_px, 1):.1f}%) | میانگینِ آگار={agar['agar_mean']:.1f}")
+
+    show(dish["agar_canvas"],
+         f"[Dish #{dish['index']}] بومِ آگار (نورِ ناهموار تصحیح‌شده، تخمین فقط از آگار)",
+         cfg=cfg)
+
+# %% [markdown]
+# ## 15.6) شاخه‌ی موازیِ Otsu — سگمنت‌کردنِ هاله با آستانه‌ی سراسری رویِ بومِ آگار
+#
+
+# %%
+# ── ماژول ۱۵.۶ (جدید) — شاخه‌ی موازیِ Otsu برایِ مرزِ هاله ────────────────────
+# این دومین شاخه‌ی *مستقلِ* سگمنت‌کردنِ هاله است، در کنارِ پروفایلِ شعاعیِ ماژولِ ۱۶.
+# دو شاخه عمداً سازوکارِ متفاوتی دارند تا حالت‌هایِ شکستِ متفاوتی داشته باشند:
+#   • ماژول ۱۶  : میانگینِ حلقه‌ای + همگراییِ آماری به پس‌زمینه (یک‌بعدی، شعاعی).
+#   • ماژول ۱۵.۶: آستانه‌ی سراسری رویِ کلِ بومِ آگار (دوبعدی، ناحیه‌ای).
+# جایی که مرزِ هاله تیز و کنتراست خوب است ولی گذارِ شعاعی تدریجی به‌نظر می‌رسد،
+# شاخه‌ی ناحیه‌ای برنده است؛ جایی که هاله کم‌کنتراست ولی هم‌مرکز و منظم است، شاخه‌ی
+# شعاعی برنده است. ادغامِ این دو کارِ ماژولِ آینده‌ی fusionِ هاله است.
+#
+# نکته‌ی کلیدی: آستانه‌ی سراسری فقط رویِ بومِ آگار (ماژولِ ۱۵.۵) معنا دارد -- رویِ
+# تصویرِ خام، شیبِ نور آن را بی‌معنا می‌کرد.
+#
+# فعلاً فقط محاسبه/نمایش -- هنوز هیچ خروجیِ نهایی‌ای از این شاخه مصرف نمی‌شود.
+
+for dish in dishes:
+    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+    otsu_res = segment_halos_otsu(dish["agar_canvas"], dish["agar_mask"],
+                                  dish["processing_mask_roi"], disks_in, cfg)
+    dish["halo_otsu"] = otsu_res
+
+    n_zone = sum(1 for p in otsu_res["per_disk"] if p["has_zone"])
+    print(f"[Dish #{dish['index']}] شاخه‌ی Otsu: status={otsu_res['status']} "
+          f"thr={otsu_res['threshold']} eta={otsu_res['eta']:.3f} "
+          f"| {n_zone} دیسک دارایِ هاله")
+
+    # نکته: px_per_mm_est در ماژولِ ۱۶ محاسبه می‌شود که *بعد* از این سلول اجرا می‌شود،
+    # پس در این مرحله هنوز در دسترس نیست و شعاع به پیکسل گزارش می‌شود.
+    for i_d, p in enumerate(otsu_res["per_disk"], start=1):
+        if p["has_zone"]:
+            print(f"    دیسک {i_d}: r_mean={p['r_mean_px']:.1f}px "
+                  f"({p['r_mean_px'] / max(disks_in[i_d - 1]['r'], 1e-6):.2f}× شعاعِ دیسک)")
+
+    if otsu_res["zone_mask"] is not None:
+        vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+        overlay = vis.copy()
+        overlay[otsu_res["zone_mask"] > 0] = (0, 200, 255)
+        vis = cv2.addWeighted(overlay, 0.35, vis, 0.65, 0)
+        for c in dish["final_candidates"]:
+            cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                       int(round(c["r"])), (255, 40, 40), 2)
+        show(vis, f"[Dish #{dish['index']}] شاخه‌ی Otsu — ناحیه‌ی بدونِ رشد (زرد)", cfg=cfg)
+    else:
+        show(dish["agar_canvas"],
+             f"[Dish #{dish['index']}] شاخه‌ی Otsu — {otsu_res['status']} (ناحیه‌ای یافت نشد)", cfg=cfg)
+
+# %% [markdown]
+# ## 15.7) شاخه‌ی موازیِ Watershed — جداکردنِ هاله‌های مجاور رویِ بومِ آگار
+#
+
+# %%
+# ── ماژول ۱۵.۷ (جدید) — شاخه‌ی موازیِ Watershed + مدلِ مرجعِ میدانِ دور ──────────
+# سومین شاخه‌ی مستقلِ سگمنت‌کردنِ هاله. همان DT/Watershedی که تا امروز در مسیرِ
+# تشخیصِ دیسک بی‌فایده بود (ممیزی: صفر دیسکِ منحصربه‌فرد از ۹۲)، این‌بار به مسئله‌ای
+# هدایت شده که واقعاً در آن ضعف داریم -- جداکردنِ هاله‌هایِ مجاور.
+#
+# سه شاخه اکنون سازوکارِ کاملاً متفاوتی دارند، پس حالت‌هایِ شکستِ متفاوتی هم دارند:
+#   ماژول ۱۶   -- پروفایلِ شعاعیِ یک‌بعدی + همگرایی به پس‌زمینه
+#   ماژول ۱۵.۶ -- آستانه‌ی سراسریِ دوبعدی (Otsu)
+#   ماژول ۱۵.۷ -- سیلابِ ناحیه‌ای از رویِ لبه‌هایِ واقعی، بدونِ هیچ آستانه‌ی سراسری
+#
+# مدلِ مرجعِ «میدانِ دور» هم این‌جا ساخته می‌شود: دورترین پیکسل‌هایِ آگار از همه‌ی
+# دیسک‌ها، که به‌لحاظِ فیزیکی نمی‌توانند داخلِ هیچ هاله‌ای باشند -- یعنی تعریفِ
+# عملیاتیِ «لَونِ باکتری». این مرجع هم نشانگرِ پس‌زمینه‌ی Watershed است و هم مبنایِ
+# آزمونِ آماریِ اعتبارسنجیِ هر ناحیه.
+#
+# فعلاً فقط محاسبه/نمایش -- هنوز هیچ خروجیِ نهایی‌ای مصرف نمی‌شود.
+
+for dish in dishes:
+    disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+
+    far_ref = build_far_field_reference(dish["agar_canvas"], dish["agar_mask"],
+                                        disks_in, cfg.halo_far_field_frac)
+    dish["far_field_ref"] = far_ref
+
+    ws = segment_halos_watershed(dish["agar_canvas"], dish["agar_mask"],
+                                 dish["processing_mask_roi"], disks_in, far_ref, cfg)
+    dish["halo_watershed"] = ws
+
+    if far_ref is None:
+        print(f"[Dish #{dish['index']}] مرجعِ میدانِ دور ساخته نشد — شاخه‌ی Watershed رد شد.")
+    else:
+        n_zone = sum(1 for p in ws["per_disk"] if p["has_zone"])
+        print(f"[Dish #{dish['index']}] مرجعِ لَون: mean={far_ref['mean']:.1f} "
+              f"std={far_ref['std']:.1f} (n={far_ref['n']}) "
+              f"| Watershed: {n_zone} دیسک دارایِ هاله")
+        for i_d, p in enumerate(ws["per_disk"], start=1):
+            r_d = disks_in[i_d - 1]["r"]
+            flag = "هاله" if p["has_zone"] else "—"
+            print(f"    دیسک {i_d}: r_mean={p['r_mean_px']:.1f}px "
+                  f"({p['r_mean_px'] / max(r_d, 1e-6):.2f}×) اثر={p['effect']:+.2f} {flag}")
+
+    if ws["labels"] is not None:
+        vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+        lab = ws["labels"]
+        overlay = vis.copy()
+        rng = np.random.RandomState(0)  # رنگ‌بندیِ قطعی (determinism)
+        for i_d in range(len(disks_in)):
+            if not ws["per_disk"][i_d]["has_zone"]:
+                continue
+            col = tuple(int(v) for v in rng.randint(60, 255, size=3))
+            overlay[lab == i_d + 2] = col
+        vis = cv2.addWeighted(overlay, 0.40, vis, 0.60, 0)
+        for c in dish["final_candidates"]:
+            cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                       int(round(c["r"])), (255, 40, 40), 2)
+        show(vis, f"[Dish #{dish['index']}] شاخه‌ی Watershed — نواحیِ تاییدشده‌ی هاله", cfg=cfg)
+
+# %% [markdown]
+# ## 15.8) شاخه‌ی موازیِ آماری — مرزِ هاله به‌عنوانِ آزمونِ فرض، نه لبه‌ی گرادیانی
+#
+
+# %%
+# ── ماژول ۱۵.۸ (جدید) — شاخه‌ی موازیِ آماریِ «غیبتِ کاملِ رشد» ─────────────────
+# چهارمین شاخه‌ی مستقل. سه شاخه‌ی دیگر همگی به شکلی «کجا تصویر عوض می‌شود» را
+# می‌پرسند؛ این شاخه پرسشِ متفاوتی می‌پرسد: «تا کجا هنوز به‌طورِ آماری *لَون نیست*؟»
+#
+# چرا این پرسش بهتر است: مرجعِ «لَون» از میدانِ دور می‌آید -- ناحیه‌ای که به‌لحاظِ
+# فیزیکی نمی‌تواند داخلِ هیچ هاله‌ای باشد -- نه از دنباله‌ی خودِ پروفایلِ همان دیسک.
+# کاتالوگِ خطاها نشان داد سازوکارِ اصلیِ کم‌برآوردها دقیقاً همین بود: وقتی پنجره‌ی
+# جست‌وجو به لَونِ واقعی نمی‌رسید، ماژولِ ۱۶ نقطه‌ای را که هنوز *داخلِ* هاله بود
+# «پس‌زمینه» فرض می‌کرد و مرز را زودتر اعلام می‌کرد.
+#
+# فعلاً فقط محاسبه/نمایش -- ورودش به ادغام مشروط به سنجشِ کمّی است.
+
+
+_MODNAME = 'ماژول ۱۵.۸ — شاخه\u200cی آماری'
+_MODKEY = 'halo_statistical'
+# ⚠️ این ماژول **تشخیصی** است: خروجی‌اش واردِ زنجیره‌ی تصمیم (ادغامِ ۱۶.۷) نمی‌شود.
+# پس خطایِ آن نباید کلِ اجرا را متوقف کند -- کاربر باید گزارشِ نهایی‌اش را بگیرد و
+# در کنارش دقیقاً ببیند این شاخه چرا شکست خورد. خطا کامل چاپ می‌شود، نه پنهان.
+import traceback as _tb
+
+try:
+    for dish in dishes:
+        disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+        stat_res = segment_halos_statistical(dish["agar_canvas"], dish["agar_mask"],
+                                             dish["processing_mask_roi"], disks_in,
+                                             dish.get("far_field_ref"), cfg)
+        dish["halo_statistical"] = stat_res
+
+        n_zone = sum(1 for p in stat_res["per_disk"] if p["has_zone"])
+        print(f"[Dish #{dish['index']}] شاخه‌ی آماری: status={stat_res['status']} "
+              f"| {n_zone} دیسک دارایِ هاله")
+        for i_d, p in enumerate(stat_res["per_disk"], start=1):
+            if p["has_zone"]:
+                r_d = disks_in[i_d - 1]["r"]
+                print(f"    دیسک {i_d}: r_mean={p['r_mean_px']:.1f}px "
+                      f"({p['r_mean_px'] / max(r_d, 1e-6):.2f}× شعاعِ دیسک)")
+
+        vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+        for c, p in zip(dish["final_candidates"], stat_res["per_disk"]):
+            cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))), int(round(c["r"])), (255, 40, 40), 2)
+            if p["has_zone"] and p["final_radii"] is not None:
+                ang = np.linspace(0.0, 2.0 * np.pi, int(cfg.halo_num_angles), endpoint=False)
+                pts = np.stack([c["x"] + p["final_radii"] * np.cos(ang),
+                                c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
+                cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (40, 220, 255), 3)
+        show(vis, f"[Dish #{dish['index']}] شاخه‌ی آماری — مرزِ «هنوز لَون نیست»", cfg=cfg)
+
+
+except Exception as _e:
+    print("=" * 70)
+    print(f"[{_MODNAME}] با خطا متوقف شد -- بقیه‌ی پایپ‌لاین ادامه می‌یابد.")
+    print(f"  نوعِ خطا: {type(_e).__name__}: {_e}")
+    print("  ردِ کامل:")
+    for _ln in _tb.format_exc().splitlines()[-12:]:
+        print("   ", _ln)
+    print("  این شاخه تشخیصی است و در قطرِ نهاییِ گزارش‌شده اثری ندارد.")
+    print("=" * 70)
+    for _d in dishes:
+        _d.setdefault(_MODKEY, {"status": "error", "per_disk": [
+            {"has_zone": False, "final_radii": None, "r_mean_px": 0.0}
+            for _ in _d.get("final_candidates", [])]})
+
+# %% [markdown]
+# ## 15.9) شاخه‌ی موازیِ مدلِ رشد — برازشِ لجستیک به گذارِ شعاعی
+#
+
+# %%
+# ── ماژول ۱۵.۹ (جدید) — شاخه‌ی موازیِ مدلِ رشد (برازشِ لجستیک) ────────────────
+# پنجمین و آخرین شاخه‌ی مستقل. چهار شاخه‌ی دیگر مرز را از رویِ *شواهدِ محلیِ تصویر*
+# پیدا می‌کنند (آستانه، ناحیه، همگرایی، آزمونِ آماری). این شاخه به‌جایِ آن یک
+# **مدلِ فیزیکی** به کلِ پروفایل برازش می‌دهد و مرز را از پارامترِ مدل می‌خواند.
+#
+# چرا این پرسشِ متفاوتی است: برازش از *همه‌ی* حلقه‌ها هم‌زمان استفاده می‌کند، پس یک
+# حلقه‌ی نویزی نمی‌تواند مرز را جابه‌جا کند -- برخلافِ روش‌هایی که به گذار از یک آستانه
+# در یک نقطه تکیه دارند. در عوض، اگر شکلِ واقعی از سیگموئید فاصله بگیرد، برازش
+# سیستماتیک خطا می‌کند. یعنی حالتِ شکستش با بقیه فرق دارد -- که شرطِ مفید بودنِ یک
+# شاخه‌ی موازی است.
+#
+# مبنایِ فیزیکی و انتخابِ نقطه‌ی عطف به‌عنوانِ مرز، در docstringِ
+# segment_halos_growth_model مستند است (هردو از اندازه‌گیری آمده‌اند، نه از فرض).
+#
+# فعلاً فقط محاسبه/نمایش -- ورودش به ادغام مشروط به سنجشِ کمّی رویِ هر ۱۱ عکس است.
+
+
+_MODNAME = 'ماژول ۱۵.۹ — مدلِ رشد'
+_MODKEY = 'halo_growth_model'
+# ⚠️ این ماژول **تشخیصی** است: خروجی‌اش واردِ زنجیره‌ی تصمیم (ادغامِ ۱۶.۷) نمی‌شود.
+# پس خطایِ آن نباید کلِ اجرا را متوقف کند -- کاربر باید گزارشِ نهایی‌اش را بگیرد و
+# در کنارش دقیقاً ببیند این شاخه چرا شکست خورد. خطا کامل چاپ می‌شود، نه پنهان.
+import traceback as _tb
+
+try:
+    for dish in dishes:
+        disks_in = [{"x": c["x"], "y": c["y"], "r": c["r"]} for c in dish["final_candidates"]]
+        gm = segment_halos_growth_model(dish["agar_canvas"], dish["agar_mask"],
+                                        dish["processing_mask_roi"], disks_in,
+                                        dish.get("far_field_ref"), cfg)
+        dish["halo_growth_model"] = gm
+
+        n_zone = sum(1 for p in gm["per_disk"] if p["has_zone"])
+        print(f"[Dish #{dish['index']}] شاخه‌ی مدلِ رشد: status={gm['status']} "
+              f"| {n_zone} دیسک دارایِ هاله")
+        for i_d, p in enumerate(gm["per_disk"], start=1):
+            if p["has_zone"]:
+                r_d = disks_in[i_d - 1]["r"]
+                print(f"    دیسک {i_d}: مرز={p['r_boundary_px']:.1f}px "
+                      f"({p['r_boundary_px'] / max(r_d, 1e-6):.2f}×)  "
+                      f"زیستی={p['r_bio_px']:.1f}px  w={p['w']:.1f}px  R²={p['r2']:.2f}")
+
+        vis = cv2.cvtColor(dish["agar_canvas"], cv2.COLOR_GRAY2RGB)
+        for c, p in zip(dish["final_candidates"], gm["per_disk"]):
+            cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                       int(round(c["r"])), (255, 40, 40), 2)
+            if p["has_zone"] and p["final_radii"] is not None:
+                ang = np.linspace(0.0, 2.0 * np.pi, int(cfg.halo_num_angles), endpoint=False)
+                pts = np.stack([c["x"] + p["final_radii"] * np.cos(ang),
+                                c["y"] + p["final_radii"] * np.sin(ang)], axis=1)
+                cv2.polylines(vis, [np.round(pts).astype(np.int32)], True, (255, 200, 40), 3)
+                if p["r_bio_px"] > c["r"]:
+                    cv2.circle(vis, (int(round(c["x"])), int(round(c["y"]))),
+                               int(round(p["r_bio_px"])), (120, 255, 120), 1)
+        show(vis, f"[Dish #{dish['index']}] مدلِ رشد — زرد: مرزِ گزارشی (نقطه‌ی عطف)، "
+                  f"سبز: مرزِ زیستی", cfg=cfg)
+
+
+except Exception as _e:
+    print("=" * 70)
+    print(f"[{_MODNAME}] با خطا متوقف شد -- بقیه‌ی پایپ‌لاین ادامه می‌یابد.")
+    print(f"  نوعِ خطا: {type(_e).__name__}: {_e}")
+    print("  ردِ کامل:")
+    for _ln in _tb.format_exc().splitlines()[-12:]:
+        print("   ", _ln)
+    print("  این شاخه تشخیصی است و در قطرِ نهاییِ گزارش‌شده اثری ندارد.")
+    print("=" * 70)
+    for _d in dishes:
+        _d.setdefault(_MODKEY, {"status": "error", "per_disk": [
+            {"has_zone": False, "final_radii": None, "r_mean_px": 0.0}
+            for _ in _d.get("final_candidates", [])]})
 
 # %% [markdown]
 # ## ۱۶)  تشخیص هاله‌ی مهار
@@ -3557,6 +4845,219 @@ for dish in dishes:
         print(line)
 
 # %% [markdown]
+# ## 16.7) ادغامِ شاخه‌هایِ موازیِ هاله
+#
+
+# %%
+# ── ماژول ۱۶.۷ (جدید) — ادغامِ شاخه‌هایِ موازیِ هاله ──────────────────────────
+# قاعده‌ی ادغام از رویِ *اندازه‌گیری* طراحی شده، نه فرض. مقایسه‌ی سه شاخه رویِ هر ۱۱
+# عکس (۹۱ دیسکِ تطبیق‌یافته، ground_truth/diagnostics/halo_branch_comparison.csv):
+#
+#   شاخه            TP  FN  FP  TN    دقت    MAE   Bias
+#   شعاعی           57   6  14  14  0.780   5.49  -0.53
+#   Otsu (صدکِ ۹۰)  26  37   1  27  0.582   3.66  -1.73
+#   Watershed       11  52   2  26  0.407   1.08  -0.08
+#
+# دو الگویِ روشن که کلِ طراحی رویِ آن‌ها بنا شده:
+#   • شاخه‌ی شعاعی بهترین *پوشش* را دارد (۵۷ از ۶۳ هاله‌ی واقعی) ولی بدترین دقتِ
+#     عددی و بیشترین مثبتِ کاذب.
+#   • شاخه‌هایِ ناحیه‌ای تقریباً هرگز کاذب نمی‌زنند (۱ و ۲ در برابرِ ۲۸ دیسکِ بدونِ
+#     هاله) و وقتی می‌زنند به‌مراتب دقیق‌ترند -- MAE واترشد پنج برابر بهتر از شعاعی.
+#
+# پس قاعده «میانگینِ شاخه‌ها» نیست، بلکه تقسیمِ کار بر اساسِ همان چیزی که هر شاخه در
+# آن قوی است:
+#   ۱) اگر یک شاخه‌ی ناحیه‌ای هاله‌ای اعلام کند -> *مقدارِ آن* ملاک است
+#      (اولویت: Watershed، سپس Otsu -- به ترتیبِ دقتِ اندازه‌گیریِ سنجیده‌شده).
+#   ۲) وگرنه شاخه‌ی شعاعی ملاک است (هیچ آستانه‌ی اضافه‌ای اعمال نمی‌شود -- دلیلش
+#      در یادداشتِ اعتبارسنجیِ پایین‌تر).
+#
+# بندِ (۱) سه هاله‌ی واقعی را که شاخه‌ی شعاعی رد کرده بود بازمی‌گرداند -- از جمله یک
+# موردِ ۲۵mm با کنتراستِ ۴۲σ که فقط به این دلیل رد شده بود که پروفایلِ یک‌بعدی‌اش در
+# پنجره‌ی گسترش‌یافته هرگز مسطح نشد. بندِ (۲) مثبت‌هایِ کاذب را تقریباً نصف می‌کند.
+#
+# یک گیتِ سومی هم امتحان شد و **حذف شد**: «تشخیصِ شعاعیِ ضعیف‌تر از ۴σ فقط با تاییدِ
+# یک شاخه‌ی ناحیه‌ای پذیرفته شود». درون‌نمونه‌ای عالی به‌نظر می‌رسید (مثبتِ کاذب از ۱۴
+# به ۹، دقت ۰.۸۳۵) ولی اعتبارسنجیِ leave-one-image-out نشان داد این عدد سراب بود:
+# وقتی آستانه رویِ ۱۰ عکس انتخاب و رویِ عکسِ یازدهم سنجیده شود، دقت به ۰.۷۵۸ می‌رسد --
+# یعنی *بدتر از هیچ‌کاری‌نکردن* (۰.۷۸۰). آستانه‌ای که خودش از رویِ داده‌ی ارزیابی
+# انتخاب شده باشد تعمیم نمی‌یابد؛ حذف شد.
+#
+# آن‌چه *باقی* ماند و زیرِ LOO هم پابرجاست، بهبودِ دقتِ عددی است (MAE از ۵.۴۹ به
+# ~۳.۸): این بهبود از خودِ اندازه‌گیریِ شاخه‌هایِ ناحیه‌ای می‌آید که هیچ پارامترِ
+# تنظیم‌شده‌ای ندارند -- هر شاخه با مرجعِ خودِ همان تصویر تصمیم می‌گیرد. انتخابِ
+# صدکِ ۹۰ برایِ Otsu هم پایدار است: در هر ۱۱ تایِ LOO همان انتخاب شد.
+
+def _radii_to_mask(shape, cx, cy, angles, radii, r_disk, dish_mask):
+    """ساختِ ماسکِ حلقه‌ای از شعاع‌هایِ per-angle (همان قراردادِ ماژولِ ۱۶)."""
+    h, w = shape[:2]
+    pts = np.stack([cx + radii * np.cos(angles), cy + radii * np.sin(angles)], axis=1)
+    pts = np.round(pts).astype(np.int32)
+    full = np.zeros((h, w), dtype=np.uint8)
+    cv2.fillPoly(full, [pts], 255)
+    if dish_mask is not None:
+        full = cv2.bitwise_and(full, _ensure_uint8_binary(dish_mask))
+    ring = full.copy()
+    cv2.circle(ring, (int(round(cx)), int(round(cy))), int(round(r_disk)), 0, -1)
+    return ring
+
+
+for dish in dishes:
+    n_angles = int(cfg.halo_num_angles)
+    angles = np.linspace(0.0, 2.0 * np.pi, n_angles, endpoint=False)
+    otsu = dish.get("halo_otsu", {}).get("per_disk", [])
+    ws = dish.get("halo_watershed", {}).get("per_disk", [])
+    counts = {"watershed": 0, "otsu": 0, "radial": 0, "none": 0}
+
+    for i, (cand, res) in enumerate(zip(dish["final_candidates"], dish["halo_results"])):
+        r_disk = float(cand["r"])
+        cx, cy = float(cand["x"]), float(cand["y"])
+        o = otsu[i] if i < len(otsu) else {}
+        w_ = ws[i] if i < len(ws) else {}
+
+        source, radii, r_scalar = None, None, 0.0
+        if w_.get("has_zone") and w_.get("final_radii") is not None:
+            radii = np.asarray(w_["final_radii"], dtype=np.float32)
+            r_scalar = float(np.mean(radii))          # تجربی: بهترین آماره برایِ واترشد
+            source = "watershed"
+        elif o.get("has_zone") and o.get("final_radii") is not None:
+            radii = np.asarray(o["final_radii"], dtype=np.float32)
+            r_scalar = float(np.percentile(radii, cfg.halo_fusion_otsu_percentile))
+            source = "otsu"
+        elif res.get("status") == "ok":
+            radii = res.get("final_radii")
+            radii = np.asarray(radii, dtype=np.float32) if radii is not None else None
+            r_scalar = float(res.get("halo_radius_px", 0.0))
+            source = "radial"
+
+        if source is None:
+            res["status"] = "no_zone_after_fusion" if res.get("status") == "ok" else res.get("status")
+            res["halo_radius_px"] = 0.0
+            res["halo_mask"] = None
+            res["halo_area_px"] = 0.0
+            res["fusion_source"] = None
+            counts["none"] += 1
+            continue
+
+        if radii is not None:
+            radii = np.maximum(radii, r_disk)
+            mask = _radii_to_mask(dish["agar_canvas"].shape, cx, cy, angles, radii,
+                                  r_disk, dish["processing_mask_roi"])
+            res["halo_mask"] = mask
+            res["halo_area_px"] = float(np.count_nonzero(mask))
+            res["final_radii"] = radii
+        res["status"] = "ok"
+        res["halo_radius_px"] = max(r_scalar, r_disk)
+        res["boundary_source"] = f"fusion:{source}"
+        res["fusion_source"] = source
+        counts[source] += 1
+
+    ppm = dish.get("px_per_mm_est")
+    print(f"[Dish #{dish['index']}] ادغامِ هاله: "
+          f"واترشد={counts['watershed']} Otsu={counts['otsu']} شعاعی={counts['radial']} "
+          f"بدونِ هاله={counts['none']}")
+    for i, (cand, res) in enumerate(zip(dish["final_candidates"], dish["halo_results"]), start=1):
+        if res.get("fusion_source"):
+            mm = (2.0 * res["halo_radius_px"] / ppm) if ppm else float("nan")
+            print(f"    دیسک {i}: {res['fusion_source']:<10} قطر≈{mm:.1f} mm")
+
+
+# ── خروجیِ تصویریِ ادغام: قطرِ نهایی به‌صورتِ *دایره* رویِ مختصاتِ خودِ هر دیسک ────
+# چرا دایره و نه کانتورِ per-angle: عددی که در گزارش و در ارزیابی استفاده می‌شود یک
+# **قطرِ اسکالر** است (`halo_radius_px`)، نه شکلِ نامنظم. رسمِ همان دایره یعنی آن‌چه
+# می‌بینید دقیقاً همان چیزی است که اندازه‌گیری می‌شود -- و اگر دایره با مرزِ واقعیِ
+# هاله نخواند، همان‌جا چشمی معلوم می‌شود که خطا از کجاست.
+# رنگ، شاخه‌ی تصمیم‌گیرنده را کد می‌کند تا در یک نگاه معلوم باشد کدام دیسک را کدام
+# شاخه اندازه گرفته -- همان تفکیکی که کلِ تحلیلِ خطا رویش بنا شده.
+
+FUSION_SOURCE_COLORS = {          # BGR
+    "watershed": (0, 200, 0),     # سبز  -- دقیق‌ترین شاخه (MAE ~۱.۱mm)
+    "otsu": (0, 165, 255),        # نارنجی
+    "radial": (255, 0, 255),      # بنفش -- کم‌دقت‌ترین، بیشترِ خطا این‌جاست
+}
+
+
+def _label_geometry(r_disk, cfg):
+    """اندازه‌ی قلم/ضخامت را نسبت به شعاعِ دیسک می‌دهد (نه پیکسلِ مطلق)."""
+    scale = max(0.35, float(r_disk) * float(cfg.label_font_scale_frac))
+    thick = max(1, int(round(float(r_disk) * float(cfg.label_thickness_frac))))
+    ring = max(1, int(round(float(r_disk) * float(cfg.label_circle_thickness_frac))))
+    return scale, thick, ring
+
+
+def draw_disk_label(img, cx, cy, r_disk, text, dish_center=None, cfg=None,
+                    color=(255, 255, 255), r_ref=None):
+    """شماره/برچسبِ دیسک را **کنارِ** خودِ دیسک و خوانا می‌نویسد.
+
+    برچسب در جهتِ دور شدن از مرکزِ ظرف قرار می‌گیرد تا رویِ دیسکِ همسایه نیفتد؛ اگر
+    مرکزِ ظرف داده نشود، بالایِ دیسک نوشته می‌شود. متن با حاشیه‌ی تیره کشیده می‌شود
+    تا هم رویِ کاغذِ روشنِ دیسک و هم رویِ آگارِ تیره خوانا بماند.
+
+    `r_ref` شعاعِ **بیرونی‌ترین دایره‌ی رسم‌شده** است (هاله، اگر باشد). فاصله از آن
+    گرفته می‌شود نه از خودِ دیسک، وگرنه برچسب دقیقاً رویِ دایره‌ی هاله می‌افتد و
+    هیچ‌کدام خوانا نمی‌مانند. اندازه‌ی قلم اما به شعاعِ *دیسک* بسته می‌ماند تا در
+    یک پلیت همه‌ی برچسب‌ها هم‌اندازه باشند.
+    """
+    scale, thick, _ = _label_geometry(r_disk, cfg)
+    if dish_center is not None:
+        vx, vy = float(cx) - float(dish_center[0]), float(cy) - float(dish_center[1])
+        n = (vx * vx + vy * vy) ** 0.5
+        ux, uy = (vx / n, vy / n) if n > 1e-6 else (0.0, -1.0)
+    else:
+        ux, uy = 0.0, -1.0
+    r_out = float(r_ref) if r_ref else float(r_disk)
+    d = r_out + float(r_disk) * float(cfg.label_offset_frac)
+    (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, scale, thick)
+    px = int(round(cx + ux * d - tw / 2.0))
+    py = int(round(cy + uy * d + th / 2.0))
+    px = max(2, min(px, img.shape[1] - tw - 2))
+    py = max(th + 2, min(py, img.shape[0] - 2))
+    cv2.putText(img, text, (px, py), cv2.FONT_HERSHEY_SIMPLEX, scale,
+                (0, 0, 0), thick + 3, cv2.LINE_AA)      # حاشیه‌ی تیره
+    cv2.putText(img, text, (px, py), cv2.FONT_HERSHEY_SIMPLEX, scale,
+                color, thick, cv2.LINE_AA)
+    return img
+
+
+for dish in dishes:
+    ox, oy = dish["roi_offset_xy"]
+    dcx, dcy = dish["center_roi_xy"]
+    dish_center_global = (dcx + ox, dcy + oy)
+    ppm = dish.get("px_per_mm_est")
+    vis = original_bgr.copy()
+
+    for i, (cand, res) in enumerate(zip(dish["final_candidates"],
+                                        dish["halo_results"]), start=1):
+        gx, gy = int(round(cand["x"] + ox)), int(round(cand["y"] + oy))
+        r_disk = float(cand["r"])
+        _, _, ring = _label_geometry(r_disk, cfg)
+
+        cv2.circle(vis, (gx, gy), int(round(r_disk)), (0, 0, 255), ring)  # خودِ دیسک
+
+        src = res.get("fusion_source")
+        if src and res.get("halo_radius_px", 0.0) > r_disk:
+            col = FUSION_SOURCE_COLORS.get(src, (255, 255, 255))
+            # همان قطرِ اسکالری که گزارش و ارزیابی از آن استفاده می‌کنند
+            cv2.circle(vis, (gx, gy), int(round(res["halo_radius_px"])), col, ring)
+            mm = (2.0 * res["halo_radius_px"] / ppm) if ppm else float("nan")
+            txt = f"{i}: {mm:.1f}mm"
+            lab_col = col
+            r_out = float(res["halo_radius_px"])
+        else:
+            txt = f"{i}: -"
+            lab_col = (200, 200, 200)
+            r_out = r_disk
+        draw_disk_label(vis, gx, gy, r_disk, txt, dish_center_global, cfg,
+                        lab_col, r_out)
+
+    n_ws = sum(1 for r in dish["halo_results"] if r.get("fusion_source") == "watershed")
+    n_ot = sum(1 for r in dish["halo_results"] if r.get("fusion_source") == "otsu")
+    n_rd = sum(1 for r in dish["halo_results"] if r.get("fusion_source") == "radial")
+    show(cv2.cvtColor(vis, cv2.COLOR_BGR2RGB),
+         f"[Dish #{dish['index']}] قطرِ نهاییِ ادغام‌شده — "
+         f"سبز=واترشد({n_ws})  نارنجی=Otsu({n_ot})  بنفش=شعاعی({n_rd})",
+         figsize=cfg.final_figsize, cfg=cfg)
+
+# %% [markdown]
 # ## ۱۷) تشخیص حباب‌های روی هاله (رخدادهای درون آزمایش)
 # روی هاله‌های تاییدشده‌ی ماژول ۱۶ ممکن است حباب‌های کوچک شکل بگیرند. این ماژول با استفاده از پروفایل شعاعی هاله (که ماژول ۱۶ همین الان محاسبه کرده) به‌عنوان پس‌زمینه‌ی نرم، سیگنال گرادیان ماژول ۱۰ (`halo_map`، که تا این‌جا بلااستفاده مانده بود) به‌عنوان سیگنال کمکی، و Distance Transform برای تخمین شعاع هر حباب (سومین کاربرد DT به‌عنوان ابزار، نه شاخه‌ی مستقل)، حباب‌ها را استخراج می‌کند و تعداد + مساحت مجموع + برآورد حجم توده را گزارش می‌دهد.
 
@@ -3714,7 +5215,210 @@ for dish in dishes:
         print(line)
 
 # %% [markdown]
-# ## ۱۸) گزارش نهایی یکپارچه
+# ## ۱۸) طبقه‌بندیِ بالینیِ S/I/R طبقِ EUCAST v16.0
+#
+# قطرِ هاله به‌تنهایی برایِ آزمایشگاه بی‌معنی است؛ آن‌چه گزارش می‌شود **دسته** است:
+# حساس (S)، حساس با مواجهه‌ی افزایش‌یافته (I)، یا مقاوم (R). این ماژول قطرِ اندازه‌گیری‌شده‌ی
+# ماژولِ ۱۶.۷ را با جدولِ نقاطِ شکستِ EUCAST تطبیق می‌دهد.
+#
+# قاعده‌ی EUCAST کاملاً قطعی است و هیچ پارامترِ قابلِ تنظیمی ندارد:
+#
+# ```
+# قطر ≥ S      ->  S
+# قطر <  R     ->  R
+# R ≤ قطر < S  ->  I
+# ```
+#
+# اگر قطر داخلِ **ATU** (ناحیه‌ی عدمِ قطعیتِ فنی) بیفتد، EUCAST می‌گوید نتیجه نباید
+# مستقیماً گزارش شود — این‌جا با پرچمِ `atu=True` علامت می‌خورد.
+#
+# **ورودیِ لازم که از تصویر به‌دست نمی‌آید:** طبقه‌بندی به گونه‌ی باکتری و آنتی‌بیوتیکِ
+# هر دیسک نیاز دارد. این دو در تصویر نیستند (برچسبِ رویِ دیسک خوانده نمی‌شود)، پس باید
+# از کاربر گرفته شوند: `cfg.eucast_organism` برایِ کلِ پلیت و `cfg.eucast_disk_agents`
+# برایِ هر دیسک. اگر داده نشوند، ماژول دسته را اعلام نمی‌کند و به‌جایش **بازه‌ی
+# دسته‌هایِ ممکن** رویِ همه‌ی نقاطِ شکستِ آن ارگانیسم را نشان می‌دهد.
+
+# %%
+# ── ماژول ۱۸ (جدید) — طبقه‌بندیِ بالینیِ S/I/R طبقِ EUCAST v16.0 ─────────────
+# جدولِ نقاطِ شکست از خودِ PDF رسمیِ EUCAST استخراج شده است
+# (ground_truth/eucast/parse_breakpoints.py -> eucast_v16_zone_breakpoints.csv).
+#
+# چرا این ماژول مهم است -- و عددی که از آن بیرون آمد:
+# سنجشِ توافقِ دسته‌ای رویِ هر ۱۱ عکس و همه‌ی ۳۴۹ نقطه‌ی شکستِ معتبرِ EUCAST نشان داد
+# MAE=۳.۸۵mm در عمل یعنی:
+#     توافقِ دسته‌ای (CA)      ۸۲.۵٪
+#     خطایِ بسیار عمده (VME)   ۶.۹٪   -- سقفِ مرسومِ پذیرش ۱.۵٪
+#     خطایِ عمده (ME)          ۹.۲٪   -- سقفِ مرسومِ پذیرش ۳.۰٪
+# یعنی سیستم در وضعِ فعلی **به آستانه‌ی پذیرشِ بالینی نمی‌رسد** و برایِ رسیدن به آن،
+# MAE باید تا حدودِ ۱.۰mm پایین بیاید. جزئیات: ground_truth/eucast/.
+
+import csv as _csv
+import os as _os
+import re as _re
+
+# پارامترها در سلولِ Config Extension تعریف شده‌اند (همان الگویِ بقیه‌ی ماژول‌ها)،
+# تا کاربر بتواند پیش از اجرا مقدارشان را عوض کند.
+
+
+def _parse_range(text):
+    """بازه‌ی ATU را از متنِ سند بیرون می‌کشد؛ مثلِ '22-24' یا '15-19A'."""
+    if not text:
+        return None
+    m = _re.search(r"(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)", text)
+    if not m:
+        return None
+    lo, hi = float(m.group(1)), float(m.group(2))
+    return (min(lo, hi), max(lo, hi))
+
+
+def load_eucast_breakpoints(path: str) -> List[Dict[str, Any]]:
+    """جدولِ نقاطِ شکستِ ناحیه‌ای را می‌خواند و فقط سطرهایِ عددیِ قابلِ‌استفاده را نگه می‌دارد."""
+    if not _os.path.exists(path):
+        return []
+    out: List[Dict[str, Any]] = []
+    with open(path, newline="", encoding="utf-8") as f:
+        for row in _csv.DictReader(f):
+            try:
+                s_ge = float(row["zone_S_ge_mm"])
+                r_lt = float(row["zone_R_lt_mm"])
+            except (ValueError, KeyError):
+                continue
+            # EUCAST برایِ «دسته‌ی S عملاً وجود ندارد» عددِ دست‌نیافتنیِ ۵۰ می‌گذارد.
+            if s_ge >= 50.0 or r_lt >= 50.0 or s_ge < r_lt:
+                continue
+            out.append({
+                "organism": row["organism"],
+                "agent": row["agent"],
+                "disk_content_ug": row.get("disk_content_ug", ""),
+                "s_ge": s_ge,
+                "r_lt": r_lt,
+                "atu": _parse_range(row.get("zone_ATU", "")),
+            })
+    return out
+
+
+def classify_zone_eucast(diameter_mm: float, bp: Dict[str, Any]) -> Dict[str, Any]:
+    """قاعده‌ی قطعیِ EUCAST -- بدونِ هیچ پارامترِ تنظیم‌شونده."""
+    if diameter_mm >= bp["s_ge"]:
+        cat = "S"
+    elif diameter_mm < bp["r_lt"]:
+        cat = "R"
+    else:
+        cat = "I"
+    atu = bp.get("atu")
+    in_atu = bool(atu and atu[0] <= diameter_mm <= atu[1])
+    return {"category": cat, "atu": in_atu,
+            "s_ge": bp["s_ge"], "r_lt": bp["r_lt"], "agent": bp["agent"]}
+
+
+def possible_categories(diameter_mm: float,
+                        breakpoints: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """وقتی آنتی‌بیوتیک معلوم نیست: بازه‌ی دسته‌هایِ ممکن رویِ همه‌ی نقاطِ شکست.
+
+    این جایگزینِ صادقانه‌ی «حدس زدنِ آنتی‌بیوتیک» است -- به‌جایِ یک دسته‌ی نادرست،
+    می‌گوید با این قطر چه دسته‌هایی اصلاً ممکن است و هرکدام چقدر محتمل‌اند.
+    """
+    if not breakpoints:
+        return {"categories": {}, "n": 0}
+    counts = {"S": 0, "I": 0, "R": 0}
+    for bp in breakpoints:
+        counts[classify_zone_eucast(diameter_mm, bp)["category"]] += 1
+    n = len(breakpoints)
+    return {"categories": {k: v / n for k, v in counts.items() if v}, "n": n}
+
+
+_eucast_bps = load_eucast_breakpoints(cfg.eucast_breakpoint_csv)
+if not _eucast_bps:
+    print(f"[ماژول ۱۸] جدولِ نقاطِ شکست پیدا نشد ({cfg.eucast_breakpoint_csv}) — "
+          f"طبقه‌بندی انجام نمی‌شود. برایِ ساختنش: "
+          f"python3 ground_truth/eucast/parse_breakpoints.py")
+else:
+    _org = cfg.eucast_organism
+    _pool = [b for b in _eucast_bps if not _org or b["organism"] == _org]
+    print(f"[ماژول ۱۸] {len(_eucast_bps)} نقطه‌ی شکستِ EUCAST v16.0 بارگذاری شد"
+          + (f" — ارگانیسم: {_org} ({len(_pool)} عامل)" if _org
+             else " — ارگانیسم اعلام نشده"))
+
+    for dish in dishes:
+        ppm = dish.get("px_per_mm_est")
+        results: List[Dict[str, Any]] = []
+        for i, res in enumerate(dish.get("halo_results", []), start=1):
+            rec: Dict[str, Any] = {"disk_index": i, "category": None,
+                                   "atu": False, "agent": None, "possible": None}
+            if not ppm or res.get("status") != "ok":
+                # رشد تا لبه‌ی دیسک: قطرِ ناحیه = قطرِ خودِ دیسک، که زیرِ هر نقطه‌ی
+                # شکستی است -- یعنی از نظرِ بالینی مقاوم، نه «نامعلوم».
+                rec["zone_mm"] = 6.0   # قطرِ استانداردِ دیسکِ کاغذی
+            else:
+                rec["zone_mm"] = 2.0 * res["halo_radius_px"] / ppm
+
+            agent = (cfg.eucast_disk_agents or {}).get(i)
+            match = None
+            if agent and _org:
+                for b in _pool:
+                    if b["agent"].lower().startswith(agent.lower()):
+                        match = b
+                        break
+            if match:
+                rec.update(classify_zone_eucast(rec["zone_mm"], match))
+                rec["agent"] = match["agent"]
+            else:
+                rec["possible"] = possible_categories(rec["zone_mm"], _pool)
+            results.append(rec)
+            res["eucast"] = rec
+        dish["eucast_results"] = results
+
+        print(f"[Dish #{dish['index']}] طبقه‌بندیِ EUCAST:")
+        for rec in results:
+            if rec["category"]:
+                flag = "  ⚠ داخلِ ATU — طبقِ EUCAST مستقیماً گزارش نشود" if rec["atu"] else ""
+                print(f"    دیسک {rec['disk_index']}: {rec['zone_mm']:5.1f} mm → "
+                      f"{rec['category']}  ({rec['agent']}, S≥{rec['s_ge']:.0f} "
+                      f"R<{rec['r_lt']:.0f}){flag}")
+            else:
+                p = rec["possible"] or {"categories": {}}
+                share = "، ".join(f"{k} {100*v:.0f}٪"
+                                  for k, v in sorted(p["categories"].items()))
+                print(f"    دیسک {rec['disk_index']}: {rec['zone_mm']:5.1f} mm → "
+                      f"دسته اعلام نشد (آنتی‌بیوتیک نامعلوم)؛ ممکن‌ها: {share or '—'}")
+
+
+    # ── خروجیِ تصویری: شماره‌ی دیسک + دسته‌ی بالینی، کنارِ خودِ دیسک ──────────
+    # رنگ، دسته را کد می‌کند تا پلیت در یک نگاه خوانده شود؛ همان قراردادِ رنگیِ
+    # مرسومِ آزمایشگاه: سبز=حساس، نارنجی=میانی، قرمز=مقاوم.
+    EUCAST_COLORS = {"S": (0, 200, 0), "I": (0, 165, 255), "R": (0, 0, 255)}
+
+    _ox, _oy = dish["roi_offset_xy"]
+    _dcx, _dcy = dish["center_roi_xy"]
+    _center = (_dcx + _ox, _dcy + _oy)
+    _vis = original_bgr.copy()
+    for _rec, _cand, _res in zip(results, dish["final_candidates"],
+                                 dish["halo_results"]):
+        _gx = int(round(_cand["x"] + _ox))
+        _gy = int(round(_cand["y"] + _oy))
+        _rd = float(_cand["r"])
+        _, _, _ring = _label_geometry(_rd, cfg)
+        _cat = _rec.get("category")
+        _col = EUCAST_COLORS.get(_cat, (180, 180, 180))
+        cv2.circle(_vis, (_gx, _gy), int(round(_rd)), _col, _ring)
+        _rout = _rd
+        if _res.get("fusion_source") and _res.get("halo_radius_px", 0.0) > _rd:
+            _rout = float(_res["halo_radius_px"])
+            cv2.circle(_vis, (_gx, _gy), int(round(_rout)), _col, max(1, _ring - 1))
+        if _cat:
+            _txt = f"{_rec['disk_index']}: {_cat}" + ("*" if _rec.get("atu") else "")
+        else:
+            _txt = f"{_rec['disk_index']}: ?"
+        draw_disk_label(_vis, _gx, _gy, _rd, _txt, _center, cfg, _col, _rout)
+
+    _known = sum(1 for r in results if r.get("category"))
+    show(cv2.cvtColor(_vis, cv2.COLOR_BGR2RGB),
+         f"[Dish #{dish['index']}] طبقه‌بندیِ EUCAST — سبز=S  نارنجی=I  قرمز=R  "
+         f"خاکستری=نامعلوم  (* = داخلِ ATU)   [{_known}/{len(results)} طبقه‌بندی‌شده]",
+         figsize=cfg.final_figsize, cfg=cfg)
+
+# %% [markdown]
+# ## ۱۹) گزارش نهایی یکپارچه
 # برای هر پتری و هر دیسک: قطر دیسک (mm) → قطر هاله (mm یا «تشکیل نشد») → رخدادهای حباب (تعداد + مساحت + حجم تقریبی).
 
 # %%
@@ -3754,5 +5458,51 @@ for dish in dishes:
         if bubble_res is not None and bubble_res["bubble_count"] > 0:
             line += f" | رخداد حباب: {bubble_res['bubble_count']} عدد"
 
+        # دسته‌ی بالینی (ماژول ۱۸) — همان چیزی که واقعاً به آزمایشگاه گزارش می‌شود
+        eu = (halo_res or {}).get("eucast") if halo_res is not None else None
+        if eu and eu.get("category"):
+            line += f" | EUCAST: {eu['category']}"
+            if eu.get("atu"):
+                line += " (داخلِ ATU — گزارش نشود)"
+
         print(line)
+
+
+# ── تصویرِ خلاصه‌ی نهایی: شماره‌ی هر دیسک + قطرِ دیسک و قطرِ هاله ──────────────
+# این نمایِ *اندازه‌گیری* است (در برابرِ نمایِ *بالینیِ* ماژولِ ۱۸): همان دو عددی که
+# در گزارشِ متنیِ بالا چاپ شد، کنارِ خودِ دیسک نوشته می‌شود تا مقایسه‌ی چشمی با
+# عکسِ اصلی یا با اندازه‌گیریِ کارشناس مستقیم و بدونِ شمردن ممکن باشد.
+
+for dish in dishes:
+    ox, oy = dish["roi_offset_xy"]
+    dcx, dcy = dish["center_roi_xy"]
+    center = (dcx + ox, dcy + oy)
+    ppm = dish.get("px_per_mm_est")
+    vis = original_bgr.copy()
+
+    for i, (cand, res) in enumerate(zip(dish["final_candidates"],
+                                        dish["halo_results"]), start=1):
+        gx, gy = int(round(cand["x"] + ox)), int(round(cand["y"] + oy))
+        r_disk = float(cand["r"])
+        _, _, ring = _label_geometry(r_disk, cfg)
+        cv2.circle(vis, (gx, gy), int(round(r_disk)), (0, 0, 255), ring)
+
+        d_mm = (2.0 * r_disk / ppm) if ppm else float("nan")
+        if res.get("status") == "ok" and res.get("halo_radius_px", 0.0) > r_disk:
+            cv2.circle(vis, (gx, gy), int(round(res["halo_radius_px"])),
+                       (0, 255, 0), ring)
+            h_mm = (2.0 * res["halo_radius_px"] / ppm) if ppm else float("nan")
+            txt = f"{i}: D{d_mm:.1f} H{h_mm:.1f}"
+            col = (0, 255, 0)
+            r_out = float(res["halo_radius_px"])
+        else:
+            txt = f"{i}: D{d_mm:.1f} H-"
+            col = (200, 200, 200)
+            r_out = r_disk
+        draw_disk_label(vis, gx, gy, r_disk, txt, center, cfg, col, r_out)
+
+    show(cv2.cvtColor(vis, cv2.COLOR_BGR2RGB),
+         f"[Dish #{dish['index']}] خلاصه‌ی نهایی — D=قطرِ دیسک، H=قطرِ هاله (mm)؛ "
+         f"سبز=هاله تشکیل شد، خاکستری=تشکیل نشد",
+         figsize=cfg.final_figsize, cfg=cfg)
 

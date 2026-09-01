@@ -3,4 +3,7 @@ __pycache__/
 .petri_cache_build_tmp/
 ground_truth/overlays/
 ground_truth/ground_truth_template.csv
-ground_truth/evaluation_results.csv
+
+# evaluation_results.csv دیگر نادیده گرفته نمی‌شود: خروجیِ رسمیِ ارزیابی است و
+# اسکریپت‌هایِ ground_truth/eucast/ مستقیماً از آن می‌خوانند، پس باید در مخزن باشد
+# تا تحلیل‌ها بدونِ اجرایِ دوباره‌ی کلِ پایپلاین قابلِ بازتولید بمانند.
