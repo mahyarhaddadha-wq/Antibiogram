@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "adm-zip": "^0.6.0",
+    "docx": "^9.7.1"
+  }
+}
