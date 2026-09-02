@@ -311,15 +311,18 @@ function table(rows) {
 // of a right-to-left row. The markdown keeps the LaTeX so the source
 // stays readable; what Word receives is the plain-Unicode transcription
 // below, which the author can replace with a real Word equation.
+// Subscripts are written with an underscore rather than with the
+// Unicode subscript letters: Times New Roman has no glyph for U+1D62
+// or U+208C, and Word would draw them as empty boxes.
 const FORMULA = {
-  "۲-۱": ["σ²b(t) = ω₀(t) · ω₁(t) · [ μ₀(t) − μ₁(t) ]²"],
-  "۲-۲": ["I_corr = I ⁄ I_illum", "I_corr = I − I_illum + Ī_illum"],
-  "۲-۳": ["MAD(X) = median( | xᵢ − median(X) | )"],
-  "۲-۴": ["d = ( μ_region − μ_background ) ⁄ σ_background"],
-  "۲-۵": ["dᵢ = yᵢ − xᵢ", "Bias = d̄", "LoA = d̄ ± 1.96 · s_d"],
-  "۲-۶": ["MAE = (1 ⁄ n) · Σᵢ₌₁ⁿ | yᵢ − xᵢ |"],
-  "۶-۱": ["y(r) = A + ( B − A ) ⁄ ( 1 + exp( −( r − r₀ ) ⁄ w ) )"],
-  "۶-۲": ["δ = 2 · k · w ⁄ p", "k = ln( 0.95 ⁄ 0.05 ) ≈ 2.944"],
+  "۲-۱": ["σ_b²(t) = ω_0(t) · ω_1(t) · [ μ_0(t) − μ_1(t) ]²"],
+  "۲-۲": ["I_corr = I / I_illum", "I_corr = I − I_illum + mean(I_illum)"],
+  "۲-۳": ["MAD(X) = median( | x_i − median(X) | )"],
+  "۲-۴": ["d = ( μ_region − μ_background ) / σ_background"],
+  "۲-۵": ["d_i = y_i − x_i", "Bias = mean(d)", "LoA = mean(d) ± 1.96 · s_d"],
+  "۲-۶": ["MAE = (1 / n) · Σ over i = 1 … n of | y_i − x_i |"],
+  "۶-۱": ["y(r) = A + ( B − A ) / ( 1 + exp( −( r − r_0 ) / w ) )"],
+  "۶-۲": ["δ = 2 · k · w / p", "k = ln( 0.95 / 0.05 ) ≈ 2.944"],
 };
 
 function formula(num, latex) {

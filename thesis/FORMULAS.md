@@ -8,15 +8,20 @@ Equation) بازنویسی کنید، نشانیِ هر رابطه و صورتِ
 
 | شماره | نشانی در متن | صورت لاتک | آنچه اکنون در سند نوشته شده |
 |---|---|---|---|
-| ۲-۱ | فصل دوم، بخش ۲-۳، بند آستانه‌گذاری اتسو | `\sigma_b^2(t) = \omega_0(t)\,\omega_1(t)\,\bigl[\mu_0(t) - \mu_1(t)\bigr]^2` | σ²b(t) = ω₀(t) · ω₁(t) · [ μ₀(t) − μ₁(t) ]² |
-| ۲-۲ | فصل دوم، بخش ۲-۳، بند تصحیح ناهمواری نور | `I_{\text{corr}} = \frac{I}{I_{\text{illum}}}` و `I_{\text{corr}} = I - I_{\text{illum}} + \overline{I_{\text{illum}}}` | دو سطر: `I_corr = I ⁄ I_illum` و `I_corr = I − I_illum + Ī_illum` |
-| ۲-۳ | فصل دوم، بخش ۲-۳، بند آماره‌های مقاوم | `\text{MAD}(X) = \operatorname{median}\bigl(\lvert x_i - \operatorname{median}(X)\rvert\bigr)` | MAD(X) = median( \| xᵢ − median(X) \| ) |
-| ۲-۴ | فصل دوم، بخش ۲-۳، بند اندازه اثر استانداردشده | `d = \dfrac{\mu_{\text{region}} - \mu_{\text{background}}}{\sigma_{\text{background}}}` | d = ( μ_region − μ_background ) ⁄ σ_background |
-| ۲-۵ | فصل دوم، بخش ۲-۴، تحلیل بلاند و آلتمن | `d_i = y_i - x_i`، `\text{Bias} = \bar{d}`، `\text{LoA} = \bar{d} \pm 1.96\,s_d` | سه سطر: `dᵢ = yᵢ − xᵢ` ، `Bias = d̄` ، `LoA = d̄ ± 1.96 · s_d` |
-| ۲-۶ | فصل دوم، بخش ۲-۴، خطای متوسط مطلق | `\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}\lvert y_i - x_i\rvert` | MAE = (1 ⁄ n) · Σᵢ₌₁ⁿ \| yᵢ − xᵢ \| |
-| ۶-۱ | فصل ششم، بخش ۶-۶-۱، مدل گذار شعاعی | `y(r) = A + \dfrac{B - A}{1 + \exp\left(-\frac{r - r_0}{w}\right)}` | y(r) = A + ( B − A ) ⁄ ( 1 + exp( −( r − r₀ ) ⁄ w ) ) |
-| ۶-۲ | فصل ششم، بخش ۶-۶-۳، فاصله نقطه عطف تا نقطه جدا شدن | `\delta = \dfrac{2kw}{p}`، `k = \ln\frac{0.95}{0.05} \approx 2.944` | دو سطر: `δ = 2 · k · w ⁄ p` و `k = ln( 0.95 ⁄ 0.05 ) ≈ 2.944` |
+| ۲-۱ | فصل دوم، بخش ۲-۳، بند آستانه‌گذاری اتسو | `\sigma_b^2(t) = \omega_0(t)\,\omega_1(t)\,\bigl[\mu_0(t) - \mu_1(t)\bigr]^2` | σ_b²(t) = ω_0(t) · ω_1(t) · [ μ_0(t) − μ_1(t) ]² |
+| ۲-۲ | فصل دوم، بخش ۲-۳، بند تصحیح ناهمواری نور | `I_{\text{corr}} = \frac{I}{I_{\text{illum}}}` و `I_{\text{corr}} = I - I_{\text{illum}} + \overline{I_{\text{illum}}}` | دو سطر: `I_corr = I / I_illum` و `I_corr = I − I_illum + mean(I_illum)` |
+| ۲-۳ | فصل دوم، بخش ۲-۳، بند آماره‌های مقاوم | `\text{MAD}(X) = \operatorname{median}\bigl(\lvert x_i - \operatorname{median}(X)\rvert\bigr)` | MAD(X) = median( \| x_i − median(X) \| ) |
+| ۲-۴ | فصل دوم، بخش ۲-۳، بند اندازه اثر استانداردشده | `d = \dfrac{\mu_{\text{region}} - \mu_{\text{background}}}{\sigma_{\text{background}}}` | d = ( μ_region − μ_background ) / σ_background |
+| ۲-۵ | فصل دوم، بخش ۲-۴، تحلیل بلاند و آلتمن | `d_i = y_i - x_i`، `\text{Bias} = \bar{d}`، `\text{LoA} = \bar{d} \pm 1.96\,s_d` | سه سطر: `d_i = y_i − x_i` ، `Bias = mean(d)` ، `LoA = mean(d) ± 1.96 · s_d` |
+| ۲-۶ | فصل دوم، بخش ۲-۴، خطای متوسط مطلق | `\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}\lvert y_i - x_i\rvert` | MAE = (1 / n) · Σ over i = 1 … n of \| y_i − x_i \| |
+| ۶-۱ | فصل ششم، بخش ۶-۶-۱، مدل گذار شعاعی | `y(r) = A + \dfrac{B - A}{1 + \exp\left(-\frac{r - r_0}{w}\right)}` | y(r) = A + ( B − A ) / ( 1 + exp( −( r − r_0 ) / w ) ) |
+| ۶-۲ | فصل ششم، بخش ۶-۶-۳، فاصله نقطه عطف تا نقطه جدا شدن | `\delta = \dfrac{2kw}{p}`، `k = \ln\frac{0.95}{0.05} \approx 2.944` | دو سطر: `δ = 2 · k · w / p` و `k = ln( 0.95 / 0.05 ) ≈ 2.944` |
 
 در روابط ۲-۴ و ۲-۵ نمادها به انگلیسی نوشته شده‌اند، چون نمادِ فارسی داخلِ یک
 عبارتِ ریاضیِ چپ‌به‌راست جابه‌جا نمایش داده می‌شود. معنای هر نماد بلافاصله در
 متنِ پیش یا پسِ همان رابطه آمده است.
+
+زیرنویسِ متغیرها با زیرخط نوشته شده است (`x_i` و نه `xᵢ`)، چون Times New Roman
+برایِ نویسه‌هایِ زیرنویسِ یونی‌کد مانندِ U+1D62 و U+208C گلیفی ندارد و ورد آن‌ها
+را مربعِ خالی می‌کشد. اگر رابطه‌ها را با ویرایشگرِ معادلهٔ ورد بازنویسی کنید،
+این محدودیت از میان می‌رود و می‌توانید زیرنویسِ واقعی بگذارید.
