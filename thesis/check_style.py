@@ -41,7 +41,7 @@ def sentences(prose):
 
 def main():
     files = sorted(THESIS.glob("chapter_0*.md")) + [THESIS / "front_matter.md"]
-    total = {"kasra": 0, "dash": 0, "underscore": 0, "q": 0, "excl": 0, "module": 0}
+    total = {"kasra": 0, "dash": 0, "underscore": 0, "q": 0, "excl": 0, "module": 0, "latex": 0}
     bad = False
 
     for f in files:
@@ -57,10 +57,13 @@ def main():
             "q": prose.count("؟"),
             "excl": prose.count("!"),
             "module": len(MODULE_RE.findall(prose)),
+            # Inline math is copied into the document verbatim, so a LaTeX
+            # macro left inside it prints as "\\omega_0" on the page.
+            "latex": len(re.findall(r"(?<!\$)\$(?!\$)[^$\n]*\\[A-Za-z]", raw)),
         }
         for k, v in counts.items():
             total[k] += v
-        flag = any(counts[k] for k in ("kasra", "dash", "module"))
+        flag = any(counts[k] for k in ("kasra", "dash", "module", "latex"))
         bad = bad or flag
         mark = "FAIL" if flag else "ok  "
         print(f"  [{mark}] {f.name:22s} " + "  ".join(f"{k}={v}" for k, v in counts.items()))
@@ -68,6 +71,9 @@ def main():
         if counts["module"]:
             for m in MODULE_RE.finditer(prose):
                 print(f"           module ref: ...{prose[max(0,m.start()-40):m.start()+25]}...")
+
+        for m in re.finditer(r"(?<!\$)\$(?!\$)[^$\n]*\\[A-Za-z][^$\n]*\$", raw):
+            print(f"           latex left in inline math: {m.group(0)}")
 
     print("\n  TOTAL " + "  ".join(f"{k}={v}" for k, v in total.items()))
     if total["q"] > 1:
