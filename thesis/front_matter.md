@@ -1,10 +1,10 @@
-# صفحات مقدماتی
-
-## ۱) صفحه‌ی عنوان (فارسی)
+# صفحه عنوان فارسی
 
 *این صفحه را سازنده‌ی سند به‌طور مستقیم می‌سازد و از این فایل خوانده نمی‌شود.*
 
-## ۲) تعهدنامه اصالت اثر
+# بسم الله الرحمن الرحیم
+
+# تعهدنامه اصالت اثر
 
 اینجانب مهیار حدادها، دانشجوی دوره کارشناسی رشته مهندسی پزشکی دانشکده فنی و مهندسی دانشگاه اصفهان به شماره دانشجویی ۴۰۱۲۰۱۳۰۵۳، نویسنده پروژه کارشناسی با عنوان «طراحی و پیاده‌سازی سامانه هوشمند تحلیل خودکار آزمون آنتی‌بیوگرام مبتنی بر پردازش تصویر و یادگیری ماشین مطابق استاندارد EUCAST» زیر راهنمایی جناب آقای دکتر محمدرضا یزدچی، بدین وسیله متعهد می‌شوم:
 
@@ -20,11 +20,11 @@
 
 تاریخ و امضا:
 
-## ۳) صورت‌جلسه هیئت داوران
+# صورت‌جلسه هیئت داوران
 
 *این صفحه پس از برگزاری جلسه دفاع، طبق فرم رسمی دانشگاه تکمیل می‌شود.*
 
-## ۴) سپاسگزاری
+# سپاسگزاری
 
 از استاد راهنما، جناب آقای دکتر محمدرضا یزدچی، که در سراسر این پروژه راهنمایی کردند و به‌ویژه بر گزارش صادقانه نتایج منفی در کنار نتایج مثبت تاکید داشتند، صمیمانه سپاسگزارم.
 
@@ -32,27 +32,57 @@
 
 از خانواده‌ام که در طول این مسیر همراه بودند، سپاسگزارم.
 
-## ۵) تقدیم‌نامه
+# تقدیم‌نامه
 
 تقدیم به پدر و مادرم.
 
-## ۶) چکیده
+# چکیده
 
-آزمون آنتی‌بیوگرام به روش انتشار از دیسک، رایج‌ترین راه تعیین حساسیت باکتری به آنتی‌بیوتیک در آزمایشگاه‌های بالینی است. در این آزمون، قطر ناحیه بدون رشد باکتری دور هر دیسک اندازه گرفته و به یکی از سه دسته حساس، حساس با مواجهه افزایش‌یافته، یا مقاوم ترجمه می‌شود. این اندازه‌گیری امروز به صورت دستی و با خط‌کش انجام می‌گیرد، که هم وقت‌گیر است و هم میان کارشناسان مختلف تفاوت دارد.
+در آزمون آنتی‌بیوگرام به روش انتشار از دیسک، قطر ناحیه بدون رشد امروز با خط‌کش و به دست کارشناس اندازه گرفته می‌شود. در این پژوهش سامانه‌ای ساخته شده است که همین کار را از روی یک عکس معمولی، در چهار مرحله یافتن ظرف، یافتن دیسک‌ها، تعیین مرز هاله با سه روش موازی، و تبدیل قطر به دسته بالینی طبق جدول‌های EUCAST نسخه ۱۶٫۰ خودکار انجام می‌دهد. سامانه تماماً کلاسیک و کاملاً قطعی است. ارزیابی روی مجموعه‌ای مرجع و مستقل با ۱۱ عکس و ۹۳ دیسک انجام شد: ظرف در هر ۱۱ عکس درست یافته شد، یافتن دیسک به امتیاز اف۱ برابر ۰٫۹۸۹ با صحت کامل رسید، و قطر هاله خطای متوسط ۳٫۸۵ میلی‌متر با میانه ۲٫۱۰ میلی‌متر و توافق دسته‌ای ۸۳٫۲ درصد داد. یافته اصلی آن است که روی نیمی از دیسک‌ها، تفاوت روشنایی داخل هاله با محیط پیرامون تنها حدود ۰٫۳ برابر نوسان طبیعی تصویر است، یعنی مرز در تصویر ثبت نشده و هیچ روش مبتنی بر روشنایی آن را بازنمی‌یابد. بر همین پایه یک مدل ریاضی از گذار شعاعی، شرایط تصویربرداری لازم برای آن، و پیش‌بینی کمی نتیجه‌اش پیشنهاد شده است.
 
-در این پژوهش سامانه‌ای طراحی و پیاده‌سازی شده است که همین زنجیره را از روی یک عکس معمولی، بدون نیاز به دوربین تخصصی یا نورپردازی کنترل‌شده، به صورت خودکار انجام می‌دهد. سامانه در چهار مرحله کار می‌کند: یافتن ظرف پتری، یافتن دیسک‌های آنتی‌بیوتیک، تعیین مرز ناحیه بدون رشد، و تبدیل قطر به دسته بالینی بر پایه جدول‌های مرجع EUCAST نسخه ۱۶٫۰. تعیین مرز با سه روش موازی و مستقل انجام و سپس بر پایه نقاط قوت اندازه‌گیری‌شده هر روش ترکیب می‌شود. کل سامانه بر روش‌های کلاسیک پردازش تصویر استوار است، هیچ مدل یادگیرنده‌ای ندارد، و رفتار آن کاملاً قطعی و تکرارپذیر است.
+**واژه‌های کلیدی:** آنتی‌بیوگرام، انتشار از دیسک، پردازش تصویر پزشکی، هاله عدم رشد، استاندارد EUCAST.
 
-ارزیابی روی یک مجموعه مرجع مستقل شامل ۱۱ عکس واقعی و ۹۳ دیسک انجام شده است. ظرف پتری در هر ۱۱ عکس درست یافته شد. یافتن دیسک به امتیاز اف۱ برابر ۰٫۹۸۹ با دقت کامل رسید. تشخیص وجود هاله دقت ۰٫۸۲۴ داشت و خطای متوسط قطر هاله ۳٫۸۵ میلی‌متر با میانه ۲٫۱۰ میلی‌متر بود. ترجمه این خطا به زبان بالینی، روی ۳۱٬۷۵۹ تصمیم شبیه‌سازی‌شده، توافق دسته‌ای ۸۳٫۲ درصد داد.
-
-تفسیر درست این اعداد به یک نکته وابسته است. خوانش کارشناس نیز تا دو میلی‌متر تغییر دارد و شبیه‌سازی این نویز نشان می‌دهد توافق دو کارشناس انسانی با یکدیگر نیز تنها ۹۲ تا ۹۶ درصد است. یافته اصلی این پژوهش نیز از همین جنس است: روی زیرمجموعه‌ای از دیسک‌ها که بیشتر خطا در آن‌ها متمرکز است، تفاوت روشنایی داخل هاله با محیط پیرامون تنها حدود ۰٫۳ برابر نوسان طبیعی خود تصویر اندازه‌گیری شد. یعنی مرز در این تصاویر ثبت نشده است و هیچ روش مبتنی بر روشنایی نمی‌تواند آن را بازیابد. بر پایه همین یافته، مسیر بهبود از الگوریتم بهتر به تصویربرداری بهتر تغییر جهت داده و در پایان‌نامه یک مدل ریاضی برای گذار شعاعی به همراه شرایط عملیاتی لازم و پیش‌بینی کمی نتیجه آن پیشنهاد شده است.
-
-**واژه‌های کلیدی:** آنتی‌بیوگرام، انتشار از دیسک، پردازش تصویر پزشکی، هاله عدم رشد، استاندارد EUCAST، توافق دسته‌ای، تحلیل بلاند و آلتمن.
-
-## ۷) فهرست مطالب
+# فهرست مطالب
 
 *این فهرست را سازنده‌ی سند به‌طور خودکار می‌سازد.*
 
-## ۸) فهرست شکل‌ها
+# فهرست جدول‌ها
+
+| شماره | عنوان |
+|---|---|
+| جدول ۱-۱ | خلاصه نتایج سنجش سامانه |
+| جدول ۲-۱ | نمونه‌ای از جدول مرجع EUCAST برای گروه انتروباکترال‌ها |
+| جدول ۲-۲ | مقایسه کارهای پیشین با پژوهش حاضر |
+| جدول ۳-۱ | اثر راستی‌آزمایی شکل بر یافتن دیسک |
+| جدول ۳-۲ | کارایی مستقل هر روش تعیین مرز |
+| جدول ۳-۳ | اثر ترکیب سه روش |
+| جدول ۳-۴ | راه‌های آزموده و کنار گذاشته‌شده |
+| جدول ۴-۱ | نگاشت نام مرحله‌ها به سلول‌های دفترچه |
+| جدول ۴-۲ | پارامترهای کلیدی و مبنای انتخاب آن‌ها |
+| جدول ۵-۱ | نتیجه یافتن دیسک روی ۹۳ دیسک مرجع |
+| جدول ۵-۲ | ماتریس درهم‌ریختگی تشخیص وجود هاله |
+| جدول ۵-۳ | دقت عددی قطر هاله |
+| جدول ۵-۴ | کارایی مستقل هر روش مرزیابی |
+| جدول ۵-۵ | اثر ادغام روش‌ها |
+| جدول ۵-۶ | ده خطای بزرگ |
+| جدول ۵-۷ | خطا به تفکیک اندازه هاله |
+| جدول ۵-۸ | نتیجه به تفکیک هر عکس |
+| جدول ۵-۹ | توافق دسته‌ای با خوانش کارشناس |
+| جدول ۵-۱۰ | نرخ تغییر دسته بر پایه فاصله تا نزدیک‌ترین نقطه شکست |
+| جدول ۵-۱۱ | توافق دسته‌ای به تفکیک روش تولیدکننده مرز |
+| جدول ۵-۱۲ | رابطه دقت میلی‌متری با معیارهای بالینی |
+| جدول ۵-۱۳ | خطای سامانه پس از کسر سهم نویز مرجع |
+| جدول ۵-۱۴ | توافق دو کارشناس انسانی با یکدیگر |
+| جدول ۵-۱۵ | جایگاه اندازه‌گیری‌های سامانه نسبت به باند دو میلی‌متری |
+| جدول ۵-۱۶ | جایگاه هر روش نسبت به باند انسانی |
+| جدول ۶-۱ | جدایش روشنایی داخل هاله از سطح رشد کامل |
+| جدول ۶-۲ | چهار نشانه مشاهده‌شده و علت مشترک آن‌ها |
+| جدول ۶-۳ | نتیجه تغییر فضای محاسبه |
+| جدول ۶-۴ | اثر میانگین‌گیری فضایی |
+| جدول ۶-۵ | مقایسه جفتی مدل سیگموئید با ادغام فعلی |
+| جدول ۶-۶ | خطای مرز به تفکیک تیزی لبه |
+
+# فهرست شکل‌ها
 
 | شماره | عنوان |
 |---|---|
@@ -98,43 +128,7 @@
 | شکل ۶-۲ | اثر میانگین‌گیری فضایی بر جدایش و بر تاری مرز |
 | شکل ۶-۳ | مقایسه جفتی مدل سیگموئید با ادغام فعلی |
 
-## ۹) فهرست جدول‌ها
-
-| شماره | عنوان |
-|---|---|
-| جدول ۱-۱ | خلاصه نتایج سنجش سامانه |
-| جدول ۲-۱ | نمونه‌ای از جدول مرجع EUCAST برای گروه انتروباکترال‌ها |
-| جدول ۲-۲ | مقایسه کارهای پیشین با پژوهش حاضر |
-| جدول ۳-۱ | اثر راستی‌آزمایی شکل بر یافتن دیسک |
-| جدول ۳-۲ | کارایی مستقل هر روش تعیین مرز |
-| جدول ۳-۳ | اثر ترکیب سه روش |
-| جدول ۳-۴ | راه‌های آزموده و کنار گذاشته‌شده |
-| جدول ۴-۱ | نگاشت نام مرحله‌ها به سلول‌های دفترچه |
-| جدول ۴-۲ | پارامترهای کلیدی و مبنای انتخاب آن‌ها |
-| جدول ۵-۱ | نتیجه یافتن دیسک روی ۹۳ دیسک مرجع |
-| جدول ۵-۲ | ماتریس درهم‌ریختگی تشخیص وجود هاله |
-| جدول ۵-۳ | دقت عددی قطر هاله |
-| جدول ۵-۴ | کارایی مستقل هر روش مرزیابی |
-| جدول ۵-۵ | اثر ادغام روش‌ها |
-| جدول ۵-۶ | ده خطای بزرگ |
-| جدول ۵-۷ | خطا به تفکیک اندازه هاله |
-| جدول ۵-۸ | نتیجه به تفکیک هر عکس |
-| جدول ۵-۹ | توافق دسته‌ای با خوانش کارشناس |
-| جدول ۵-۱۰ | نرخ تغییر دسته بر پایه فاصله تا نزدیک‌ترین نقطه شکست |
-| جدول ۵-۱۱ | توافق دسته‌ای به تفکیک روش تولیدکننده مرز |
-| جدول ۵-۱۲ | رابطه دقت میلی‌متری با معیارهای بالینی |
-| جدول ۵-۱۳ | خطای سامانه پس از کسر سهم نویز مرجع |
-| جدول ۵-۱۴ | توافق دو کارشناس انسانی با یکدیگر |
-| جدول ۵-۱۵ | جایگاه اندازه‌گیری‌های سامانه نسبت به باند دو میلی‌متری |
-| جدول ۵-۱۶ | جایگاه هر روش نسبت به باند انسانی |
-| جدول ۶-۱ | جدایش روشنایی داخل هاله از سطح رشد کامل |
-| جدول ۶-۲ | چهار نشانه مشاهده‌شده و علت مشترک آن‌ها |
-| جدول ۶-۳ | نتیجه تغییر فضای محاسبه |
-| جدول ۶-۴ | اثر میانگین‌گیری فضایی |
-| جدول ۶-۵ | مقایسه جفتی مدل سیگموئید با ادغام فعلی |
-| جدول ۶-۶ | خطای مرز به تفکیک تیزی لبه |
-
-## ۱۰) واژه‌نامه
+# واژه‌نامه
 
 | واژه فارسی | معادل انگلیسی |
 |---|---|
@@ -153,7 +147,7 @@
 | خطای جزئی | Minor error |
 | آستانه‌گذاری اتسو | Otsu's method |
 | تبدیل هاف دایره‌ای | Circular Hough transform |
-| تبدیل کلاه‌بالا سفید | White top-hat transform |
+| تبدیل کلاه سفید | White top-hat transform |
 | عملگر بستن و باز کردن | Morphological closing and opening |
 | تبدیل فاصله | Distance transform |
 | الگوریتم آبخیز | Watershed algorithm |
@@ -174,18 +168,12 @@
 | دفترچه ژوپیتر | Jupyter notebook |
 | یادگیری عمیق | Deep learning |
 
-## ۱۱) Abstract
+# Abstract
 
-Disk diffusion antibiogram testing is the most widely used method for determining bacterial susceptibility to antibiotics in clinical laboratories. The diameter of the zone in which bacterial growth is inhibited around each antibiotic disk is measured and translated into one of three categories: susceptible, susceptible at increased exposure, or resistant. This measurement is still performed by hand with a ruler, which is time consuming and varies between readers.
+In disk diffusion antibiogram testing the diameter of the growth-free zone is still measured by hand with a ruler. This project builds a system that does the same job from an ordinary photograph, in four stages: locating the petri dish, locating the antibiotic disks, delineating the inhibition zone with three parallel methods, and mapping the diameter onto a clinical category using the EUCAST v16.0 breakpoint tables. The system is entirely classical and fully deterministic. It was evaluated against an independent reference set of 11 photographs containing 93 disks: the dish was located correctly in all 11 images, disk detection reached an F1 score of 0.989 at perfect precision, and the zone diameter gave a mean absolute error of 3.85 mm, a median of 2.10 mm and a categorical agreement of 83.2 percent. The principal finding is that on half of the disks the intensity difference between the inside of the zone and the surrounding lawn is only about 0.3 times the natural variation of the image, so the boundary is not recorded and no intensity-based method can recover it. On that basis a mathematical model of the radial transition is proposed, together with the imaging conditions it requires and a quantitative prediction of its result.
 
-This project designs and implements a system that performs the whole reading chain automatically from an ordinary photograph, with no specialised camera and no controlled lighting. The system works in four stages: locating the petri dish, locating the antibiotic disks, delineating the inhibition zone, and mapping the measured diameter onto a clinical category using the EUCAST v16.0 breakpoint tables. Zone delineation is performed by three independent parallel methods whose outputs are then combined according to the measured strengths of each. The system is built entirely from classical image-processing methods, contains no learned model, and is fully deterministic and reproducible.
+**Keywords:** Antibiogram, disk diffusion, medical image processing, zone of inhibition, EUCAST standard.
 
-The system was evaluated against an independent reference set of 11 real photographs containing 93 disks. The petri dish was correctly located in all 11 images. Disk detection reached an F1 score of 0.989 at perfect precision. Zone-presence detection reached an accuracy of 0.824, and the mean absolute error of the zone diameter was 3.85 mm with a median of 2.10 mm. Translated into clinical terms over 31,759 simulated decisions, categorical agreement with the expert reading was 83.2 percent.
-
-Reading these figures correctly depends on one point. The expert reading itself varies by up to two millimetres, and simulating that noise shows that two human experts agree with each other only 92 to 96 percent of the time. The principal finding of this work is of the same kind: on the subset of disks where most of the error is concentrated, the intensity difference between the inside of the zone and the surrounding lawn was measured at only about 0.3 times the natural spatial variation of the image itself. The boundary is therefore not recorded in these photographs, and no intensity-based method can recover it. On the basis of this finding the improvement path shifts from a better algorithm to better imaging, and a mathematical model of the radial transition is proposed together with the operating conditions it requires and a quantitative prediction of the evaluation result it would produce.
-
-**Keywords:** Antibiogram, disk diffusion, medical image processing, zone of inhibition, EUCAST standard, categorical agreement, Bland–Altman analysis.
-
-## ۱۲) English Title Page
+# English Title Page
 
 *این صفحه را سازنده‌ی سند به‌طور مستقیم می‌سازد و از این فایل خوانده نمی‌شود.*
