@@ -1,0 +1,45 @@
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_01.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_02.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_03.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_04.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_05.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_06.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_07.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_08.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_09.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_10.jpg
+[IPKernelApp] WARNING | Kernel is running over TCP without encryption. All communication (including code and outputs) is sent in plain text and is susceptible to eavesdropping. Use IPC transport or launch with kernel manager-provisioned CurveZMQ keys to enable transport encryption.
+[done] gt_11.jpg
+
+==========================================================================
+تفکیک‌پذیری **سرِ خودِ مرزِ مرجع**  (n=63 دیسک)
+==========================================================================
+  اندازه‌اثرِ لبه : میانه 0.67σ   چارک۱ 0.38   چارک۳ 1.08
+  AUC لبه        : میانه 0.711   چارک۱ 0.624   چارک۳ 0.830
+  کسری با AUC>۰.۶: 83%   AUC>۰.۷: 56%
+
+==========================================================================
+آزمونِ اوراکل: بهترین آستانه‌ی ممکن، با دانستنِ خودِ جواب
+==========================================================================
+  خطایِ قطر: میانه 0.15 mm   میانگین 1.06 mm   n=63
+  کسری با خطایِ ≤۲mm: 87%   ≤۴mm: 95%
+
+  کنترلِ پوچ -- همان اوراکل به سمتِ هدفِ *غلط* (هاله‌ی دیسکِ دیگر):
+    خطا: میانه 2.59 mm   میانگین 3.37 mm   n=63
+    کسری با خطایِ ≤۲mm: 44%
+
+  اگر کنترلِ پوچ هم به‌خوبیِ اوراکلِ واقعی باشد، اوراکل صرفاً نشان می‌دهد
+  «هر شعاعی در بازه‌ی جست‌وجو با یک آستانه قابلِ‌دستیابی است» و چیزی درباره‌ی
+  وجودِ مرز ثابت نمی‌کند. تفاوتِ معنادارِ این دو است که ادعا را می‌سنجد.
+
+جزئیات: /home/user/Antibiogram/ground_truth/diagnostics/boundary_recorded_test.csv
