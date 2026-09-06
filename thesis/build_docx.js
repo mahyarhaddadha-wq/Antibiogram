@@ -31,7 +31,6 @@ const D = require("docx");
 
 const THESIS = __dirname;
 const FIGS = path.join(THESIS, "figures");
-const GALLERY = path.join(FIGS, "pipeline", "gt_06");
 
 // ─── Template constants ────────────────────────────────────────────────
 const FA = "IRNazanin";        // Persian body and heading face
@@ -39,6 +38,8 @@ const FA_TITLE = "IRTitr";     // Persian display face, cover title only
 const EN = "Times New Roman";  // Latin face
 
 const FACE = { ascii: EN, hAnsi: EN, eastAsia: EN, cs: FA };
+const MATH = "Cambria Math";
+const FACE_MATH = { ascii: MATH, hAnsi: MATH, eastAsia: MATH, cs: MATH };
 const FACE_TITLE = { ascii: EN, hAnsi: EN, eastAsia: EN, cs: FA_TITLE };
 
 // [Latin size, complex-script size] in half points. The complex-script
@@ -311,18 +312,20 @@ function table(rows) {
 // of a right-to-left row. The markdown keeps the LaTeX so the source
 // stays readable; what Word receives is the plain-Unicode transcription
 // below, which the author can replace with a real Word equation.
-// Subscripts are written with an underscore rather than with the
-// Unicode subscript letters: Times New Roman has no glyph for U+1D62
-// or U+208C, and Word would draw them as empty boxes.
+// The transcriptions are the author's own, kept verbatim from the revision.
+// They use Unicode subscripts and a fraction slash, which Times New Roman
+// has no glyph for, so the formula cell is set in Cambria Math — it ships
+// with Office and covers every character used here.
 const FORMULA = {
-  "۲-۱": ["σ_b²(t) = ω_0(t) · ω_1(t) · [ μ_0(t) − μ_1(t) ]²"],
-  "۲-۲": ["I_corr = I / I_illum", "I_corr = I − I_illum + mean(I_illum)"],
-  "۲-۳": ["MAD(X) = median( | x_i − median(X) | )"],
-  "۲-۴": ["d = ( μ_region − μ_background ) / σ_background"],
-  "۲-۵": ["d_i = y_i − x_i", "Bias = mean(d)", "LoA = mean(d) ± 1.96 · s_d"],
-  "۲-۶": ["MAE = (1 / n) · Σ over i = 1 … n of | y_i − x_i |"],
-  "۶-۱": ["y(r) = A + ( B − A ) / ( 1 + exp( −( r − r_0 ) / w ) )"],
-  "۶-۲": ["δ = 2 · k · w / p", "k = ln( 0.95 / 0.05 ) ≈ 2.944"],
+  "۲-۱": ["σ_b² (t) = ω₀(t) · ω₁(t) · [ μ₀(t) − μ₁(t) ]²"],
+  "۲-۲": ["I_corr = I ⁄ I_illum"],
+  "۲-۳": ["I_corr = I − I_illum + Ī_illum"],
+  "۲-۴": ["MAD(X) = median( | xᵢ − median(X) | )"],
+  "۲-۵": ["d = ( μ_region − μ_background ) ⁄ σ_background"],
+  "۲-۶": ["dᵢ = yᵢ − xᵢ", "Bias = d̄", "LoA = d̄ ± 1.96 · s_d"],
+  "۲-۷": ["MAE = (1 ⁄ n) · Σᵢ₌₁ⁿ | yᵢ − xᵢ |"],
+  "۶-۱": ["y(r) = A + ( B − A ) ⁄ ( 1 + exp( −( r − r₀ ) ⁄ w ) )"],
+  "۶-۲": ["δ = 2 · k · w ⁄ p", "k = ln( 0.95 ⁄ 0.05 ) ≈ 2.944"],
 };
 
 function formula(num, latex) {
@@ -365,7 +368,7 @@ function formula(num, latex) {
           alignment: D.AlignmentType.CENTER,
           spacing: { before: 0, after: 0, line: LINE, lineRule: D.LineRuleType.AUTO },
           children: [new D.TextRun({
-            text: l, font: FACE, italics: true,
+            text: l, font: FACE_MATH, italics: true,
             size: SZ.body[0], sizeComplexScript: SZ.body[1], rightToLeft: false,
           })],
         })), bodyW),
@@ -375,23 +378,18 @@ function formula(num, latex) {
 }
 
 // ─── Figure manifest ───────────────────────────────────────────────────
-// Explicit, because the reading order of the chapter is not the execution
-// order of the notebook cells the gallery images come from.
-const GALLERY_FOR = {
-  1: "01_input_image", 2: "02_dish_detection", 3: "03_dish_mask",
-  4: "04_tophat_a", 5: "05_tophat_b", 6: "06_threshold", 7: "07_closing",
-  8: "08_opening", 9: "09_distance_transform", 10: "14_watershed_markers",
-  11: "10_halo_gradient", 12: "11_disk_edges", 13: "12_hough_candidates",
-  14: "13_blob_watershed", 15: "15_disks_final", 16: "16_agar_canvas",
-  17: "21_halo_base", 18: "22_halo_growth", 19: "23_halo_angular_fix",
-  20: "17_branch_otsu", 21: "18_branch_watershed", 22: "19_branch_statistical",
-  23: "20_branch_growth_model", 24: "24_halo_fusion", 25: "25_bubbles",
-  26: "26_eucast", 27: "27_final_report",
+// Chapter four shows the pipeline as ten grouped plates rather than the
+// twenty-seven separate notebook outputs; make_plates.py composes them.
+const PLATES = {
+  1: "plate_4_1_dish", 2: "plate_4_2_disk_pre", 3: "plate_4_3_disk_br",
+  4: "plate_4_4_disks_final", 5: "plate_4_5_radial", 6: "plate_4_6_branches",
+  7: "plate_4_7_fusion", 8: "plate_4_8_bubbles", 9: "plate_4_9_eucast",
+  10: "plate_4_10_report",
 };
 
 const FIGURES = { "۳-۱": path.join(FIGS, "fig_3_1_architecture.png") };
-for (const [n, file] of Object.entries(GALLERY_FOR)) {
-  FIGURES[`۴-${toFa(n)}`] = path.join(GALLERY, `${file}.png`);
+for (const [n, file] of Object.entries(PLATES)) {
+  FIGURES[`۴-${toFa(n)}`] = path.join(FIGS, "plates", `${file}.png`);
 }
 [["۵-۱", "fig_5_1_bland_altman.png"],
  ["۵-۲", "fig_5_2_system_vs_expert.png"],
@@ -509,7 +507,7 @@ function convert(md, opts = {}) {
     if ((m = t.match(/^\*{1,2}(?:شکلِ?|شکل)\s*((?:[۰-۹]+|الف|ب|پ|ت|ث)-[۰-۹]+)\s*[:：]?\s*(.*)$/))) {
       const num = m[1];
       const f = FIGURES[num];
-      if (f && fs.existsSync(f)) out.push(image(f, num.startsWith("۴") ? 320 : 420));
+      if (f && fs.existsSync(f)) out.push(image(f, num.startsWith("۴") ? 430 : 420));
       else console.warn("  missing figure", num, f);
       out.push(caption("fig", num, m[2].replace(/\*+$/, "").trim()));
       i++; continue;
@@ -608,7 +606,7 @@ const titlePage = [
   cover("گروه مهندسی پزشکی", 11, { after: 900 }),
   cover("پروژه‌ی کارشناسی رشته‌ی مهندسی پزشکی", 18, { after: 800 }),
   cover("طراحی و پیاده‌سازی سامانه هوشمند تحلیل خودکار آزمون آنتی‌بیوگرام", 13, { titr: true, after: 80 }),
-  cover("مبتنی بر پردازش تصویر و یادگیری ماشین مطابق استاندارد EUCAST", 13, { titr: true, after: 900 }),
+  cover("مبتنی بر پردازش تصویر مطابق استاندارد EUCAST", 13, { titr: true, after: 900 }),
   cover("استاد راهنما:", 15, { after: 80 }),
   cover("دکتر محمدرضا یزدچی", 13, { after: 600 }),
   cover("دانشجو:", 15, { after: 80 }),
@@ -625,7 +623,7 @@ const englishTitlePage = [
   cover("B.Sc. Project", 16, { en: true, after: 800 }),
   cover("Design and Implementation of an Intelligent Automated", 15, { en: true, after: 60 }),
   cover("Antibiogram Analysis System Based on Image Processing", 15, { en: true, after: 60 }),
-  cover("and Machine Learning According to EUCAST Standards", 15, { en: true, after: 900 }),
+  cover("According to EUCAST Standards", 15, { en: true, after: 900 }),
   cover("Supervisor:", 14, { en: true, after: 80 }),
   cover("Dr. Mohammad Reza Yazdchi", 13, { en: true, after: 600 }),
   cover("By:", 14, { en: true, after: 80 }),

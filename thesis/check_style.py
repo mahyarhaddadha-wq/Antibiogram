@@ -15,6 +15,17 @@ DASHES = "—–"   # em dash, en dash
 # Module-number references the text must not use (rule 10).
 MODULE_RE = re.compile(r"ماژول\s*[۰-۹\d]")
 
+HALFSPACE_RE = re.compile(
+    "\u200c |"                                    # half space then a space
+    " \u200c|"                                    # a space then a half space
+    "[\u0600-\u06ff](?<!می)(?<!نمی)\u200c(?:است|بود|باشد)\\b|"   # a free verb glued on
+    "\\b(?:ن?می)(?:شود|کند|دهد|باشد|تواند|رود|گیرد|آید|ماند|شد|کرد|گردد)\\b|"
+    "(?:آغشته|اندازه|دسته|مشاهده|نتیجه|داده|خستگی|کلافگی|تندی|آزمایشگاه)"
+    "(?:ها|های|هایی|گیری)\\b|"                     # a suffix with no separator
+    "\\bبصورت\\b"                                 # a prefix written solid
+)
+
+
 def strip_structure(text):
     """Drop headings, tables, code and footnote definitions before prose checks."""
     out = []
@@ -41,7 +52,8 @@ def sentences(prose):
 
 def main():
     files = sorted(THESIS.glob("chapter_0*.md")) + [THESIS / "front_matter.md"]
-    total = {"kasra": 0, "dash": 0, "underscore": 0, "q": 0, "excl": 0, "module": 0, "latex": 0}
+    total = {"kasra": 0, "dash": 0, "underscore": 0, "q": 0, "excl": 0, "module": 0,
+             "latex": 0, "halfspace": 0}
     bad = False
 
     for f in files:
@@ -60,10 +72,14 @@ def main():
             # Inline math is copied into the document verbatim, so a LaTeX
             # macro left inside it prints as "\\omega_0" on the page.
             "latex": len(re.findall(r"(?<!\$)\$(?!\$)[^$\n]*\\[A-Za-z]", raw)),
+            # Half-space defects: a zero-width non-joiner next to a real
+            # space, a free verb glued to the word before it, a prefix
+            # written solid, or a suffix attached with a full space.
+            "halfspace": len(HALFSPACE_RE.findall(raw)),
         }
         for k, v in counts.items():
             total[k] += v
-        flag = any(counts[k] for k in ("kasra", "dash", "module", "latex"))
+        flag = any(counts[k] for k in ("dash", "module", "latex", "halfspace"))
         bad = bad or flag
         mark = "FAIL" if flag else "ok  "
         print(f"  [{mark}] {f.name:22s} " + "  ".join(f"{k}={v}" for k, v in counts.items()))
@@ -74,6 +90,9 @@ def main():
 
         for m in re.finditer(r"(?<!\$)\$(?!\$)[^$\n]*\\[A-Za-z][^$\n]*\$", raw):
             print(f"           latex left in inline math: {m.group(0)}")
+
+        for m in HALFSPACE_RE.finditer(raw):
+            print(f"           half space: ...{raw[max(0, m.start()-25):m.end()+15]}...")
 
     print("\n  TOTAL " + "  ".join(f"{k}={v}" for k, v in total.items()))
     if total["q"] > 1:
