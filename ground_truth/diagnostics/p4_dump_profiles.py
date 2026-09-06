@@ -23,7 +23,7 @@ RAW = REPO / "ground_truth" / "raw_images"
 GT_CSV = REPO / "ground_truth" / "ground_truth_expert_readings.csv"
 OUT = Path("/tmp/radial_profiles.json")
 CFG_MARKER = "cfg = Phase2Config()"
-STOP_MARKER = "# ── ماژول ۱۵.۸ (جدید)"   # بعد از بوم + مرجعِ میدانِ دور
+STOP_MARKER = "# ── ماژول ۱۶.۵ (بازطراحی دوم)"   # بعد از محاسبه‌ی px_per_mm_est (ماژول ۱۶)
 
 DUMP = r'''
 import numpy as _np, json as _json
